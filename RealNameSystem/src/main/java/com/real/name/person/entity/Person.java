@@ -1,11 +1,13 @@
 package com.real.name.person.entity;
 
+import com.real.name.project.entity.ProjectPersonDetail;
 import lombok.Data;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Data
@@ -200,6 +202,10 @@ public class Person {
      */
     private Integer groupNo;
 
+    @OneToMany(mappedBy = "person", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    private List<ProjectPersonDetail> projectPersonDetails;
+
+
     public Person() { }
 
     public Person(String personName, String idCardNumber, String nation, Integer age, Date startDate, Date expiryDate, Integer gender, String address, String headImage, String grantOrg) {
@@ -276,6 +282,8 @@ public class Person {
                 ", hometown='" + hometown + '\'' +
                 ", address='" + address + '\'' +
                 ", headImage='" + headImage + '\'' +
+                ", idCardIndex='" + idCardIndex + '\'' +
+                ", groupNo=" + groupNo +
                 '}';
     }
 }

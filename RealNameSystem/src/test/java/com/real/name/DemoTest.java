@@ -1,4 +1,3 @@
-/*
 package com.real.name;
 
 import com.alibaba.fastjson.JSON;
@@ -16,13 +15,11 @@ import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-*/
 /**
  * @Desc TODO
  * @Author hp
  * @Date 2019/5/6 12:17
- **//*
-
+ **/
 public class DemoTest {
 
     //上传项目参建单位信息
@@ -45,7 +42,7 @@ public class DemoTest {
         String res = request.postData(BaseInfo.URL,null,dataMap);
         dataMap.put("appsecret",appsecret);
         System.out.println(String.format("调用结果：%s",res));
-}
+    }
 
 
     public Map<String,String> getMap(String data,String method) {
@@ -341,11 +338,9 @@ public class DemoTest {
         SearchProject sp = new SearchProject(1,20);
         sp.setProjectCode("10203923");
 
-        */
-/**
+        /**
          * 具体查寻参数可根据需要进行设置
-         *//*
-
+         */
 
         String str = JSON.toJSONString(sp);
         System.out.println(str);
@@ -580,4 +575,3 @@ public class DemoTest {
 
     }
 }
-*/

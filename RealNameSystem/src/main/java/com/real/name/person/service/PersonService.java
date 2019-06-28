@@ -4,6 +4,7 @@ import com.real.name.person.entity.Person;
 import com.real.name.person.entity.Person2;
 import com.real.name.person.entity.Person3;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Date;
@@ -76,4 +77,14 @@ public interface PersonService {
 
     //根据PersonId
     Person3 findByPersonId(Integer id);
+
+    //根据workRole查询出所有人员
+    Page<Person> findByWorkRole(PageRequest pageRequest, Integer workRole);
+
+    //根据员工ID删除所有员工
+    void deleteById(Integer id);
+
+    //更新员工信息
+    Person updateByPersonId(Person person);
+
 }

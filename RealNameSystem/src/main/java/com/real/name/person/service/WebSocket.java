@@ -1,15 +1,8 @@
 package com.real.name.person.service;
 
-import com.alibaba.fastjson.JSON;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
-import com.real.name.common.result.ResultVo;
-import com.real.name.common.utils.HTTPTool;
-import com.real.name.face.entity.Device;
-import com.real.name.person.entity.Person;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.OnClose;
@@ -17,8 +10,6 @@ import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 @Component

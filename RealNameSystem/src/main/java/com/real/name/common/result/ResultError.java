@@ -19,6 +19,8 @@ public enum ResultError {
     PHONE_ERROR(12, "手机号码不正确"),
     PARAM_ERROR(13, "参数有误"),
     USERNAME_OR_PASSWORD_ERROR(14, "用户名或密码错误"),
+    PERSONID_EMPTY(15, "人员ID为空"),
+    PERSON_EMPTY(16, "该人员不存在"),
     LOGIN_TOKEN_ERROR(98, "登录信息中没有Token"),
     NETWORK_ERROR(99, "网络错误"),
     ;

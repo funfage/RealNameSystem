@@ -4,9 +4,9 @@ import lombok.Data;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -154,6 +154,8 @@ public class Project {
      */
     private Integer nationNum;
 
+    @OneToMany(mappedBy = "project", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    private List<ProjectPersonDetail> projectPersonDetailList;
 
     public Project(String projectName, String projectCompany, String projectLocal, String projectType, Integer projectContact) {
         this.name = projectName;
@@ -164,4 +166,39 @@ public class Project {
     }
 
     public Project() { }
+
+    @Override
+    public String toString() {
+        return "Project{" +
+                "projectCode='" + projectCode + '\'' +
+                ", contractorCorpCode='" + contractorCorpCode + '\'' +
+                ", contractorCorpName='" + contractorCorpName + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", category='" + category + '\'' +
+                ", buildCorpName='" + buildCorpName + '\'' +
+                ", buildCorpCode='" + buildCorpCode + '\'' +
+                ", builderLicenses='" + builderLicenses + '\'' +
+                ", buildPlanNum='" + buildPlanNum + '\'' +
+                ", prjPlanNum='" + prjPlanNum + '\'' +
+                ", areaCode='" + areaCode + '\'' +
+                ", invest=" + invest +
+                ", buildingArea=" + buildingArea +
+                ", buildingLength=" + buildingLength +
+                ", startDate=" + startDate +
+                ", completeDate=" + completeDate +
+                ", linkMan='" + linkMan + '\'' +
+                ", linkPhone='" + linkPhone + '\'' +
+                ", prjStatus=" + prjStatus +
+                ", lat=" + lat +
+                ", lng=" + lng +
+                ", address='" + address + '\'' +
+                ", approvalNum='" + approvalNum + '\'' +
+                ", approvalLevelNum=" + approvalLevelNum +
+                ", prjSize='" + prjSize + '\'' +
+                ", propertyNum='" + propertyNum + '\'' +
+                ", functionNum='" + functionNum + '\'' +
+                ", nationNum=" + nationNum +
+                '}';
+    }
 }

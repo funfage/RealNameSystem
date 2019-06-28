@@ -1,10 +1,12 @@
 package com.real.name.group.entity;
 
+import com.real.name.project.entity.Project;
+import com.real.name.project.entity.ProjectPersonDetail;
 import lombok.Data;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 班组
@@ -64,8 +66,31 @@ public class WorkerGroup {
      */
     private String remark;
 
+    @OneToMany(mappedBy = "workerGroup", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    private List<ProjectPersonDetail> projectPersonDetails;
+
     private Date entryTime;
     private Date exitTime;
     private String entryAttachments;
     private String exitAttachments;
+
+    @Override
+    public String toString() {
+        return "WorkerGroup{" +
+                "teamSysNo=" + teamSysNo +
+                ", projectCode='" + projectCode + '\'' +
+                ", corpCode='" + corpCode + '\'' +
+                ", corpName='" + corpName + '\'' +
+                ", teamName='" + teamName + '\'' +
+                ", responsiblePersonName='" + responsiblePersonName + '\'' +
+                ", responsiblePersonPhone='" + responsiblePersonPhone + '\'' +
+                ", responsiblePersonIdCardType=" + responsiblePersonIdCardType +
+                ", responsiblePersonIdNumber='" + responsiblePersonIdNumber + '\'' +
+                ", remark='" + remark + '\'' +
+                ", entryTime=" + entryTime +
+                ", exitTime=" + exitTime +
+                ", entryAttachments='" + entryAttachments + '\'' +
+                ", exitAttachments='" + exitAttachments + '\'' +
+                '}';
+    }
 }

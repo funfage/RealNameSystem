@@ -10,6 +10,7 @@ import com.real.name.person.service.repository.Person2Rep;
 import com.real.name.person.service.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -98,4 +99,21 @@ public class PersonImp implements PersonService {
     public Person3 findByPersonId(Integer id) {
         return personRepository.findByPersonId(id);
     }
+
+    @Override
+    public Page<Person> findByWorkRole(PageRequest pageRequest, Integer workRole) {
+        return personRepository.findByWorkRole(pageRequest, workRole);
+    }
+
+    @Override
+    public void deleteById(Integer id) {
+        personRepository.deleteById(id);
+    }
+
+    @Override
+    public Person updateByPersonId(Person person) {
+        return personRepository.save(person);
+    }
+
+
 }

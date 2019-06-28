@@ -37,6 +37,14 @@ public class ResultVo {
         return new ResultVo(code, false, message);
     }
 
+    public static ResultVo failure(String message){
+        return new ResultVo(0,false, message);
+    }
+
+    public static ResultVo failure(){
+        return new ResultVo(-1, false ,"operator error");
+    }
+
     public ResultVo(Integer code, Boolean success, Object data, String msg) {
         this.code = code;
         this.success = success;

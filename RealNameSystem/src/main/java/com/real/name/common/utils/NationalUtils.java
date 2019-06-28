@@ -4,10 +4,15 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.real.name.common.entity.forNational.NationalGroup;
 import com.real.name.common.entity.forNational.SearchProject;
+import com.real.name.common.entity.forNational.WorkerWrapper;
 import com.real.name.common.info.BaseInfo;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.labor.BaseRequest;
 import com.real.name.labor.EncriptionHelper;
+import com.real.name.person.entity.Person;
+import com.real.name.project.entity.Project;
+import com.real.name.project.entity.ProjectPersonDetail;
+import org.springframework.util.StringUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -95,6 +100,51 @@ public class NationalUtils {
         BaseRequest request = new BaseRequest(){};
         String res = request.postData(BaseInfo.URL,null,dataMap);
         JSONObject obj = JSONObject.parseObject(res);
+        obj = obj.getJSONObject("data");
+        return AsyncHandleResultQuery(obj.getString("requestSerialCode"), "AsyncHandleResult.Query");
+    }
+
+    /**
+     * 修改工人项目信息
+     */
+    public static JSONObject updateProjectPerson(ProjectPersonDetail projectPersonDetail){
+        Person person = projectPersonDetail.getPerson();
+        Project project = projectPersonDetail.getProject();
+        WorkerGroup workerGroup = projectPersonDetail.getWorkerGroup();
+        String method = "ProjectWorker.Update";
+        String appsecret = BaseInfo.APPSCRECT;
+        WorkerWrapper wp = new WorkerWrapper();
+        wp.setProjectCode(project.getProjectCode());
+        wp.setCorpCode(workerGroup.getCorpCode());
+        wp.setCorpName(workerGroup.getCorpName());
+        wp.setTeamName(workerGroup.getTeamName());
+        wp.setTeamSysNo(workerGroup.getTeamSysNo());
+        wp.setWorkerName(person.getPersonName());
+        wp.setIsTeamLeader(person.getIsTeamLeader());
+        wp.setIdCardType(person.getIdCardType().toString());
+        wp.setIdCardNumber(AesUtils.encrypt(person.getIdCardNumber(),appsecret));
+        wp.setWorkType(person.getWorkType());
+        wp.setWorkRole(person.getWorkRole());
+        wp.setNation(person.getNation());
+        wp.setAddress(person.getAddress());
+        wp.setHeadImage(person.getHeadImage());
+        wp.setCellPhone(person.getCellPhone());
+        wp.setGrantOrg(person.getGrantOrg());
+        wp.setPoliticsType(person.getPoliticsType().toString());
+        wp.setCultureLevelType(person.getCultureLevelType().toString());
+        String str = JSON.toJSONString(wp);
+        System.out.println(str);
+        Map<String,String> dataMap = getMap(str,method);
+        BaseRequest request = new BaseRequest() {};
+        String res = request.postData(BaseInfo.URL,null,dataMap);
+        System.out.println("返回结果：" + res);
+        JSONObject obj = JSONObject.parseObject(res);
+        //判断是否返回错误信息
+        String code = obj.getString("code");
+        if(!StringUtils.isEmpty(code) && code.equals("-1")){
+            return obj;
+        }
+        //获取正确结果
         obj = obj.getJSONObject("data");
         return AsyncHandleResultQuery(obj.getString("requestSerialCode"), "AsyncHandleResult.Query");
     }
