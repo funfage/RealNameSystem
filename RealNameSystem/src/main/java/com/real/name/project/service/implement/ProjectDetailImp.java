@@ -113,4 +113,14 @@ public class ProjectDetailImp implements ProjectDetailService {
     public int deleteByProjectCode(String projectCode) {
         return projectDetailRepository.deleteByProjectCode(projectCode);
     }
+
+    @Override
+    public int deleteByTeamSysNo(Integer teamSysNo) {
+        return projectDetailRepository.deleteByTeamSysNo(teamSysNo);
+    }
+
+    @Override
+    public int deleteByPersonId(Integer personId) {
+        return projectDetailRepository.deleteByPersonId(personId);
+    }
 }

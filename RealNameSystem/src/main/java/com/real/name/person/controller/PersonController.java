@@ -14,7 +14,9 @@ import com.real.name.face.service.RecordService;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
 import com.real.name.person.service.WebSocket;
+import com.real.name.project.entity.ProjectDetail;
 import com.real.name.project.entity.ProjectPersonDetail;
+import com.real.name.project.service.ProjectDetailService;
 import com.real.name.project.service.ProjectPersonDetailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +42,7 @@ public class PersonController {
     private ProjectPersonDetailService projectPersonDetailService;
 
     @Autowired
-    private WebSocket webSocket;
+    private ProjectDetailService projectDetailService;
 
     /**
      * 添加工人
@@ -65,26 +67,28 @@ public class PersonController {
 
     /**
      * 删除工人信息并把头像也删除
-     * @param id 员工id
+     * @param personId 员工id
      * @return
      */
     @GetMapping("deletePerson")
-    public ResultVo deletePerson(@RequestParam("id") Integer id){
-        if(id <= 0){
-            throw AttendanceException.errorMessage("person_id");
+    public ResultVo deletePerson(@RequestParam("id") Integer personId){
+        if(personId <= 0){
+            throw AttendanceException.errorMessage("人员编号");
         }
         try {
-            int effectNum = personService.deleteByPersonId(id);
+            //删除personDetail中的信息
+            projectDetailService.deleteByPersonId(personId);
+            int effectNum = personService.deleteByPersonId(personId);
             if (effectNum <= 0) {
                 throw AttendanceException.errorMessage(ResultError.DELETE_ERROR, "工人");
             }else{
                 //删除头像
-                ImageTool.deleteImage(id.toString());
-                return ResultVo.success();
+                ImageTool.deleteImage(personId.toString());
+                return ResultVo.success("删除人员信息成功");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return ResultVo.failure();
+            return ResultVo.failure(e.getMessage());
         }
     }
 
@@ -152,17 +156,17 @@ public class PersonController {
         if(!StringUtils.isEmpty(person.getAddress())){
             selectPerson.setAddress(person.getAddress());
         }
-        JSONObject jsonObject = null;
         try {
             if(attendProject){
                 ProjectPersonDetail projectPersonDetail = projectPerson.get();
                 //设置修改后的person
                 projectPersonDetail.setPerson(selectPerson);
                 //修改全国项目工人信息
-                jsonObject = NationalUtils.updateProjectPerson(projectPersonDetail);
+                JSONObject jsonObject = NationalUtils.updateProjectPerson(projectPersonDetail);
+                //判断是否修改成功
                 String code = jsonObject.getString("code");
                 if(!StringUtils.isEmpty(code) && code.equals("-1")){
-                    return ResultVo.failure(jsonObject.getString("message"));
+                    return ResultVo.failure(ResultError.NATIONAL_ERROR.getCode(), ResultError.NATIONAL_ERROR.getMessage() + jsonObject.getString("message"));
                 }
             }
             //修改本地工人信息
@@ -170,7 +174,7 @@ public class PersonController {
             return ResultVo.success();
         } catch (Exception e) {
             e.printStackTrace();
-            return ResultVo.failure();
+            return ResultVo.failure(e.getMessage());
         }
     }
 

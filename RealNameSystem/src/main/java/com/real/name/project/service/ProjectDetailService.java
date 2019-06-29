@@ -28,6 +28,25 @@ public interface ProjectDetailService {
      */
     Optional<Project> getProjectFromPersonId(Integer personId);
 
+    /**
+     * 根据项目编号删除
+     * @param projectCode
+     * @return
+     */
     int deleteByProjectCode(String projectCode);
+
+    /**
+     * 根据班组编号删除
+     * @param teamSysNo
+     * @return
+     */
+    int deleteByTeamSysNo(Integer teamSysNo);
+
+    /**
+     * 根据人员编号删除
+     */
+    int deleteByPersonId(Integer personId);
+
+
 
 }

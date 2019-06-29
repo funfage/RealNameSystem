@@ -108,16 +108,16 @@ public class ProjectController {
             throw AttendanceException.emptyMessage("项目编号");
         }
         try {
+            //删除project_detail相关的信息
+            projectDetailService.deleteByProjectCode(projectCode);
             int effectNum = projectService.deleteByProjectCode(projectCode);
             //判断是否删除成功
             if (effectNum <= 0) {
-                throw  AttendanceException.errorMessage(ResultError.DELETE_ERROR, "项目");
+                throw AttendanceException.errorMessage(ResultError.DELETE_ERROR, "项目");
             }else{
-                //删除project_detail相关的信息
-                projectDetailService.deleteByProjectCode(projectCode);
                 return ResultVo.success("删除项目成功");
             }
-        } catch (AttendanceException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return ResultVo.failure();
         }
@@ -178,7 +178,7 @@ public class ProjectController {
      * @param project
      * @return
      */
-    private Project mergeProject(Project selectProject, Project project){
+    private void mergeProject(Project selectProject, Project project){
         if(StringUtils.hasText(project.getAddress())){
             selectProject.setAddress(project.getAddress());
         }
@@ -291,7 +291,6 @@ public class ProjectController {
             }
             selectProject.setStartDate(project.getStartDate());
         }
-        return selectProject;
     }
 
 

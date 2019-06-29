@@ -22,6 +22,12 @@ public final class AesUtils {
     }
 
 
+    /**
+     * º”√‹
+     * @param content
+     * @param key
+     * @return
+     */
     public static String encrypt( String content, String key) {
         byte[] result = null;
         try {
@@ -36,6 +42,12 @@ public final class AesUtils {
         return Base64.encodeBase64String(result);
     }
 
+    /**
+     * Ω‚√‹
+     * @param content
+     * @param key
+     * @return
+     */
     public static String decrypt( String content, String key) {
         try {
             Cipher cipher = Cipher.getInstance(ALGORITHM);

@@ -13,6 +13,8 @@ import com.real.name.labor.EncriptionHelper;
 import com.real.name.person.entity.Person;
 import com.real.name.project.entity.Project;
 import com.real.name.project.entity.ProjectPersonDetail;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import java.text.SimpleDateFormat;
@@ -27,6 +29,7 @@ import java.util.UUID;
  * @Date 2019/5/12 20:53
  **/
 public class NationalUtils {
+    private Logger logger = LoggerFactory.getLogger(NationalUtils.class);
     /**
      * @param method
      * @param data   这个是对象序列化之后的字符串
@@ -85,7 +88,7 @@ public class NationalUtils {
         BaseRequest request = new BaseRequest() {
         };
         String res = request.postData(BaseInfo.URL, null, dataMap);
-        return JSON.parse(res);
+        return HandleResultReturn(res);
     }
 
     /**
@@ -101,14 +104,38 @@ public class NationalUtils {
         ng.setTeamName(group.getTeamName());
         ng.setResponsiblePersonPhone(group.getResponsiblePersonPhone());
         ng.setResponsiblePersonName(group.getResponsiblePersonName());
+        ng.setResponsiblePersonIdNumber(AesUtils.encrypt(group.getResponsiblePersonIdNumber(), appsecret));
         ng.setRemark(group.getRemark());
         String str = JSON.toJSONString(ng);
         Map<String,String> dataMap = getMap(str,method);
         BaseRequest request = new BaseRequest(){};
         String res = request.postData(BaseInfo.URL,null,dataMap);
-        JSONObject obj = JSONObject.parseObject(res);
-        obj = obj.getJSONObject("data");
-        return AsyncHandleResultQuery(obj.getString("requestSerialCode"), "AsyncHandleResult.Query");
+        System.out.println("返回结果:" + res);
+        return HandleResultReturn(res);
+    }
+
+    /**
+     * 修改班组
+     */
+    public static JSONObject updateGroup(WorkerGroup workerGroup) {
+        String method = "Team.Update";
+        String appsecret = BaseInfo.APPSCRECT;
+        NationalGroup ng = new NationalGroup();
+        ng.setTeamSysNo(workerGroup.getTeamSysNo());
+        ng.setTeamName(workerGroup.getTeamName());
+        ng.setResponsiblePersonName(workerGroup.getResponsiblePersonName());
+        ng.setResponsiblePersonPhone(workerGroup.getResponsiblePersonPhone());
+        ng.setResponsiblePersonIDCardType(workerGroup.getResponsiblePersonIdCardType().toString());
+        ng.setResponsiblePersonIDNumber(AesUtils.encrypt(workerGroup.getResponsiblePersonIdNumber(), appsecret));
+        ng.setRemark(workerGroup.getRemark());
+        ng.setEntryTime(CommonUtils.DateToString(workerGroup.getEntryTime()));
+        ng.setExitTime(CommonUtils.DateToString(workerGroup.getExitTime()));
+        String str = JSON.toJSONString(ng);
+        Map<String,String> dataMap = getMap(str,method);
+        BaseRequest request = new BaseRequest() {};
+        String res = request.postData(BaseInfo.URL,null,dataMap);
+        System.out.println("返回结果:" + res);
+        return HandleResultReturn(res);
     }
 
     /**
@@ -145,15 +172,7 @@ public class NationalUtils {
         BaseRequest request = new BaseRequest() {};
         String res = request.postData(BaseInfo.URL,null,dataMap);
         System.out.println("返回结果：" + res);
-        JSONObject obj = JSONObject.parseObject(res);
-        //判断是否返回错误信息
-        String code = obj.getString("code");
-        if(!StringUtils.isEmpty(code) && code.equals("-1")){
-            return obj;
-        }
-        //获取正确结果
-        obj = obj.getJSONObject("data");
-        return AsyncHandleResultQuery(obj.getString("requestSerialCode"), "AsyncHandleResult.Query");
+        return HandleResultReturn(res);
     }
 
     /**
@@ -166,5 +185,20 @@ public class NationalUtils {
         BaseRequest request = new BaseRequest(){};
         String result = request.postData(BaseInfo.URL,null,dataMap);
         return JSONObject.parseObject(result);
+    }
+
+    /**
+     * 处理结果并返回
+     */
+    private static JSONObject HandleResultReturn(String result) {
+        JSONObject obj = JSONObject.parseObject(result);
+        //判断是否返回错误信息
+        String code = obj.getString("code");
+        if(!StringUtils.isEmpty(code) && !code.equals("0")){
+            return obj;
+        }
+        //获取正确结果
+        obj = obj.getJSONObject("data");
+        return AsyncHandleResultQuery(obj.getString("requestSerialCode"), "AsyncHandleResult.Query");
     }
 }

@@ -23,6 +23,7 @@ public enum ResultError {
     PERSONID_EMPTY(15, "人员ID为空"),
     PERSON_EMPTY(16, "该人员不存在"),
     ID_CARD_REPEAT(17, "身份证号重复"),
+    NATIONAL_ERROR(18, "全国平台相关错误"),
     LOGIN_TOKEN_ERROR(98, "登录信息中没有Token"),
     NETWORK_ERROR(99, "网络错误"),
     DELETE_ERROR(100, "删除失败"),

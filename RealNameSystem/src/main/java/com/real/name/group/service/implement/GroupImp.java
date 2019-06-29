@@ -51,4 +51,14 @@ public class GroupImp implements GroupService {
     public List<WorkerGroup> findByProjectCode(String projectCode) {
         return groupRepository.findByProjectCode(projectCode);
     }
+
+    @Override
+    public WorkerGroup updateByTeamSysNo(WorkerGroup workerGroup) {
+        return groupRepository.save(workerGroup);
+    }
+
+    @Override
+    public int deleteByTeamSysNo(Integer teamSysNo) {
+        return groupRepository.deleteByTeamSysNo(teamSysNo);
+    }
 }

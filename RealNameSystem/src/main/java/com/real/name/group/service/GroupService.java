@@ -34,4 +34,14 @@ public interface GroupService {
      * 根据项目id查找班组
      */
     List<WorkerGroup> findByProjectCode(String projectCode);
+
+    /**
+     * 修改班组信息
+     */
+    WorkerGroup updateByTeamSysNo(WorkerGroup workerGroup);
+
+    /**
+     * 删除班组信息
+     */
+    int deleteByTeamSysNo(Integer teamSysNo);
 }

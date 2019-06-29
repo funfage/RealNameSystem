@@ -20,4 +20,5 @@ public interface ProjectRepository extends JpaRepository<Project, String> {
     @Transactional
     int deleteByProjectCode(String projectCode);
 
+
 }

@@ -14,4 +14,9 @@ public class ProjectDetailTest extends BaseTest {
         int i = repository.deleteByProjectCode("44010620190510008");
         System.out.println(i);
     }
+
+    @Test
+    public void deleteByTeamSysNo() {
+        int i = repository.deleteByTeamSysNo(123);
+    }
 }

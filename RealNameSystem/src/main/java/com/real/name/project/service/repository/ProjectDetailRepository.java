@@ -19,8 +19,31 @@ public interface ProjectDetailRepository extends JpaRepository<ProjectDetail, In
 
     Optional<ProjectDetail> findByPersonId(Integer personId);
 
+    /**
+     * 根据projectCode删除
+     * @param projectCode 项目编号
+     * @return 影响的行数
+     */
     @Modifying
     @Transactional
     int deleteByProjectCode(String projectCode);
 
+
+    /**
+     * 根据TeamSYSNo删除
+     * @param TeamSysNo 班组编号
+     * @return 影响的行数
+     */
+    @Modifying
+    @Transactional
+    int deleteByTeamSysNo(Integer TeamSysNo);
+
+    /**
+     * 根据personId删除
+     * @param personId
+     * @return
+     */
+    @Modifying
+    @Transactional
+    int deleteByPersonId(Integer personId);
 }
