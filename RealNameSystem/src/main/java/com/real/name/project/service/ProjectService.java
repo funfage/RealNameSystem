@@ -25,4 +25,14 @@ public interface ProjectService {
      * @param projectCode 项目id
      */
     Optional<Project> findByProjectCode(String projectCode);
+
+    /**
+     * 修改项目信息
+     */
+    Project updateByProjectCode(Project project);
+
+    /**
+     * 删除项目信息
+     */
+    int deleteByProjectCode(String Project);
 }

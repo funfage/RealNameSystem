@@ -2,6 +2,7 @@ package com.real.name.common.utils;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.real.name.common.entity.CJUnit;
 import com.real.name.common.entity.forNational.NationalGroup;
 import com.real.name.common.entity.forNational.SearchProject;
 import com.real.name.common.entity.forNational.WorkerWrapper;
@@ -63,6 +64,12 @@ public class NationalUtils {
         dataMap.put("version", BaseInfo.VERSION);
         dataMap.put("sign", sign);
         return dataMap;
+    }
+    /**
+     * 上传项目信息
+     */
+    public static JSONObject uploadProject(Project project){
+        return null;
     }
 
     /**

@@ -75,27 +75,27 @@ public class Project {
     /**
      * 总投资，单位：（万元）
      */
-    private Double invest = 0.0;
+    private Double invest;
 
     /**
      * 总面积，单位：平方米
      */
-    private Double buildingArea = 0.0;
+    private Double buildingArea;
 
     /**
      * 总长度，单位：米
      */
-    private Double buildingLength = 0.0;
+    private Double buildingLength;
 
     /**
      * 开工日期
      */
-    private Date startDate = new Date();
+    private Date startDate;
 
     /**
      * 竣工日期
      */
-    private Date completeDate = new Date();
+    private Date completeDate;
 
     /**
      * 项目联系人名称
@@ -110,16 +110,16 @@ public class Project {
     /**
      * 项目状态，001:筹备，002:立项，003:在建，004:完工，005:停工
      */
-    private Integer prjStatus = 1;
+    private Integer prjStatus;
 
     /**
      * 经度
      */
-    private Double lat = 0.0;
+    private Double lat;
     /**
      * 维度
      */
-    private Double lng = 0.0;
+    private Double lng;
 
     /**
      * 项目位置

@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum ResultError {
+    OPERATOR_ERROR(-1, "operator error"),
     CONTENT_EMPTY(1, "内容不能为空"),
     CONTENT_ERROR(2, "内容不正确"),
     PERSON_EXIST(3, "人员已存在"),
@@ -21,8 +22,13 @@ public enum ResultError {
     USERNAME_OR_PASSWORD_ERROR(14, "用户名或密码错误"),
     PERSONID_EMPTY(15, "人员ID为空"),
     PERSON_EMPTY(16, "该人员不存在"),
+    ID_CARD_REPEAT(17, "身份证号重复"),
     LOGIN_TOKEN_ERROR(98, "登录信息中没有Token"),
     NETWORK_ERROR(99, "网络错误"),
+    DELETE_ERROR(100, "删除失败"),
+    INSERT_ERROR(101, "添加失败"),
+    UPDATE_ERROR(102, "修改失败"),
+    QUERY_ERROR(103, "查询失败"),
     ;
 
     private Integer code;

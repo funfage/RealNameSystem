@@ -67,7 +67,7 @@ public class ControllerContainer {
          // List<Device> devices = deviceMapper.findAllDutou();
         System.out.println("devices size:" + devices.size());
         for (Controller device: devices) {
-            System.out.println("tt:" +device.getDeviceId());
+            System.out.println("getDutou:" +device.getDeviceId());
             String deviceID = device.getDeviceId();
             clientMap.put(deviceID,device);
         }

@@ -29,14 +29,6 @@ public class PersonImp implements PersonService {
     @Autowired
     private Person2Rep person2Rep;
 
-
-    @Override
-    public Person create(String personName, String idCardNumber, String nation, Integer age, Date startDate, Date expiryDate, Integer gender, String address, String headImage, String grantOrg) {
-        Optional<Person> person = personRepository.findByIdCardNumber(idCardNumber);
-        if (person.isPresent()) throw new AttendanceException(ResultError.PERSON_EXIST);
-        return personRepository.save(new Person(personName, idCardNumber, nation, age, startDate, expiryDate, gender, address, headImage, grantOrg));
-    }
-
     @Override
     public Person create(Person person) {
         if (person.getIdCardNumber() == null || person.getIdCardNumber().trim().length() != 18) {
@@ -106,8 +98,8 @@ public class PersonImp implements PersonService {
     }
 
     @Override
-    public void deleteById(Integer id) {
-        personRepository.deleteById(id);
+    public int deleteByPersonId(Integer personId) {
+        return personRepository.deleteByPersonId(personId);
     }
 
     @Override

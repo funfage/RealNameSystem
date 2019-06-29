@@ -39,14 +39,14 @@ public class DutouServerHandler extends SimpleChannelInboundHandler<DatagramPack
        // boolean autorelease = false;
         super(autorelease2);
     }*/
-    @Autowired
-    private WebSocket webSocket;
+//    @Autowired
+//    private WebSocket webSocket;
 
-    @Autowired
+   /* @Autowired
     private DeviceService deviceService;
 
     @Autowired
-    private PersonService personService;
+    private PersonService personService;*/
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet) throws Exception {
@@ -70,6 +70,7 @@ public class DutouServerHandler extends SimpleChannelInboundHandler<DatagramPack
             cardNo += receiveStr.substring(32,40);
             System.out.println("DutouServerHandler.cardno:" +cardNo);
             String equipmentID =ConvertCode.HexString2IntString( receiveStr.substring(8,16));
+            System.out.println("equipmentID:" +equipmentID);
            boolean flag = ControllerContainer.getInstance().addOnlineEquipment(equipmentID,hostName,ctx,cardNo);
            //是门禁读头，数据库需录入进出信息,同时返回给前端
            if (flag == true){
@@ -105,10 +106,16 @@ public class DutouServerHandler extends SimpleChannelInboundHandler<DatagramPack
                Record recordSave = new Record(ip,equipmentID,personId,strtodate,"dutou",direction);
                RecordRepository recordRepository = appCtx.getBean(RecordRepository.class);
                recordRepository.save(recordSave);
-
+               System.out.println("recordSave to DB:" + recordSave);
                //返回给前端
-               // 获取刷脸人员信息
+               // 获取人员信息
+               //Optional<Device> device = deviceService.findByDeviceId(equipmentID);
+               //ApplicationContext appCtx = SpringUtil.getApplicationContext();
+               DeviceService deviceService = appCtx.getBean(DeviceService.class);
                Optional<Device> device = deviceService.findByDeviceId(equipmentID);
+
+               WebSocket webSocket = appCtx.getBean(WebSocket.class);
+
                if (device.isPresent()) {
                    map.put("device", device.get());
                }

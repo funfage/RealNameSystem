@@ -4,10 +4,8 @@ import lombok.Data;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Table;
 import java.util.Date;
 
 @Entity
@@ -16,7 +14,7 @@ import java.util.Date;
 @Data
 public class Device {
 
-    public static final String PASS = "12345678";
+    //public static final String PASS = "12345678";
 
     @Id
     private String deviceId;

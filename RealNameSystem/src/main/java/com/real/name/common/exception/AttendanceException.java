@@ -20,10 +20,14 @@ public class AttendanceException extends RuntimeException {
     }
 
     public static AttendanceException emptyMessage(String message) {
-        return new AttendanceException(1, message + ResultError.CONTENT_EMPTY.getMessage());
+        return new AttendanceException(ResultError.CONTENT_ERROR.getCode(), message + ResultError.CONTENT_EMPTY.getMessage());
     }
 
     public static AttendanceException errorMessage(String message) {
-        return new AttendanceException(2, message + ResultError.CONTENT_ERROR.getMessage());
+        return new AttendanceException(ResultError.CONTENT_ERROR.getCode(), message + ResultError.CONTENT_ERROR.getMessage());
+    }
+
+    public static AttendanceException errorMessage(ResultError error, String desc) {
+        return new AttendanceException(error.getCode(), desc + error.getMessage());
     }
 }

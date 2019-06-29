@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -44,30 +45,41 @@ public class ProjectDetailImp implements ProjectDetailService {
         Optional<ProjectDetail> projectDetail = projectDetailRepository.findByProjectCodeAndPersonId(projectCode, personId);
         if (projectDetail.isPresent()) return;
 
+        // 把人员、班组、项目之间的关系存到数据库
         ProjectDetail projectD = new ProjectDetail(projectCode, personId, teamSysNo);
         projectDetailRepository.save(projectD);
-
-
-
 
         // 给设备发送人员信息
         String url = "person/create";
         Map<String, String> map = new HashMap<>();
-        map.put("pass", Device.PASS);
         map.put("person", person.get().toJSON());
-        System.out.println(map);
-        ResultVo rvo = HTTPTool.sendDataTo(url, map);
+
+        // 根据工人类型，发送人员信息给不同的设备
+        Integer workRole = person.get().getWorkRole();
+        ResultVo rvo = sendData(workRole, url, map, projectCode);
         System.out.println("add person: " + rvo);
 
+        String pId = person.get().getPersonId().toString();
+        String headImage = person.get().getHeadImage();
+
         // 给设备添加人员照片
-        if (rvo != null && rvo.getSuccess()) {
+        if (rvo != null && rvo.getSuccess() && StringUtils.hasText(pId) && StringUtils.hasText(headImage)) {
             url = "face/create";
             map = new HashMap<>();
-            map.put("pass", Device.PASS);
-            map.put("personId", person.get().getPersonId().toString());
-            map.put("imgBase64", person.get().getHeadImage());
-            HTTPTool.sendDataTo(url, map);
+            map.put("personId", pId);
+            map.put("imgBase64", headImage);
+            sendData(workRole, url, map, projectCode);
         }
+    }
+
+    private ResultVo sendData(Integer workRole, String url, Map<String, String> map, String projectCode) {
+        ResultVo rvo = null;
+        if (workRole == 20) { // 如果是建筑工人，发送给该工人所属项目的设备
+            rvo = HTTPTool.sendDataTo(url, map, projectCode);
+        } else if (workRole == 10){ // 如果是管理工人，发送给全部设备
+            rvo = HTTPTool.sendDataTo(url, map);
+        }
+        return rvo;
     }
 
     @Override
@@ -95,5 +107,10 @@ public class ProjectDetailImp implements ProjectDetailService {
         Optional<Project> project = projectService.findByProjectCode(detail.get().getProjectCode());
 
         return project;
+    }
+
+    @Override
+    public int deleteByProjectCode(String projectCode) {
+        return projectDetailRepository.deleteByProjectCode(projectCode);
     }
 }

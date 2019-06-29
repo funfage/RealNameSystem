@@ -9,7 +9,6 @@ import com.real.name.project.service.ProjectService;
 import com.real.name.project.service.repository.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 
@@ -54,5 +53,15 @@ public class ProjectImp implements ProjectService {
     @Override
     public Optional<Project> findByProjectCode(String projectCode) {
         return projectRepository.findById(projectCode);
+    }
+
+    @Override
+    public Project updateByProjectCode(Project project) {
+        return projectRepository.save(project);
+    }
+
+    @Override
+    public int deleteByProjectCode(String projectCode) {
+        return projectRepository.deleteByProjectCode(projectCode);
     }
 }

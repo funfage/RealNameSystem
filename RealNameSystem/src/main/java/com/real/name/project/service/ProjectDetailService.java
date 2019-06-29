@@ -27,4 +27,7 @@ public interface ProjectDetailService {
      * @return 项目信息
      */
     Optional<Project> getProjectFromPersonId(Integer personId);
+
+    int deleteByProjectCode(String projectCode);
+
 }

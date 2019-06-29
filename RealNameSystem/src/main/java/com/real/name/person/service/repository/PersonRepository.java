@@ -28,7 +28,7 @@ public interface PersonRepository extends JpaRepository<Person, Integer> {
     Page<Person> findByWorkRole(Pageable pageable, Integer workRole);
 
     //根据员工ID删除人员
-    void deleteById(Integer id);
+    int deleteByPersonId(Integer personId);
 
 
     /*//修改员工信息

@@ -16,6 +16,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,8 +28,6 @@ public class HTTPTool {
     private DeviceService deviceService;
 
     private static HTTPTool httpTool;
-
-    //private static final String ports[] = {":8090/", ":8091/", ":8092/", ":8093/"};
 
     @PostConstruct
     public void init() {
@@ -45,10 +44,32 @@ public class HTTPTool {
     public static ResultVo sendDataTo(String deviceId, String url, Map<String, String> param) {
 
         if (StringUtils.hasText(deviceId)) {
-            Optional<Device> device = httpTool.deviceService.findByDeviceId("E0F2D4B761E53DF9F0");
+            Optional<Device> device = httpTool.deviceService.findByDeviceId(deviceId);
             if (device.isPresent() && StringUtils.hasText(device.get().getIp())) {
-                return postUrlForParam("http://" + device.get().getIp() + ":" + device.get().getOutPort() + "/" + url, param);
+                postToDevice(device.get(), url, param);
             }
+        }
+        return ResultVo.success();
+    }
+
+    /**
+     * 发送数据给某个项目中的设备
+     *
+     * @param url         请求路径
+     * @param param       请求参数
+     * @param projectCode 项目id
+     */
+    public static ResultVo sendDataTo(String url, Map<String, String> param, String projectCode) {
+        if (!StringUtils.hasText(url) || !StringUtils.hasText(projectCode)) return null;
+
+        List<Device> devices = httpTool.deviceService.findAll();
+        for (Device device : devices) {
+            if (!StringUtils.hasText(device.getIp()) ||
+                    device.getOutPort() == null ||
+                    device.getOutPort() < 1 ||
+                    !device.getProjectCode().equals(projectCode))
+                continue;
+            postToDevice(device, url, param);
         }
         return ResultVo.success();
     }
@@ -65,11 +86,20 @@ public class HTTPTool {
 
         List<Device> devices = httpTool.deviceService.findAll();
         for (Device device : devices) {
-            if (!StringUtils.hasText(device.getIp()) || device.getOutPort() == null || device.getOutPort() < 1) continue;
-            ResultVo resultVo = postUrlForParam("http://" + device.getIp() + ":" + device.getOutPort() + "/" + url, param);
-            System.out.println(resultVo);
+            if (!StringUtils.hasText(device.getIp()) || device.getOutPort() == null || device.getOutPort() < 1)
+                continue;
+            postToDevice(device, url, param);
         }
         return ResultVo.success();
+    }
+
+    private static void postToDevice(Device device, String url, Map<String, String> param) {
+        if (device == null) return;
+        if (param == null) param = new HashMap<>();
+
+        param.put("pass", device.getPass());
+        ResultVo resultVo = postUrlForParam("http://" + device.getIp() + ":" + device.getOutPort() + "/" + url, param);
+        System.out.println("Send data to device result: " + resultVo);
     }
 
     /**
@@ -83,11 +113,11 @@ public class HTTPTool {
         RestTemplate restTemplate = new RestTemplate();
 
         MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
-
-        for (Map.Entry<String, String> entry : param.entrySet()) {
-            params.add(entry.getKey(), entry.getValue());
+        if (param != null) {
+            for (Map.Entry<String, String> entry : param.entrySet()) {
+                params.add(entry.getKey(), entry.getValue());
+            }
         }
-
         HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(params);
         String response = restTemplate.postForObject(url, entity, String.class);
         return JSONObject.parseObject(response, ResultVo.class);
@@ -136,7 +166,6 @@ public class HTTPTool {
             ipAddress = "";
         }
         // ipAddress = this.getRequest().getRemoteAddr();
-
         return ipAddress;
     }
 }

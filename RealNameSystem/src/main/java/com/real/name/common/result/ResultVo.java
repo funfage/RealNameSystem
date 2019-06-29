@@ -38,7 +38,7 @@ public class ResultVo {
     }
 
     public static ResultVo failure(String message){
-        return new ResultVo(0,false, message);
+        return new ResultVo(-1,false, message);
     }
 
     public static ResultVo failure(){

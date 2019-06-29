@@ -43,53 +43,21 @@ public class PersonController {
     private WebSocket webSocket;
 
     /**
-     * 创建人员
+     * 添加工人
+     * @param person
+     * @return
      */
-    @PostMapping("/create")
-    public ResultVo create(@RequestParam(name = "pass", required = false) String pass,
-                           @RequestParam("idCardNumber") String idCardNumber, @RequestParam("personName") String personName,
-                           @RequestParam("nation") String nation, @RequestParam("startDate") Long startDate,
-                           @RequestParam("expiryDate") Long expiryDate, @RequestParam("gender") Integer gender,
-                           @RequestParam("address") String address, @RequestParam("headImage") String headImage,
-                           @RequestParam("grantOrg") String grantOrg, @RequestParam("birthday") Long birthday) {
-
-        if (idCardNumber.trim().length() != 18) {
-            throw new AttendanceException(ResultError.ID_CARD_ERROR);
-        } else if (personName.trim().length() < 2) {
-            throw new AttendanceException(ResultError.PERSON_NAME_ERROR);
-        } else if (nation.trim().length() < 1) {
-            throw AttendanceException.emptyMessage("名族");
-        } else if (gender > 3) {
-            throw AttendanceException.errorMessage("性别");
-        } else if (headImage.trim().length() < 1) {
-            throw AttendanceException.emptyMessage("头像");
-        } else if (grantOrg.trim().length() < 1) {
-            throw AttendanceException.emptyMessage("签发机关");
-        }
-//        else if (personService.findByIdCardNumber(idCardNumber).isPresent()) {
-//            throw new AttendanceException(ResultError.PERSON_EXIST);
-//        }
-        // 计算年龄
-        Integer age = (int) ((System.currentTimeMillis() - birthday) / 1000 / 3600 / 24 / 365);
-
-        Person person1 = new Person(personName, idCardNumber, nation, age, new Date(startDate), new Date(expiryDate), gender, address, headImage, grantOrg);
-
-        //webSocket.sendMessage(JSON.toJSONString(person1));
-        return ResultVo.success();
-    }
-
     @PostMapping("/savePerson")
-    public ResultVo savePerson(String person) {
+    public ResultVo savePerson(@RequestParam(name = "person") String person) {
 
         if (person.contains("data:image/jpeg;base64,")) {
             person = person.replace("data:image/jpeg;base64,", "");
         }
         Person p = JSON.parseObject(person, Person.class);
-
+        //保存人员信息到数据库
         p = personService.create(p);
-//        System.out.println(person);
+        //保存头像
         ImageTool.generateImage(p.getHeadImage(), p.getPersonId().toString());
-
         Map<String, Object> m = new HashMap<>();
         m.put("personId", p.getPersonId());
         return ResultVo.success(m);
@@ -102,14 +70,18 @@ public class PersonController {
      */
     @GetMapping("deletePerson")
     public ResultVo deletePerson(@RequestParam("id") Integer id){
+        if(id <= 0){
+            throw AttendanceException.errorMessage("person_id");
+        }
         try {
-            if(id == null){
-                return ResultVo.failure(ResultError.PERSONID_EMPTY);
+            int effectNum = personService.deleteByPersonId(id);
+            if (effectNum <= 0) {
+                throw AttendanceException.errorMessage(ResultError.DELETE_ERROR, "工人");
+            }else{
+                //删除头像
+                ImageTool.deleteImage(id.toString());
+                return ResultVo.success();
             }
-            personService.deleteById(id);
-            //删除头像
-            ImageTool.deleteImage(id.toString());
-            return ResultVo.success();
         } catch (Exception e) {
             e.printStackTrace();
             return ResultVo.failure();
@@ -123,8 +95,8 @@ public class PersonController {
      */
     @PostMapping("updatePerson")
     public ResultVo updatePerson(@RequestBody Person person){
-        if(person.getPersonId() == null){
-            return ResultVo.failure(ResultError.PERSONID_EMPTY);
+        if(person.getPersonId() == null || person.getPersonId() <= 0){
+            throw AttendanceException.errorMessage("person_id");
         }
         Person selectPerson = null;
         boolean attendProject = true;
@@ -134,7 +106,9 @@ public class PersonController {
         if(!projectPerson.isPresent() || projectPerson.get().getPerson() == null){
             //从数据库中查询工人信息
             Optional<Person> optionalPerson = personService.findById(person.getPersonId());
-            selectPerson = optionalPerson.get();
+            if(optionalPerson.isPresent()){
+                selectPerson = optionalPerson.get();
+            }
             //false 标识未参加项目
             attendProject = false;
         }else{
@@ -149,12 +123,24 @@ public class PersonController {
             selectPerson.setPersonName(person.getPersonName());
         }
         if(!StringUtils.isEmpty(person.getIdCardNumber())){
-            selectPerson.setIdCardNumber(person.getIdCardNumber());
+            //判断输入的身份证号码是否正确
+            if (person.getIdCardNumber().trim().length() != 18) {
+                throw new AttendanceException(ResultError.ID_CARD_ERROR);
+            }else if (personService.findByIdCardNumber(person.getIdCardNumber()).isPresent()) {
+                throw new AttendanceException(ResultError.ID_CARD_REPEAT);
+            }else{
+                selectPerson.setIdCardNumber(person.getIdCardNumber());
+            }
         }
         if(!StringUtils.isEmpty(person.getCellPhone())){
+            //判断输入的电话号码是否正确
             selectPerson.setCellPhone(person.getCellPhone());
         }
         if(!StringUtils.isEmpty(person.getGender())){
+            //判断输入的性别是否正确
+            if(person.getGender() > 3){
+                throw AttendanceException.errorMessage("性别");
+            }
             selectPerson.setGender(person.getGender());
         }
         if(!StringUtils.isEmpty(person.getAge())){
@@ -192,7 +178,6 @@ public class PersonController {
     public ResultVo takeImg(@RequestParam(name = "personId") String personId) {
         String url = "face/takeImg";
         Map<String, String> map = new HashMap<>();
-        map.put("pass", Device.PASS);
         map.put("personId", personId);
         ResultVo rvo = HTTPTool.sendDataTo(url, map);
         System.out.println(rvo);
@@ -230,7 +215,7 @@ public class PersonController {
                          @RequestParam(name = "size", defaultValue = "10") Integer size,
                          @RequestParam("workRole") Integer workRole) {
         PageRequest p = PageRequest.of(page, size);
-
+        //若id为-1则查询所有，否则根据id查询
         return id == -1 ? ResultVo.success(personService.findByWorkRole(p, workRole)) : ResultVo.success(personService.findById(id));
     }
 

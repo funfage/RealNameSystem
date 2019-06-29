@@ -6,6 +6,7 @@ import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.UDPTool;
 import com.real.name.face.entity.Device;
 import com.real.name.face.service.implement.DeviceImp;
+import com.real.name.face.service.repository.DeviceRepository;
 import com.real.name.netty.DutouCmdSend;
 import com.real.name.netty.Entity.Controller;
 import com.real.name.netty.ControllerContainer;
@@ -30,6 +31,8 @@ public class DutouController {
     DeviceDao deviceDao;
     @Autowired
     DeviceImp deviceImp;
+    @Autowired
+    DeviceRepository deviceRepository;
 
     /**
      * 把身份证卡片ID给前端
@@ -87,15 +90,20 @@ public class DutouController {
     public ResultVo registerDutou(@RequestParam("projectCode")String  projectCode,@RequestParam("idCardIndex")String  idCardIndex){
         List<Device> devices = deviceImp.findDutouOfmenjin(projectCode,1);
         if (devices != null && devices.size() != 0) {
-            System.out.println(devices);
+            System.out.println("/registerDutou:"+devices);
             for (Device device:devices) {
                 String equipmentID = device.getDeviceId();
                 Controller controller = ControllerContainer.getInstance().clientMap.get(equipmentID);
+                System.out.println("/registerDutou:"+controller);
                 ChannelHandlerContext ctx = controller.getCtx();
                 byte[] order = DutouCmdSend.addAuthority(equipmentID,idCardIndex);
-                String hostname = controller.getIp();
+                //控制器没有心跳，就不能保证有控制机IP，故用同一项目人脸设备的IP
+                List<Device> deviceList = deviceRepository.findByProjectCodeAndDeviceType(projectCode,3);
+                String hostname = deviceList.get(0).getIp();
+                //String hostname = controller.getIp();
                 int outPort = controller.getOutPort();
                 UDPTool.sendData(order,hostname,ctx,outPort);
+
 
             }
             return ResultVo.success();

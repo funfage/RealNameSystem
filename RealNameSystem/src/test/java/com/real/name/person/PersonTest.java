@@ -19,7 +19,7 @@ import java.util.Optional;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class PersonRepositoryTest {
+public class PersonTest {
     @Autowired
     private PersonRepository personRepository;
 
@@ -57,8 +57,8 @@ public class PersonRepositoryTest {
     public void testA(){
         String str1 = null;
         String str2 = "";
-        System.out.println(StringUtils.isEmpty(str1));
-        System.out.println(StringUtils.isEmpty(str2));
+        System.out.println(StringUtils.hasText(str1));
+        System.out.println(StringUtils.hasText(str2));
     }
 
 }

@@ -13,8 +13,12 @@ import com.real.name.person.entity.Person2;
 import com.real.name.project.entity.Project;
 import com.real.name.project.service.ProjectDetailService;
 import com.real.name.project.service.ProjectService;
+import io.netty.util.internal.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -23,6 +27,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/project")
 public class ProjectController {
+    private Logger logger = LoggerFactory.getLogger(ProjectController.class);
 
     @Autowired
     private ProjectService projectService;
@@ -37,17 +42,16 @@ public class ProjectController {
     private RecordService recordService;
 
     /**
-     * 创建项目
+     * 本地创建项目
      */
     @PostMapping("/create")
     public ResultVo create(Project project) {
-
         Project p = projectService.create(project);
         return ResultVo.success(p);
     }
 
     /**
-     * 查询项目
+     * 从全国平台查询并创建项目
      */
     @GetMapping("/find")
     public Object find(@RequestParam(value = "pageIndex", defaultValue = "0") Integer pageIndex,
@@ -55,7 +59,6 @@ public class ProjectController {
 
         // 从全国对接平台查询项目
         Object projects = NationalUtils.queryProject(pageIndex, pageSize);
-
         if (projects instanceof Map) {
             Map map = (Map) projects;
             Map data = (Map) map.get("data");
@@ -69,6 +72,57 @@ public class ProjectController {
         }
         return projects;
     }
+
+    /**
+     * 修改项目
+     */
+    @PostMapping(value = "updateProject")
+    public ResultVo updateProject(@RequestBody Project project){
+        if(project.getProjectCode() == null){
+            throw AttendanceException.emptyMessage("projectCode");
+        }
+        //查询该项目是否存在
+        Optional<Project> projectOptional = projectService.findByProjectCode(project.getProjectCode());
+        if(!projectOptional.isPresent()){
+            throw new AttendanceException(ResultError.PROJECT_NOT_EXIST);
+        }
+        Project selectProject = projectOptional.get();
+        //信息的合并
+        mergeProject(selectProject, project);
+        try {
+            //修改数据库中的信息
+            projectService.updateByProjectCode(selectProject);
+            return ResultVo.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultVo.failure();
+        }
+    }
+
+    /**
+     * 删除项目
+     */
+    @GetMapping("deleteProject")
+    public ResultVo deleteProject(@RequestParam("projectCode") String projectCode) {
+        if (!StringUtils.hasText(projectCode)) {
+            throw AttendanceException.emptyMessage("项目编号");
+        }
+        try {
+            int effectNum = projectService.deleteByProjectCode(projectCode);
+            //判断是否删除成功
+            if (effectNum <= 0) {
+                throw  AttendanceException.errorMessage(ResultError.DELETE_ERROR, "项目");
+            }else{
+                //删除project_detail相关的信息
+                projectDetailService.deleteByProjectCode(projectCode);
+                return ResultVo.success("删除项目成功");
+            }
+        } catch (AttendanceException e) {
+            e.printStackTrace();
+            return ResultVo.failure();
+        }
+    }
+
 
     /**
      * 项目添加人员
@@ -116,6 +170,128 @@ public class ProjectController {
         m.put("id", "-1");
 
         return ResultVo.success(m);
+    }
+
+    /**
+     * 合并项目信息
+     * @param selectProject
+     * @param project
+     * @return
+     */
+    private Project mergeProject(Project selectProject, Project project){
+        if(StringUtils.hasText(project.getAddress())){
+            selectProject.setAddress(project.getAddress());
+        }
+        if(project.getApprovalLevelNum() != null){
+            selectProject.setApprovalLevelNum(project.getApprovalLevelNum());
+        }
+        if(StringUtils.hasText(project.getApprovalNum())){
+            selectProject.setApprovalNum(project.getApprovalNum());
+        }
+        if(StringUtils.hasText(project.getAreaCode())){
+            selectProject.setAreaCode(project.getAreaCode());
+        }
+        if(StringUtils.hasText(project.getBuildCorpCode())){
+            selectProject.setBuildCorpCode(project.getBuildCorpCode());
+        }
+        if(StringUtils.hasText(project.getBuildCorpName())){
+            selectProject.setBuildCorpName(project.getBuildCorpName());
+        }
+        if(StringUtils.hasText(project.getBuilderLicenses())){
+            selectProject.setBuilderLicenses(project.getBuilderLicenses());
+        }
+        if(StringUtils.hasText(project.getBuilderLicenses())){
+            selectProject.setBuilderLicenses(project.getBuilderLicenses());
+        }
+        if(project.getBuildingArea() != null){
+            if(project.getBuildingArea() < 0){
+                throw AttendanceException.errorMessage("总面积");
+            }
+            selectProject.setBuildingArea(project.getBuildingArea());
+        }
+        if(project.getBuildingLength() != null){
+            if(project.getBuildingLength() < 0){
+                throw AttendanceException.errorMessage("总长度");
+            }
+            selectProject.setBuildingLength(project.getBuildingLength());
+        }
+        if(StringUtils.hasText(project.getBuildPlanNum())){
+            selectProject.setBuildPlanNum(project.getBuildPlanNum());
+        }
+        if(StringUtils.hasText(project.getCategory())){
+            selectProject.setCategory(project.getCategory());
+        }
+        if(project.getCompleteDate() != null){
+            if (System.currentTimeMillis() - project.getCompleteDate().getTime() < 0) {
+                throw AttendanceException.errorMessage("竣工日期");
+            }
+            selectProject.setCompleteDate(project.getCompleteDate());
+        }
+        if(StringUtils.hasText(project.getContractorCorpCode())){
+            selectProject.setContractorCorpCode(project.getContractorCorpCode());
+        }
+        if(StringUtils.hasText(project.getContractorCorpName())){
+            selectProject.setContractorCorpName(project.getContractorCorpName());
+        }
+        if(StringUtils.hasText(project.getDescription())){
+            selectProject.setDescription(project.getDescription());
+        }
+        if(StringUtils.hasText(project.getFunctionNum())){
+            selectProject.setFunctionNum(project.getFunctionNum());
+        }
+        if(project.getInvest() != null){
+            if(project.getInvest() <= 0){
+                throw AttendanceException.errorMessage("总投资");
+            }
+            selectProject.setInvest(project.getInvest());
+        }
+        if(project.getLat() != null){
+            if(project.getLat() < 0  || project.getLat() > 180){
+                throw AttendanceException.errorMessage("经度");
+            }
+            selectProject.setLat(project.getLat());
+        }
+        if(StringUtils.hasText(project.getLinkMan())){
+            selectProject.setLinkMan(project.getLinkMan());
+        }
+        if(StringUtils.hasText(project.getLinkPhone())){
+            selectProject.setLinkPhone(project.getLinkPhone());
+        }
+        if(project.getLng() != null){
+            if (project.getLng() < 0 || project.getLng() > 90) {
+                throw AttendanceException.errorMessage("纬度");
+            }
+            selectProject.setLng(project.getLng());
+        }
+        if(StringUtils.hasText(project.getName())){
+            selectProject.setName(project.getName());
+        }
+        if(project.getNationNum() != null){
+            selectProject.setNationNum(project.getNationNum());
+        }
+        if(StringUtils.hasText(project.getPrjPlanNum())){
+            selectProject.setPrjPlanNum(project.getPrjPlanNum());
+        }
+        if(StringUtils.hasText(project.getPrjSize())){
+            selectProject.setPrjSize(project.getPrjSize());
+        }
+        if(project.getPrjStatus() != null){
+            Integer status = project.getPrjStatus();
+            if(status != 1 && status != 2 && status != 3 && status != 4 && status != 5){
+                throw AttendanceException.errorMessage("项目状态");
+            }
+            selectProject.setPrjStatus(project.getPrjStatus());
+        }
+        if(StringUtils.hasText(project.getPropertyNum())){
+            selectProject.setPropertyNum(project.getPropertyNum());
+        }
+        if(project.getStartDate() != null){
+            if (project.getCompleteDate().getTime() - project.getStartDate().getTime() < 0) {
+                throw AttendanceException.errorMessage("开工日期");
+            }
+            selectProject.setStartDate(project.getStartDate());
+        }
+        return selectProject;
     }
 
 

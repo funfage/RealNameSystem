@@ -15,21 +15,6 @@ public interface PersonService {
 
     /**
      * 新建人员
-     * @param personName 姓名
-     * @param idCardNumber 身份证号码
-     * @param nation 名族
-     * @param startDate 身份证开始时间
-     * @param expiryDate 身份证过期时间
-     * @param gender 性别
-     * @param address 身份证住址
-     * @param headImage 头像
-     * @param grantOrg 签发机关
-     * @return
-     */
-    Person create(String personName, String idCardNumber, String nation, Integer age, Date startDate, Date expiryDate, Integer gender, String address, String headImage, String grantOrg);
-
-    /**
-     * 新建人员
      */
     Person create(Person person);
 
@@ -82,7 +67,7 @@ public interface PersonService {
     Page<Person> findByWorkRole(PageRequest pageRequest, Integer workRole);
 
     //根据员工ID删除所有员工
-    void deleteById(Integer id);
+    int deleteByPersonId(Integer personId);
 
     //更新员工信息
     Person updateByPersonId(Person person);

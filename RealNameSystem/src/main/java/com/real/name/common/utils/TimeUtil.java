@@ -45,7 +45,7 @@ public class TimeUtil {
             asc =  asc+"0";
             len = asc.length();
         }
-        System.out.println("len:" +asc);
+        System.out.println("str2Bcd len:" +asc);
         byte abt[] = new byte[len];
         if (len >= 2) {
             len = len / 2;

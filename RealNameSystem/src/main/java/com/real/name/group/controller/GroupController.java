@@ -36,7 +36,6 @@ public class GroupController {
         } else if (groupService.findByTeamName(group.getTeamName()).isPresent()) {
             throw new AttendanceException(ResultError.GROUP_EXIST);
         }
-
         if (!CommonUtils.isRightPhone(group.getResponsiblePersonPhone())) {
             throw new AttendanceException(ResultError.PHONE_ERROR);
         }
