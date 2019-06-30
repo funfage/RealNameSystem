@@ -1,6 +1,10 @@
 package com.real.name.project.entity;
 
+import com.alibaba.fastjson.JSON;
 import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -8,7 +12,8 @@ import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 
-@Data
+@Setter
+@Getter
 @Entity
 @DynamicInsert
 @DynamicUpdate
@@ -154,8 +159,8 @@ public class Project {
      */
     private Integer nationNum;
 
-    @OneToMany(mappedBy = "project", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
-    private List<ProjectPersonDetail> projectPersonDetailList;
+    /*@OneToMany(mappedBy = "project", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    private List<ProjectPersonDetail> projectPersonDetailList;*/
 
     public Project(String projectName, String projectCompany, String projectLocal, String projectType, Integer projectContact) {
         this.name = projectName;
@@ -167,8 +172,13 @@ public class Project {
 
     public Project() { }
 
+    public Project(String projectCode) {
+        this.projectCode = projectCode;
+    }
+
     @Override
     public String toString() {
+//        return JSON.toJSONString(this);
         return "Project{" +
                 "projectCode='" + projectCode + '\'' +
                 ", contractorCorpCode='" + contractorCorpCode + '\'' +

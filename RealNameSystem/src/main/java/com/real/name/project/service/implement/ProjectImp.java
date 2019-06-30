@@ -8,7 +8,10 @@ import com.real.name.project.entity.Project;
 import com.real.name.project.service.ProjectService;
 import com.real.name.project.service.repository.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 
@@ -37,17 +40,22 @@ public class ProjectImp implements ProjectService {
     }
 
     @Override
-    public Project create(Project project) {
+    public Project createProject(Project project) {
 
-//        if (!StringUtils.hasText(project.getName())) {
-//            throw  AttendanceException.emptyMessage("项目名称");
-//        }
-//
-//        // 判断项目名称是否唯一
-//        Optional<Project> optionalProject = projectRepository.findByName(project.getName());
-//        if (optionalProject.isPresent()) throw new AttendanceException(ResultError.PROJECT_EXIST);
-
+        if (!StringUtils.hasText(project.getName())) {
+            throw  AttendanceException.emptyMessage("项目名称");
+        }
+        // 判断项目名称是否唯一
+        Optional<Project> optionalProject = projectRepository.findByName(project.getName());
+        if (optionalProject.isPresent()) {
+            throw new AttendanceException(ResultError.PROJECT_EXIST);
+        }
         return projectRepository.save(project);
+    }
+
+    @Override
+    public Page<Project> findAll(Pageable pageable) {
+        return projectRepository.findAll(pageable);
     }
 
     @Override

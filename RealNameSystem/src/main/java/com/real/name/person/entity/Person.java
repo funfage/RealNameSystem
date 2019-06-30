@@ -1,7 +1,11 @@
 package com.real.name.person.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.real.name.project.entity.ProjectPersonDetail;
 import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -10,7 +14,8 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Data
+@Setter
+@Getter
 @DynamicUpdate
 @DynamicInsert
 public class Person {
@@ -192,6 +197,7 @@ public class Person {
     /**
      * 照片的base64编码
      */
+    @JsonIgnore
     private String headImage;
     /**
      * 身份证索引号
@@ -202,11 +208,16 @@ public class Person {
      */
     private Integer groupNo;
 
+    /*@JsonIgnore
     @OneToMany(mappedBy = "person", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
-    private List<ProjectPersonDetail> projectPersonDetails;
+    private List<ProjectPersonDetail> projectPersonDetails;*/
 
 
     public Person() { }
+
+    public Person(Integer personId) {
+        this.personId = personId;
+    }
 
     public Person(String personName, String idCardNumber, String nation, Integer age, Date startDate, Date expiryDate, Integer gender, String address, String headImage, String grantOrg) {
         this.personName = personName;

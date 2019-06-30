@@ -7,6 +7,10 @@ import com.real.name.project.service.repository.ProjectRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+
+import java.awt.print.Pageable;
 
 public class ProjectTest extends BaseTest {
     @Autowired
@@ -31,5 +35,14 @@ public class ProjectTest extends BaseTest {
         Assert.assertEquals(null, updateProject);
     }
 
+    @Test
+    public void findAll() {
+        PageRequest pageRequest = PageRequest.of(2, 5);
+        Page<Project> all = projectRepository.findAll(pageRequest);
+        /*for (Project project : all) {
+            System.out.println(project);
+        }*/
+        System.out.println(all.get());
+    }
 
 }

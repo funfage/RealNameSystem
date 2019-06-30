@@ -1,5 +1,6 @@
 package com.real.name.project.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
@@ -9,14 +10,17 @@ import com.real.name.face.entity.Record;
 import com.real.name.face.service.RecordService;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.group.service.GroupService;
-import com.real.name.person.entity.Person2;
+//import com.real.name.person.entity.Person2;
 import com.real.name.project.entity.Project;
 import com.real.name.project.service.ProjectDetailService;
+import com.real.name.project.service.ProjectPersonDetailService;
 import com.real.name.project.service.ProjectService;
 import io.netty.util.internal.StringUtil;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -39,38 +43,51 @@ public class ProjectController {
     private ProjectDetailService projectDetailService;
 
     @Autowired
+    private ProjectPersonDetailService projectPersonDetailService;
+
+    @Autowired
     private RecordService recordService;
 
     /**
      * 本地创建项目
      */
-    @PostMapping("/create")
-    public ResultVo create(Project project) {
-        Project p = projectService.create(project);
+    @PostMapping("/createProject")
+    public ResultVo createProject(Project project) {
+        Project p = projectService.createProject(project);
         return ResultVo.success(p);
     }
 
     /**
      * 从全国平台查询并创建项目
      */
-    @GetMapping("/find")
-    public Object find(@RequestParam(value = "pageIndex", defaultValue = "0") Integer pageIndex,
+    @GetMapping("/queryProject")
+    public ResultVo queryProject(@RequestParam(value = "pageIndex", defaultValue = "0") Integer pageIndex,
                        @RequestParam(value = "pageSize", defaultValue = "20") Integer pageSize) throws Exception {
-
         // 从全国对接平台查询项目
-        Object projects = NationalUtils.queryProject(pageIndex, pageSize);
-        if (projects instanceof Map) {
-            Map map = (Map) projects;
-            Map data = (Map) map.get("data");
-            List rows = (List) data.get("rows");
-            for (Object row : rows) {
-                JSONObject j = (JSONObject)row;
-                Project project = j.toJavaObject(Project.class);
-                System.out.println(project);
-                projectService.create(project);
+        JSONObject jsonObject = NationalUtils.queryProject(pageIndex, pageSize);
+        //判断是否查询成功
+        if(!jsonObject.getBoolean("error")){
+            JSONObject queryResult = jsonObject.getJSONObject("data");
+            //如果不为空则将项目信息插入数据库
+            if (queryResult != null) {
+                JSONArray rows = queryResult.getJSONArray("rows");
+                List<Project> projects = JSONObject.parseArray(rows.toJSONString(), Project.class);
+                for (Project project : projects) {
+                    try {
+                        projectService.createProject(project);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
-        return projects;
+        //从数据库查询信息
+        Page<Project> queryList = projectService.findAll(PageRequest.of(pageIndex, pageSize));
+        if (queryList.isEmpty()) {
+            return ResultVo.failure(ResultError.QUERY_EMPTY);
+        }
+        queryList.forEach(System.out::println);
+        return ResultVo.success(queryList);
     }
 
     /**
@@ -109,7 +126,7 @@ public class ProjectController {
         }
         try {
             //删除project_detail相关的信息
-            projectDetailService.deleteByProjectCode(projectCode);
+            projectPersonDetailService.deleteByProject(new Project(projectCode));
             int effectNum = projectService.deleteByProjectCode(projectCode);
             //判断是否删除成功
             if (effectNum <= 0) {

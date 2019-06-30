@@ -1,18 +1,41 @@
 package com.real.name.group.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.real.name.common.entity.forNational.Worker;
 import com.real.name.project.entity.Project;
 import com.real.name.project.entity.ProjectPersonDetail;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+/*
+
+@NamedNativeQuery(
+        name = "test",
+        query = "select team_name, project_code from w worker_group where w.team_sys_no =:teamSysNo",
+        resultSetMapping = "testresult"
+)
+@SqlResultSetMapping(
+        name = "testresult",
+        entities = {
+                @EntityResult(entityClass = WorkerGroup.class,
+                fields = {
+                        @FieldResult(name = "teamSysNo", column = "team_sys_no"),
+                        @FieldResult(name = "projectCode", column = "project_code"),
+                })
+        }
+)
+*/
 
 /**
  * 班组
  */
-@Data
 @Entity
+@Setter
+@Getter
 public class WorkerGroup {
 
     /**
@@ -66,13 +89,21 @@ public class WorkerGroup {
      */
     private String remark;
 
+    /*@JsonIgnore
     @OneToMany(mappedBy = "workerGroup", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
-    private List<ProjectPersonDetail> projectPersonDetails;
+    private List<ProjectPersonDetail> projectPersonDetails;*/
 
     private Date entryTime;
     private Date exitTime;
     private String entryAttachments;
     private String exitAttachments;
+
+    public WorkerGroup() {
+    }
+
+    public WorkerGroup(Integer teamSysNo) {
+        this.teamSysNo = teamSysNo;
+    }
 
     @Override
     public String toString() {

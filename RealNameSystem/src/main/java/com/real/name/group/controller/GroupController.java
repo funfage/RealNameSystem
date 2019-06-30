@@ -10,6 +10,7 @@ import com.real.name.group.entity.WorkerGroup;
 import com.real.name.group.service.GroupService;
 import com.real.name.project.entity.ProjectDetail;
 import com.real.name.project.service.ProjectDetailService;
+import com.real.name.project.service.ProjectPersonDetailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,9 @@ public class GroupController {
 
     @Autowired
     private ProjectDetailService projectDetailService;
+
+    @Autowired
+    private ProjectPersonDetailService projectPersonDetailService;
 
     /**
      * 创建班组
@@ -72,7 +76,7 @@ public class GroupController {
     }
 
     /**
-     * 创建班组
+     * 查询班组
      */
     @GetMapping("find")
     public Object find(@RequestParam(name = "teamSysNo", required = false) Integer teamSysNo,
@@ -133,7 +137,7 @@ public class GroupController {
         }
         try {
             //删除project_detail相关的信息
-            projectDetailService.deleteByTeamSysNo(teamSysNo);
+            projectPersonDetailService.deleteByWorkerGroup(new WorkerGroup(teamSysNo));
             //删除班组信息
             int effectNum = groupService.deleteByTeamSysNo(teamSysNo);
             if (effectNum <= 0) {

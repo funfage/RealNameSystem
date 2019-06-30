@@ -10,9 +10,10 @@ import java.security.Security;
 import java.security.spec.AlgorithmParameterSpec;
 
 /**
- * Created by jim.z.hu on 2019/3/20.
+ * AES encrypt and decrypt util
  */
 public final class AesUtils {
+
     private static final String CHARSET_NAME = "UTF-8";
     private static final String AES_NAME = "AES";
     public static final String ALGORITHM = "AES/CBC/PKCS7Padding";
@@ -21,12 +22,8 @@ public final class AesUtils {
         Security.addProvider(new BouncyCastleProvider());
     }
 
-
     /**
-     * º”√‹
-     * @param content
-     * @param key
-     * @return
+     * encrypt
      */
     public static String encrypt( String content, String key) {
         byte[] result = null;
@@ -43,10 +40,7 @@ public final class AesUtils {
     }
 
     /**
-     * Ω‚√‹
-     * @param content
-     * @param key
-     * @return
+     * decrypt
      */
     public static String decrypt( String content, String key) {
         try {
@@ -60,7 +54,6 @@ public final class AesUtils {
         }
         return "error";
     }
-
 
     public static byte[] subBytes(byte[] src) {
         if (src.length < 16) {

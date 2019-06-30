@@ -9,14 +9,4 @@ public class ProjectDetailTest extends BaseTest {
     @Autowired
     private ProjectDetailRepository repository;
 
-    @Test
-    public void deleteByProjectCodeTest(){
-        int i = repository.deleteByProjectCode("44010620190510008");
-        System.out.println(i);
-    }
-
-    @Test
-    public void deleteByTeamSysNo() {
-        int i = repository.deleteByTeamSysNo(123);
-    }
 }

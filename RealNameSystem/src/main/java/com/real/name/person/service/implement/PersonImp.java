@@ -30,7 +30,7 @@ public class PersonImp implements PersonService {
     private Person2Rep person2Rep;
 
     @Override
-    public Person create(Person person) {
+    public Person createPerson(Person person) {
         if (person.getIdCardNumber() == null || person.getIdCardNumber().trim().length() != 18) {
             throw new AttendanceException(ResultError.ID_CARD_ERROR);
         } else if (!StringUtils.hasText(person.getPersonName())) {

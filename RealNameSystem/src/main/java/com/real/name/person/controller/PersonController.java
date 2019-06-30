@@ -8,13 +8,10 @@ import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.HTTPTool;
 import com.real.name.common.utils.ImageTool;
 import com.real.name.common.utils.NationalUtils;
-import com.real.name.face.entity.Device;
 import com.real.name.face.entity.Record;
 import com.real.name.face.service.RecordService;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
-import com.real.name.person.service.WebSocket;
-import com.real.name.project.entity.ProjectDetail;
 import com.real.name.project.entity.ProjectPersonDetail;
 import com.real.name.project.service.ProjectDetailService;
 import com.real.name.project.service.ProjectPersonDetailService;
@@ -57,7 +54,7 @@ public class PersonController {
         }
         Person p = JSON.parseObject(person, Person.class);
         //保存人员信息到数据库
-        p = personService.create(p);
+        p = personService.createPerson(p);
         //保存头像
         ImageTool.generateImage(p.getHeadImage(), p.getPersonId().toString());
         Map<String, Object> m = new HashMap<>();
@@ -77,7 +74,7 @@ public class PersonController {
         }
         try {
             //删除personDetail中的信息
-            projectDetailService.deleteByPersonId(personId);
+            projectPersonDetailService.deleteByPerson(new Person(personId));
             int effectNum = personService.deleteByPersonId(personId);
             if (effectNum <= 0) {
                 throw AttendanceException.errorMessage(ResultError.DELETE_ERROR, "工人");
@@ -163,9 +160,7 @@ public class PersonController {
                 projectPersonDetail.setPerson(selectPerson);
                 //修改全国项目工人信息
                 JSONObject jsonObject = NationalUtils.updateProjectPerson(projectPersonDetail);
-                //判断是否修改成功
-                String code = jsonObject.getString("code");
-                if(!StringUtils.isEmpty(code) && code.equals("-1")){
+                if(jsonObject.getBoolean("error")){
                     return ResultVo.failure(ResultError.NATIONAL_ERROR.getCode(), ResultError.NATIONAL_ERROR.getMessage() + jsonObject.getString("message"));
                 }
             }
@@ -177,38 +172,6 @@ public class PersonController {
             return ResultVo.failure(e.getMessage());
         }
     }
-
-    @PostMapping("takeImg")
-    public ResultVo takeImg(@RequestParam(name = "personId") String personId) {
-        String url = "face/takeImg";
-        Map<String, String> map = new HashMap<>();
-        map.put("personId", personId);
-        ResultVo rvo = HTTPTool.sendDataTo(url, map);
-        System.out.println(rvo);
-        return rvo;
-    }
-
-
-    /**
-     * 给人员添加照片，必须先创建人员，后添加该人员的照片
-     */
-    @PostMapping("/face/create")
-    public ResultVo faceCreate(@RequestParam("pass") String pass, @RequestParam("personId") Integer personId,
-                               @RequestParam("imgBase64") String imgBase64) {
-
-        Person person = personService.saveImgBase64(personId, imgBase64);
-
-        String url = "face/create";
-
-        Map<String, String> map = new HashMap<>();
-        map.put("pass", pass);
-        map.put("personId", person.getPersonId().toString());
-//        map.put("faceId", face.getFaceId().toString());
-        map.put("imgBase64", imgBase64);
-
-        return HTTPTool.sendDataTo(url, map);
-    }
-
 
     /**
      * 根据id查找人员，若id=-1则查找全部人员
@@ -223,6 +186,33 @@ public class PersonController {
         return id == -1 ? ResultVo.success(personService.findByWorkRole(p, workRole)) : ResultVo.success(personService.findById(id));
     }
 
+    @PostMapping("takeImg")
+    public ResultVo takeImg(@RequestParam(name = "personId") String personId) {
+        String url = "face/takeImg";
+        Map<String, String> map = new HashMap<>();
+        map.put("personId", personId);
+        ResultVo rvo = HTTPTool.sendDataTo(url, map);
+        System.out.println(rvo);
+        return rvo;
+    }
+
+    /**
+     * 给人员添加照片，必须先创建人员，后添加该人员的照片
+     */
+    @PostMapping("/face/create")
+    public ResultVo faceCreate(@RequestParam("pass") String pass, @RequestParam("personId") Integer personId,
+                               @RequestParam("imgBase64") String imgBase64) {
+
+        Person person = personService.saveImgBase64(personId, imgBase64);
+        String url = "face/create";
+        Map<String, String> map = new HashMap<>();
+        map.put("pass", pass);
+        map.put("personId", person.getPersonId().toString());
+//        map.put("faceId", face.getFaceId().toString());
+        map.put("imgBase64", imgBase64);
+        return HTTPTool.sendDataTo(url, map);
+    }
+
     /**
      * 查询人员考勤记录
      */
@@ -230,15 +220,8 @@ public class PersonController {
     public ResultVo findAttendance(@RequestParam("personId") Integer personId,
                                    @RequestParam("beginTime") Long beginTime,
                                    @RequestParam("endTime") Long endTime) {
-
         List<Record> records = recordService.findByPersonIdAndTimeBetween(personId, new Date(beginTime), new Date(endTime));
-
         return ResultVo.success(records);
     }
 
-    @GetMapping("test")
-    public ResultVo test(){
-        logger.debug("日志开始");
-        return ResultVo.success();
-    }
 }

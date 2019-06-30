@@ -1,5 +1,7 @@
 package com.real.name.project.service.implement;
 
+import com.real.name.common.exception.AttendanceException;
+import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.HTTPTool;
 import com.real.name.face.entity.Device;
@@ -7,9 +9,11 @@ import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
 import com.real.name.project.entity.Project;
 import com.real.name.project.entity.ProjectDetail;
+import com.real.name.project.entity.ProjectPersonDetail;
 import com.real.name.project.service.ProjectDetailService;
 import com.real.name.project.service.ProjectService;
 import com.real.name.project.service.repository.ProjectDetailRepository;
+import com.real.name.project.service.repository.ProjectPersonDetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +27,9 @@ public class ProjectDetailImp implements ProjectDetailService {
 
     @Autowired
     private ProjectDetailRepository projectDetailRepository;
+
+    @Autowired
+    private ProjectPersonDetailRepository projectPersonDetailRepository;
 
     @Autowired
     private PersonService personService;
@@ -56,7 +63,7 @@ public class ProjectDetailImp implements ProjectDetailService {
 
         // 根据工人类型，发送人员信息给不同的设备
         Integer workRole = person.get().getWorkRole();
-        ResultVo rvo = sendData(workRole, url, map, projectCode);
+        ResultVo rvo = sendData(personId, workRole, url, map, projectCode);
         System.out.println("add person: " + rvo);
 
         String pId = person.get().getPersonId().toString();
@@ -68,16 +75,21 @@ public class ProjectDetailImp implements ProjectDetailService {
             map = new HashMap<>();
             map.put("personId", pId);
             map.put("imgBase64", headImage);
-            sendData(workRole, url, map, projectCode);
+            sendData(personId, workRole, url, map, projectCode);
         }
     }
 
-    private ResultVo sendData(Integer workRole, String url, Map<String, String> map, String projectCode) {
+    private ResultVo sendData(Integer personId, Integer workRole, String url, Map<String, String> map, String projectCode) {
         ResultVo rvo = null;
-        if (workRole == 20) { // 如果是建筑工人，发送给该工人所属项目的设备
-            rvo = HTTPTool.sendDataTo(url, map, projectCode);
-        } else if (workRole == 10){ // 如果是管理工人，发送给全部设备
-            rvo = HTTPTool.sendDataTo(url, map);
+        try {
+            if (workRole == 20) { // 如果是建筑工人，发送给该工人所属项目的设备
+                rvo = HTTPTool.sendDataTo(url, map, projectCode);
+            } else if (workRole == 10){ // 如果是管理工人，发送给全部设备
+                rvo = HTTPTool.sendDataTo(url, map);
+            }
+        } catch (Exception e) {
+            projectDetailRepository.deleteByPersonIdAndProjectCode(personId, projectCode);
+            throw new AttendanceException(ResultError.NETWORK_ERROR);
         }
         return rvo;
     }
@@ -101,26 +113,12 @@ public class ProjectDetailImp implements ProjectDetailService {
     }
 
     @Override
-    public Optional<Project> getProjectFromPersonId(Integer personId) {
-        Optional<ProjectDetail> detail = projectDetailRepository.findByPersonId(personId);
-        if (!detail.isPresent()) return null;
-        Optional<Project> project = projectService.findByProjectCode(detail.get().getProjectCode());
-
-        return project;
+    public Project getProjectFromPersonId(Integer personId) {
+        Optional<ProjectPersonDetail> detail = projectPersonDetailRepository.findByPerson_PersonId(personId);
+        if (!detail.isPresent()) {
+            return null;
+        }
+        return detail.get().getProject();
     }
 
-    @Override
-    public int deleteByProjectCode(String projectCode) {
-        return projectDetailRepository.deleteByProjectCode(projectCode);
-    }
-
-    @Override
-    public int deleteByTeamSysNo(Integer teamSysNo) {
-        return projectDetailRepository.deleteByTeamSysNo(teamSysNo);
-    }
-
-    @Override
-    public int deleteByPersonId(Integer personId) {
-        return projectDetailRepository.deleteByPersonId(personId);
-    }
 }

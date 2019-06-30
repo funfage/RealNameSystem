@@ -30,6 +30,7 @@ public enum ResultError {
     INSERT_ERROR(101, "添加失败"),
     UPDATE_ERROR(102, "修改失败"),
     QUERY_ERROR(103, "查询失败"),
+    QUERY_EMPTY(104, "查询结果为空"),
     ;
 
     private Integer code;

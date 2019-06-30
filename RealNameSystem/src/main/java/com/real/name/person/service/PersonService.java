@@ -1,6 +1,7 @@
 package com.real.name.person.service;
 
 import com.real.name.person.entity.Person;
+//import com.real.name.person.entity.Person2;
 import com.real.name.person.entity.Person2;
 import com.real.name.person.entity.Person3;
 import org.springframework.data.domain.Page;
@@ -16,7 +17,7 @@ public interface PersonService {
     /**
      * 新建人员
      */
-    Person create(Person person);
+    Person createPerson(Person person);
 
     /**
      * 查询全部人员

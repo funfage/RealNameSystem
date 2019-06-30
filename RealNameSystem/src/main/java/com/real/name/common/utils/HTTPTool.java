@@ -1,11 +1,14 @@
 package com.real.name.common.utils;
 
 import com.alibaba.fastjson.JSONObject;
+import com.real.name.common.exception.AttendanceException;
+import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.face.entity.Device;
 import com.real.name.face.service.DeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -110,7 +113,11 @@ public class HTTPTool {
      * @return POST请求的结果，Json格式
      */
     public static ResultVo postUrlForParam(String url, Map<String, String> param) {
-        RestTemplate restTemplate = new RestTemplate();
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(6000);// 设置超时
+        requestFactory.setReadTimeout(6000);
+
+        RestTemplate restTemplate = new RestTemplate(requestFactory);
 
         MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
         if (param != null) {
@@ -119,9 +126,31 @@ public class HTTPTool {
             }
         }
         HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(params);
-        String response = restTemplate.postForObject(url, entity, String.class);
+        String response;
+        try {
+            response = restTemplate.postForObject(url, entity, String.class);
+        } catch (Exception e) {
+            System.out.print("Network error: ");
+            System.out.println(e.getMessage());
+            throw new AttendanceException(ResultError.NETWORK_ERROR);
+        }
+
         return JSONObject.parseObject(response, ResultVo.class);
     }
+
+    public static void main(String[] args) {
+        Map<String , String >m = new HashMap<>();
+        m.put("username", "guest");
+        m.put("password", "123456");
+        try {
+            ResultVo resultVo = postUrlForParam("http://139.9.47.19:9901/attendance/login", m);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+//        System.out.println(resultVo);
+    }
+
 
 
     /**

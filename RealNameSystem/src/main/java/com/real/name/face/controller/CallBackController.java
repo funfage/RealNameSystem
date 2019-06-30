@@ -49,6 +49,12 @@ public class CallBackController {
     @Autowired
     private WebSocket webSocket;
 
+    /**
+     * 人脸设备回调地址
+     * @param callbackUrl
+     * @param pass
+     * @return
+     */
     @PostMapping("setIdentifyCallBack")
     public ResultVo setIdentifyCallBack(@RequestParam("callbackUrl") String callbackUrl, @RequestParam("pass") String pass) {
 
@@ -66,6 +72,12 @@ public class CallBackController {
         return HTTPTool.sendDataTo(url, map);
     }
 
+    /**
+     * 设置设备心跳回调
+     * @param url 回调地址
+     * @param pass 设备密码
+     * @return
+     */
     @PostMapping("setDeviceHeartBeat")
     public ResultVo setDeviceHeartBeat(@RequestParam("url") String url, @RequestParam("pass") String pass) {
 

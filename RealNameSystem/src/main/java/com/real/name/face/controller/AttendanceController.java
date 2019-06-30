@@ -27,8 +27,6 @@ import java.util.*;
 public class AttendanceController {
 
     @Autowired
-    private DeviceDao deviceDao;
-    @Autowired
     RecordRepository recordRepository;
     @Autowired
     RecordDao recordDao;
@@ -56,9 +54,9 @@ public class AttendanceController {
              personIds = recordDao.findDistinctPersons(map);
          }else {
              map.put("projectCode",projectCode);
+             //获取该项目所有人员
              personIds = recordDao.personInproject(map);
          }
-
          System.out.println("records:" +personIds.size());
          SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd"); //设置时间格式
          Calendar cal = Calendar.getInstance();
@@ -84,23 +82,6 @@ public class AttendanceController {
 
              }
          }
-
-
-         /*List<Person3> result = new ArrayList<>(personIds.size());
-         for (Integer personID:personIds) {
-             map.put("personID",personID);
-             List<Record> people = recordDao.findPerson(map);
-             System.out.println("people:" +people.size());
-             System.out.println("Pid:" +personID);
-             Person3 person = personImp.findByPersonId(personID);
-             if (person != null) {
-                // person.setDays(people.size()/2);
-                 person.setDays(people.size()/2);
-                 result.add(person);
-             }
-
-         }*/
-         //System.out.println("reult:"+result.size());
          return  ResultVo.success();
      }
 

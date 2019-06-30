@@ -78,7 +78,7 @@ public class NationalUtils {
     /**
      * 查询项目信息
      */
-    public static Object queryProject(Integer pageIndex, Integer pageSize) {
+    public static JSONObject queryProject(Integer pageIndex, Integer pageSize) {
         String method = "Project.Query";
         SearchProject sp = new SearchProject(pageIndex, pageSize);
         sp.setContractorCorpCode(BaseInfo.CORPCODE);
@@ -179,26 +179,60 @@ public class NationalUtils {
      * 异步调用接口查询
      */
     static JSONObject AsyncHandleResultQuery(String str,String method) {
-        NationalGroup ng = new NationalGroup();
-        ng.setRequestSerialCode(str);
-        Map<String,String> dataMap = getMap(JSON.toJSONString(ng),method);
-        BaseRequest request = new BaseRequest(){};
-        String result = request.postData(BaseInfo.URL,null,dataMap);
-        return JSONObject.parseObject(result);
+        try {
+            NationalGroup ng = new NationalGroup();
+            ng.setRequestSerialCode(str);
+            Map<String,String> dataMap = getMap(JSON.toJSONString(ng),method);
+            BaseRequest request = new BaseRequest(){};
+            String result = request.postData(BaseInfo.URL,null,dataMap);
+            return JSONObject.parseObject(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
      * 处理结果并返回
+     * @param result 异步通知结果
+     * @return
+     *        为空则说明操作失败
+     *        data为空则说明所获取的数据为空
+     *        否则成功获取数据并返回
      */
     private static JSONObject HandleResultReturn(String result) {
-        JSONObject obj = JSONObject.parseObject(result);
-        //判断是否返回错误信息
-        String code = obj.getString("code");
-        if(!StringUtils.isEmpty(code) && !code.equals("0")){
-            return obj;
+        JSONObject resultObj = null;
+        try {
+            resultObj = JSONObject.parseObject(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            resultObj = new JSONObject();
+            resultObj.put("error", true);
+            resultObj.put("message", "全国平台异步通知结果解析失败");
+            return resultObj;
         }
-        //获取正确结果
-        obj = obj.getJSONObject("data");
-        return AsyncHandleResultQuery(obj.getString("requestSerialCode"), "AsyncHandleResult.Query");
+        //判断是否返回错误信息
+        String code = resultObj.getString("code");
+        //code不为空且不为零则说明返回了错误代码
+        if(StringUtils.isEmpty(code)){
+            resultObj.put("message", "全国平台异步通知结果code解析为空");
+            resultObj.put("error", true);
+        } else if (!code.equals("0")) {
+            resultObj.put("error", true);
+        } else {
+            //获取正确结果
+            JSONObject data = resultObj.getJSONObject("data");
+            if (data != null) {
+                String requestSerialCode = data.getString("requestSerialCode");
+                if (StringUtils.hasText(requestSerialCode)) {
+                    data = AsyncHandleResultQuery(requestSerialCode, "AsyncHandleResult.Query");
+                }
+                resultObj.put("data", data);
+            } else {
+                resultObj.put("data", null);
+            }
+            resultObj.put("error", false);
+        }
+        return resultObj;
     }
 }

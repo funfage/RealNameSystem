@@ -1,6 +1,8 @@
 package com.real.name.project.service;
 
 import com.real.name.project.entity.Project;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
 
@@ -18,7 +20,19 @@ public interface ProjectService {
     Project create(String projectName, String projectCompany, String projectLocal,
                    String projectType, Integer personId);
 
-    Project create(Project project);
+    /**
+     * 创建项目
+     * @param project
+     * @return
+     */
+    Project createProject(Project project);
+
+    /**
+     * 分页查询
+     * @param pageable
+     * @return
+     */
+    Page<Project> findAll(Pageable pageable);
 
     /**
      * 查找项目

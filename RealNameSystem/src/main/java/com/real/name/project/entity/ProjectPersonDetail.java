@@ -1,31 +1,38 @@
 package com.real.name.project.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.person.entity.Person;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Date;
 
 @Table(name = "project_detail")
 @Entity
-@Data
+@Getter
+@Setter
 public class ProjectPersonDetail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(cascade=CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "personId")
+    @JsonIgnore
     private Person person;
 
-    @ManyToOne(cascade=CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "projectCode")
+    @JsonIgnore
     private Project project;
 
-    @ManyToOne(cascade=CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "teamSysNo")
+    @JsonIgnore
     private WorkerGroup workerGroup;
 
     private Date createTime;
@@ -35,13 +42,21 @@ public class ProjectPersonDetail {
      */
     private Integer personStatus;
 
+    public ProjectPersonDetail() {
+    }
+
+    public ProjectPersonDetail(Person person, Project project, WorkerGroup workerGroup, Date createTime, Integer personStatus) {
+        this.person = person;
+        this.project = project;
+        this.workerGroup = workerGroup;
+        this.createTime = createTime;
+        this.personStatus = personStatus;
+    }
+
     @Override
     public String toString() {
         return "ProjectPersonDetail{" +
                 "id=" + id +
-                ", person=" + person +
-                ", project=" + project +
-                ", workerGroup=" + workerGroup +
                 ", createTime=" + createTime +
                 ", personStatus=" + personStatus +
                 '}';

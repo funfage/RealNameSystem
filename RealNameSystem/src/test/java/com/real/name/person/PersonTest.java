@@ -1,6 +1,7 @@
 package com.real.name.person;
 
 import com.real.name.person.entity.Person;
+import com.real.name.person.service.PersonService;
 import com.real.name.person.service.repository.PersonRepository;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -14,6 +15,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @RunWith(SpringRunner.class)
@@ -23,12 +26,22 @@ public class PersonTest {
     @Autowired
     private PersonRepository personRepository;
 
+    @Autowired
+    private PersonService personService;
+
     @Test
     public void testGetPersonAll(){
         PageRequest pageRequest = PageRequest.of(0, 10);
         Page<Person> personPage = personRepository.findAll(pageRequest);
         System.out.println(personPage.getContent());
 
+    }
+
+    @Test
+    public void findPersons2() {
+        List<Integer> personIds = new ArrayList<>();
+        personIds.add(76);
+        personService.findPersons2(personIds);
     }
 
     @Test
