@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -65,12 +66,37 @@ public class ProjectDetailImp implements ProjectDetailService {
         List<String> deviceIds = (List<String>) personMap.get("deviceIds");
         //查询每个id是否下发成功
         for (String deviceId : deviceIds) {
+            Boolean isSuccess;
             Device device = new Device(deviceId);
             IssueDetail issueDetail = new IssueDetail(personId, device);
             //获取该设备的返回信息
             String response = (String) personMap.get(deviceId);
+            if (!StringUtils.hasText(response)) {
+                logger.error("获取设备响应信息：{}失败", response);
+                //查询设备信息是否有人员信息
+                Map<String, Object> queryMap = sendQuery(person.getPersonId().toString(), 1, 0, deviceId);
+                String queryResponse = (String) queryMap.get(deviceId);
+                if (!StringUtils.hasText(queryResponse)) {
+                    logger.error("获取设备响应queryResponse信息：{}失败", response);
+                    //下发失败,设置失败标识
+                    issueDetail.setIssueStatus(DeviceConstant.issueFailure);
+                }else{
+                    FaceResult queryResult = JSONObject.parseObject(queryResponse, FaceResult.class);
+                    isSuccess = queryResult.getSuccess();
+                    if(isSuccess != null && isSuccess){
+                        //下发成功,设置成功标识
+                        issueDetail.setIssueStatus(DeviceConstant.issueSuccess);
+                    }else{
+                        //下发失败,设置失败标识
+                        issueDetail.setIssueStatus(DeviceConstant.issueFailure);
+                    }
+                }
+                //保存到数据库
+                issueDetailRepository.save(issueDetail);
+                continue;
+            }
             FaceResult personResult = JSONObject.parseObject(response, FaceResult.class);
-            Boolean isSuccess = personResult.getSuccess();
+            isSuccess = personResult.getSuccess();
             if (isSuccess != null && isSuccess) {//下发成功
                 //下发人员照片
                 Map<String, Object> imgMap = sendHeadImg(workRole, person.getPersonId().toString(), person.getHeadImage(), projectCode);
@@ -89,14 +115,20 @@ public class ProjectDetailImp implements ProjectDetailService {
                 //查询设备信息是否有人员信息
                 Map<String, Object> queryMap = sendQuery(person.getPersonId().toString(), 1, 0, deviceId);
                 String queryResponse = (String) queryMap.get(deviceId);
-                FaceResult queryResult = JSONObject.parseObject(queryResponse, FaceResult.class);
-                isSuccess = queryResult.getSuccess();
-                if(isSuccess != null && isSuccess){
-                    //下发成功,设置成功标识
-                    issueDetail.setIssueStatus(DeviceConstant.issueSuccess);
-                }else{
+                if (!StringUtils.hasText(queryResponse)) {
+                    logger.error("获取设备响应queryResponse信息：{}失败", response);
                     //下发失败,设置失败标识
                     issueDetail.setIssueStatus(DeviceConstant.issueFailure);
+                }else{
+                    FaceResult queryResult = JSONObject.parseObject(queryResponse, FaceResult.class);
+                    isSuccess = queryResult.getSuccess();
+                    if(isSuccess != null && isSuccess){
+                        //下发成功,设置成功标识
+                        issueDetail.setIssueStatus(DeviceConstant.issueSuccess);
+                    }else{
+                        //下发失败,设置失败标识
+                        issueDetail.setIssueStatus(DeviceConstant.issueFailure);
+                    }
                 }
                 issueDetailRepository.save(issueDetail);
             }
@@ -104,7 +136,10 @@ public class ProjectDetailImp implements ProjectDetailService {
         //将项目,人员,班组信息绑定并保存
         ProjectDetail projectDetail = new ProjectDetail(projectCode, personId, teamSysNo);
         try {
-            projectDetailRepository.save(projectDetail);
+            ProjectDetail save = projectDetailRepository.save(projectDetail);
+            if (save == null) {
+                throw new AttendanceException("添加人员到项目失败");
+            }
         } catch (Exception e) {
             logger.error("添加人员到项目失败, e:{}", e);
         }

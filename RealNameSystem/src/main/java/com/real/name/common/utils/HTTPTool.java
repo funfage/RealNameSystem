@@ -66,10 +66,6 @@ public class HTTPTool {
                 }
                 deviceIds.add(device.getDeviceId());
                 String response = (method == DeviceConstant.postMethod ? postToDevice(device, url, param) : getToDevce(device, url, param));
-                if (!StringUtils.hasText(response)) {
-                    logger.error("获取设备响应信息：{}失败", response);
-                    throw new AttendanceException("获取设备响应信息失败");
-                }
                 modelMap.put(device.getDeviceId(), response);
             }
             //将所查询的所有设备id放入集合
@@ -94,10 +90,6 @@ public class HTTPTool {
             Device device = optionalDevice.get();
             if (StringUtils.hasText(device.getIp()) && device.getOutPort() != null && device.getOutPort() > 0 && device.getOutPort() < 65536) {
                 String response = (method == DeviceConstant.postMethod ? postToDevice(device, url, param) : getToDevce(device, url, param));
-                if (!StringUtils.hasText(response)) {
-                    logger.error("获取设备响应信息：{}失败", response);
-                    throw new AttendanceException("获取设备响应信息失败");
-                }
                 modelMap.put(device.getDeviceId(), response);
                 return modelMap;
             }else{
@@ -127,10 +119,6 @@ public class HTTPTool {
                 }
                 deviceIds.add(device.getDeviceId());
                 String response = (method == DeviceConstant.postMethod ? postToDevice(device, url, param) : getToDevce(device, url, param));
-                if (!StringUtils.hasText(response)) {
-                    logger.error("获取设备响应信息：{}失败", response);
-                    throw new AttendanceException("获取设备响应信息失败");
-                }
                 modelMap.put(device.getDeviceId(), response);
             }
             //将所查询的所有设备id放入集合
