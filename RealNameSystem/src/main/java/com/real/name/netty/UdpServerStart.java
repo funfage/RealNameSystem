@@ -6,8 +6,13 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
+import org.slf4j.LoggerFactory;
+
 
 public class UdpServerStart implements  Runnable {
+
+    private org.slf4j.Logger Logger = LoggerFactory.getLogger(UdpServerStart.class);
+
     @Override
     public void run() {
         EventLoopGroup group = new NioEventLoopGroup();
@@ -16,22 +21,30 @@ public class UdpServerStart implements  Runnable {
             Bootstrap b = new Bootstrap();
 
             boolean autorelease = false;
+            //3.配置启动器
             b.group(group)
                     .channel(NioDatagramChannel.class)
+                    //指定为广播模式
                     .option(ChannelOption.SO_BROADCAST, true)
                     .handler(new DutouServerHandler());
 
+            //bind到指定端口，并返回一个channel，该端口就是监听UDP报文的端口
             Channel channel = b.bind(9902).sync().channel();
+            /*等待future完成
+             *channel.closeFuture()不做任何操作，只是简单的返回channel对象中的closeFuture对象，
+             * 对于每个Channel对象，都会有唯一的一个CloseFuture，用来表示关闭的Future
+             * 如果用户操作调用了sync或者await方法，会在对应的future对象上阻塞用户线程
+            */
             channel.closeFuture().await();
 
         } catch (InterruptedException e) {
             e.printStackTrace();
         }finally {
-            System.out.println("退出程序");
+            Logger.info("退出UdpServer");
             group.shutdownGracefully();
-
         }
     }
+
     public  static void startUdpServer(){
         try {
             new Thread(new UdpServerStart()).start();

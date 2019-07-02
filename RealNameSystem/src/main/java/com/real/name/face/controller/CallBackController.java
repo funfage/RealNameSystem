@@ -61,7 +61,7 @@ public class CallBackController {
         if (!StringUtils.hasText(pass)) {
             throw AttendanceException.emptyMessage("密码 ");
         } else if (!StringUtils.hasText(callbackUrl)) {
-            throw AttendanceException.emptyMessage("URL ");
+            throw AttendanceException.emptyMessage("URL");
         }
 
         String url = "setIdentifyCallBack";
@@ -162,8 +162,8 @@ public class CallBackController {
 
         Optional<Device> device = deviceService.findByDeviceId(deviceKey);
         if (device.isPresent()) {
-            device.get().setIp(IP);
-            deviceService.save(device.get());
+//            device.get().setIp(IP);
+//            deviceService.save(device.get());
         } else {
             deviceService.save(new Device(deviceKey, IP));
         }

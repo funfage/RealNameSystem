@@ -4,6 +4,8 @@ import com.real.name.common.utils.SpringUtil;
 import com.real.name.netty.Entity.Controller;
 import com.real.name.netty.dao.DeviceDao;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
 import java.util.HashMap;
@@ -11,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 
 public class ControllerContainer {
+
+    Logger logger = LoggerFactory.getLogger(ControllerContainer.class);
+
     public static ControllerContainer instance;
     public   Map<String,Controller> clientMap;
     //private Map<String,String> authSuccessMap;
@@ -19,6 +24,7 @@ public class ControllerContainer {
         clientMap = new HashMap<>();
         init();
     }
+
     public static ControllerContainer getInstance() {
         if(instance == null) {
             synchronized (ControllerContainer.class) {
@@ -29,15 +35,25 @@ public class ControllerContainer {
         }
         return instance;
     }
+
+    /**
+     * 添加在线设备
+     * @param equipmentId
+     * @param ip
+     * @param ctx
+     * @param cardNo
+     * @return
+     */
     public Boolean addOnlineEquipment(String equipmentId, String ip, ChannelHandlerContext ctx, String cardNo) {
+        //获取设备信息
         Controller dutou = clientMap.get(equipmentId);
         if( dutou != null) {
             System.out.println("dutou not null");
-            //client.setCtx(ctx);
             dutou.setIp(ip);
             dutou.setCtx(ctx);
             dutou.setCardNo(cardNo);
-           return dutou.getDeviceType()==1?true:false;
+            //deviceType为禁止读头
+           return dutou.getDeviceType() == 1;
         }else {
             ApplicationContext appCtx = SpringUtil.getApplicationContext();
             DeviceDao equipmentDao = appCtx.getBean(DeviceDao.class);
@@ -46,30 +62,33 @@ public class ControllerContainer {
                 newDutou.setIp(ip);
                 newDutou.setCtx(ctx);
                 newDutou.setCardNo(cardNo);
-                return newDutou.getDeviceType()==1?true:false;
+                clientMap.put(newDutou.getDeviceId(), newDutou);
+                return newDutou.getDeviceType() == 1;
             }
         }
-
         return false;
     }
+
+    /**
+     * 从clientMap中得到设备信息
+     */
     public Controller getController(String equipmentID){
+        logger.info("clientMap中的devices所有deviceId", clientMap);
         return  clientMap.get(equipmentID);
     }
-    public void init(){
+
+    private void init(){
         System.out.println("ttt:"+DeviceDao.class);
-        //System.out.println("container init============================");
         ApplicationContext appCtx = SpringUtil.getApplicationContext();
         DeviceDao equipmentDao = appCtx.getBean(DeviceDao.class);
-        //String name = "DeviceDao";
-       // DeviceDao equipmentDao = (DeviceDao) appCtx.getBean(name);
+        //获取所有读头设备信息
         List<Controller> devices = equipmentDao.findAll();
-        //List<Device> devices = equipmentDao.findAllDutou();
-         // List<Device> devices = deviceMapper.findAllDutou();
         System.out.println("devices size:" + devices.size());
+        //将设备信息放入clientMap
         for (Controller device: devices) {
             System.out.println("getDutou:" +device.getDeviceId());
             String deviceID = device.getDeviceId();
-            clientMap.put(deviceID,device);
+            clientMap.put(deviceID, device);
         }
     }
 }

@@ -52,9 +52,14 @@ public class ProjectController {
      * 本地创建项目
      */
     @PostMapping("/createProject")
-    public ResultVo createProject(Project project) {
-        Project p = projectService.createProject(project);
-        return ResultVo.success(p);
+    public ResultVo createProject(@RequestBody Project project) {
+        try {
+            projectService.createProject(project);
+            return ResultVo.success();
+        } catch (Exception e) {
+            logger.error("项目添加失败", e);
+            return ResultVo.failure(ResultError.INSERT_ERROR);
+        }
     }
 
     /**
@@ -76,7 +81,7 @@ public class ProjectController {
                     try {
                         projectService.createProject(project);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        //无需处理
                     }
                 }
             }
@@ -86,7 +91,6 @@ public class ProjectController {
         if (queryList.isEmpty()) {
             return ResultVo.failure(ResultError.QUERY_EMPTY);
         }
-        queryList.forEach(System.out::println);
         return ResultVo.success(queryList);
     }
 

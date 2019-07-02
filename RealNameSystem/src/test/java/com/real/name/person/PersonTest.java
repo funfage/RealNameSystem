@@ -1,6 +1,7 @@
 package com.real.name.person;
 
 import com.real.name.person.entity.Person;
+import com.real.name.person.entity.PersonQuery;
 import com.real.name.person.service.PersonService;
 import com.real.name.person.service.repository.PersonRepository;
 import org.junit.FixMethodOrder;
@@ -72,6 +73,21 @@ public class PersonTest {
         String str2 = "";
         System.out.println(StringUtils.hasText(str1));
         System.out.println(StringUtils.hasText(str2));
+    }
+
+    @Test
+    public void findPeopleByCondition(){
+        PersonQuery query = new PersonQuery();
+        query.setNameOrIDCard("b");
+        List<Person> peopleByCondition = personRepository.findPeopleByCondition(query);
+        System.out.println(peopleByCondition.size());
+    }
+
+    @Test
+    public void findPersonTest() {
+        PageRequest p = PageRequest.of(0, 10);
+        Page<Person> work = personRepository.findByWorkRole(p, 10);
+        System.out.println(work);
     }
 
 }

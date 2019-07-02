@@ -18,6 +18,7 @@ import com.real.name.project.service.ProjectPersonDetailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -177,13 +178,31 @@ public class PersonController {
      * 根据id查找人员，若id=-1则查找全部人员
      */
     @GetMapping("/find")
-    public ResultVo find(@RequestParam("id") Integer id,
+    public ResultVo findPerson(@RequestParam("id") Integer id,
                          @RequestParam(name = "page", defaultValue = "0") Integer page,
                          @RequestParam(name = "size", defaultValue = "10") Integer size,
-                         @RequestParam("workRole") Integer workRole) {
+                         @RequestParam(name = "workRole", defaultValue = "0") Integer workRole) {
         PageRequest p = PageRequest.of(page, size);
-        //若id为-1则查询所有，否则根据id查询
-        return id == -1 ? ResultVo.success(personService.findByWorkRole(p, workRole)) : ResultVo.success(personService.findById(id));
+        if (id == -1 && workRole != 0) {
+            Page<Person> people;
+            if (workRole == -1) {
+                people = personService.findAll(p);
+            } else {
+                people = personService.findByWorkRole(p, workRole);
+            }
+            if (people.isEmpty()) {
+                return ResultVo.failure("查询信息为空");
+            } else {
+                return ResultVo.success(people);
+            }
+        } else {
+            Optional<Person> optional = personService.findById(id);
+            if (optional.isPresent()) {
+                return ResultVo.success(optional);
+            } else {
+                return ResultVo.failure("查询信息为空");
+            }
+        }
     }
 
     @PostMapping("takeImg")
@@ -222,6 +241,14 @@ public class PersonController {
                                    @RequestParam("endTime") Long endTime) {
         List<Record> records = recordService.findByPersonIdAndTimeBetween(personId, new Date(beginTime), new Date(endTime));
         return ResultVo.success(records);
+    }
+
+    @GetMapping("logtest")
+    public ResultVo logTest() {
+        logger.info("info test");
+        logger.warn("warn test");
+        logger.error("error test");
+        return ResultVo.success();
     }
 
 }

@@ -52,10 +52,6 @@ public class ProjectDetailImp implements ProjectDetailService {
         Optional<ProjectDetail> projectDetail = projectDetailRepository.findByProjectCodeAndPersonId(projectCode, personId);
         if (projectDetail.isPresent()) return;
 
-        // 把人员、班组、项目之间的关系存到数据库
-        ProjectDetail projectD = new ProjectDetail(projectCode, personId, teamSysNo);
-        projectDetailRepository.save(projectD);
-
         // 给设备发送人员信息
         String url = "person/create";
         Map<String, String> map = new HashMap<>();
@@ -63,7 +59,7 @@ public class ProjectDetailImp implements ProjectDetailService {
 
         // 根据工人类型，发送人员信息给不同的设备
         Integer workRole = person.get().getWorkRole();
-        ResultVo rvo = sendData(personId, workRole, url, map, projectCode);
+        ResultVo rvo = sendData(workRole, url, map, projectCode);
         System.out.println("add person: " + rvo);
 
         String pId = person.get().getPersonId().toString();
@@ -75,21 +71,37 @@ public class ProjectDetailImp implements ProjectDetailService {
             map = new HashMap<>();
             map.put("personId", pId);
             map.put("imgBase64", headImage);
-            sendData(personId, workRole, url, map, projectCode);
+            rvo = sendData(workRole, url, map, projectCode);
+
+            if (rvo != null && rvo.getSuccess()) {
+                // 把人员、班组、项目之间的关系存到数据库
+                ProjectDetail projectD = new ProjectDetail(projectCode, personId, teamSysNo);
+                projectDetailRepository.save(projectD);
+            } else {
+                throw new AttendanceException(ResultError.NETWORK_ERROR);
+            }
+        } else {
+            throw new AttendanceException(ResultError.NETWORK_ERROR);
         }
     }
 
-    private ResultVo sendData(Integer personId, Integer workRole, String url, Map<String, String> map, String projectCode) {
-        ResultVo rvo = null;
-        try {
-            if (workRole == 20) { // 如果是建筑工人，发送给该工人所属项目的设备
-                rvo = HTTPTool.sendDataTo(url, map, projectCode);
-            } else if (workRole == 10){ // 如果是管理工人，发送给全部设备
-                rvo = HTTPTool.sendDataTo(url, map);
-            }
-        } catch (Exception e) {
-            projectDetailRepository.deleteByPersonIdAndProjectCode(personId, projectCode);
-            throw new AttendanceException(ResultError.NETWORK_ERROR);
+    /**
+     * 向人脸识别设备发送信息
+     * @param workRole
+     * @param url
+     * @param map
+     * @param projectCode
+     * @return
+     */
+
+    private ResultVo sendData(Integer workRole, String url, Map<String, String> map, String projectCode) {
+        ResultVo rvo;
+        if (workRole == 20) { // 如果是建筑工人，发送给该工人所属项目的设备
+            rvo = HTTPTool.sendDataTo(url, map, projectCode);
+        } else if (workRole == 10){ // 如果是管理工人，发送给全部设备
+            rvo = HTTPTool.sendDataTo(url, map);
+        } else {
+            throw new AttendanceException(ResultError.PERSON_EMPTY);
         }
         return rvo;
     }

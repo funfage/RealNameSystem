@@ -203,6 +203,7 @@ public class Person {
      * 身份证索引号
      */
     private String idCardIndex;
+
     /**
      * 班组
      */

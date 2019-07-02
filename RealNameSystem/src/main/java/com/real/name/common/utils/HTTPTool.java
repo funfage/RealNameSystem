@@ -130,11 +130,8 @@ public class HTTPTool {
         try {
             response = restTemplate.postForObject(url, entity, String.class);
         } catch (Exception e) {
-            System.out.print("Network error: ");
-            System.out.println(e.getMessage());
             throw new AttendanceException(ResultError.NETWORK_ERROR);
         }
-
         return JSONObject.parseObject(response, ResultVo.class);
     }
 

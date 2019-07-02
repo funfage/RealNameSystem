@@ -36,34 +36,82 @@
         </layout>
     </appender>
 
-    <!--输出到文件-->
+   <!-- &lt;!&ndash;输出到文件&ndash;&gt;
     <appender name="0" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    </appender>
+    </appender>-->
 
     <!-- 定义 ALL 日志的输出方式:-->
     <appender name="FILE_ALL" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <!--日志文件路径，日志文件名称-->
         <File>${LOG_HOME}/all_${LOG_PREFIX}.log</File>
-
         <!-- 设置滚动策略，当天的日志大小超过 ${MAX_FILE_SIZE} 文件大小时候，新的内容写入新的文件， 默认10MB -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-
             <!--日志文件路径，新的 ALL 日志文件名称，“ i ” 是个变量 -->
             <FileNamePattern>${LOG_DIR}/all_${LOG_PREFIX}%i.log</FileNamePattern>
-
             <!-- 配置日志的滚动时间 ，表示只保留最近 10 天的日志-->
             <MaxHistory>${MAX_HISTORY}</MaxHistory>
-
             <!--当天的日志大小超过 ${MAX_FILE_SIZE} 文件大小时候，新的内容写入新的文件， 默认10MB-->
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
-
         </rollingPolicy>
-
         <!-- 输出的日志内容格式化-->
         <layout class="ch.qos.logback.classic.PatternLayout">
             <pattern>${LOG_MSG}</pattern>
+        </layout>
+    </appender>
+
+    <!-- 定义 INFO 日志的输出方式:-->
+    <appender name="FILE_INFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 下面为配置只输出info级别的日志 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <OnMismatch>DENY</OnMismatch>
+            <OnMatch>ACCEPT</OnMatch>
+        </filter>
+        <!--日志文件路径，日志文件名称-->
+        <File>${LOG_HOME}/info_${LOG_PREFIX}.log</File>
+        <!-- 设置滚动策略，当天的日志大小超过 ${MAX_FILE_SIZE} 文件大小时候，新的内容写入新的文件， 默认10MB -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件路径，新的 INFO 日志文件名称，“ i ” 是个变量 -->
+            <FileNamePattern>${LOG_DIR}/info_${LOG_PREFIX}%i.log</FileNamePattern>
+            <!-- 配置日志的滚动时间 ，表示只保留最近 10 天的日志-->
+            <MaxHistory>${MAX_HISTORY}</MaxHistory>
+            <!--当天的日志大小超过 ${MAX_FILE_SIZE} 文件大小时候，新的内容写入新的文件， 默认10MB-->
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <!-- 输出的日志内容格式化-->
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>${LOG_MSG}</Pattern>
+        </layout>
+    </appender>
+
+    <!-- 定义 WARM 日志的输出方式:-->
+    <appender name="FILE_WARN" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 下面为配置只输出warn级别的日志 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>WARN</level>
+            <OnMismatch>DENY</OnMismatch>
+            <OnMatch>ACCEPT</OnMatch>
+        </filter>
+        <!--日志文件路径，日志文件名称-->
+        <File>${LOG_HOME}/warn_${LOG_PREFIX}.log</File>
+        <!-- 设置滚动策略，当天的日志大小超过 ${MAX_FILE_SIZE} 文件大小时候，新的内容写入新的文件， 默认10MB -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件路径，新的 INFO 日志文件名称，“ i ” 是个变量 -->
+            <FileNamePattern>${LOG_DIR}/warn_${LOG_PREFIX}%i.log</FileNamePattern>
+            <!-- 配置日志的滚动时间 ，表示只保留最近 10 天的日志-->
+            <MaxHistory>${MAX_HISTORY}</MaxHistory>
+            <!--当天的日志大小超过 ${MAX_FILE_SIZE} 文件大小时候，新的内容写入新的文件， 默认10MB-->
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <!-- 输出的日志内容格式化-->
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>${LOG_MSG}</Pattern>
         </layout>
     </appender>
 
@@ -77,22 +125,17 @@
         </filter>
         <!--日志文件路径，日志文件名称-->
         <File>${LOG_HOME}/err_${LOG_PREFIX}.log</File>
-
         <!-- 设置滚动策略，当天的日志大小超过 ${MAX_FILE_SIZE} 文件大小时候，新的内容写入新的文件， 默认10MB -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-
             <!--日志文件路径，新的 ERR 日志文件名称，“ i ” 是个变量 -->
             <FileNamePattern>${LOG_DIR}/err_${LOG_PREFIX}%i.log</FileNamePattern>
-
             <!-- 配置日志的滚动时间 ，表示只保留最近 10 天的日志-->
             <MaxHistory>${MAX_HISTORY}</MaxHistory>
-
             <!--当天的日志大小超过 ${MAX_FILE_SIZE} 文件大小时候，新的内容写入新的文件， 默认10MB-->
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
         </rollingPolicy>
-
         <!-- 输出的日志内容格式化-->
         <layout class="ch.qos.logback.classic.PatternLayout">
             <Pattern>${LOG_MSG}</Pattern>
@@ -100,24 +143,23 @@
     </appender>
 
     <!-- additivity 设为false,则logger内容不附加至root ，配置以配置包下的所有类的日志的打印，级别是 ERROR-->
-
     <logger name="org.springframework"     level="ERROR" />
     <logger name="org.apache.commons"      level="ERROR" />
-    <logger name="org.apache.zookeeper"    level="ERROR"  />
-    <logger name="com.alibaba.dubbo.monitor" level="ERROR"/>
-    <logger name="com.alibaba.dubbo.remoting" level="ERROR" />
+    <logger name="com.real.name" level="${LOG_ROOT_LEVEL}" additivity="true">
+        <!-- FILE_ALL 日志输出添加到 logger -->
+        <appender-ref ref="FILE_ALL"/>
+        <!-- FILE_INFO 日志输出添加到 logger -->
+        <appender-ref ref="FILE_INFO"/>
+        <!-- FILE_WARN 日志输出添加到 logger -->
+        <appender-ref ref="FILE_WARN"/>
+        <!-- FILE_ERROR 日志输出添加到 logger -->
+        <appender-ref ref="FILE_ERROR"/>
+    </logger>
 
     <!-- ${LOG_ROOT_LEVEL} 日志级别 -->
     <root level="${LOG_ROOT_LEVEL}">
-
         <!-- 标识这个"${STDOUT}"将会添加到这个logger -->
         <appender-ref ref="${STDOUT}"/>
-
-        <!-- FILE_ALL 日志输出添加到 logger -->
-        <appender-ref ref="FILE_ALL"/>
-
-        <!-- FILE_ERROR 日志输出添加到 logger -->
-        <appender-ref ref="FILE_ERROR"/>
     </root>
 
 </configuration>

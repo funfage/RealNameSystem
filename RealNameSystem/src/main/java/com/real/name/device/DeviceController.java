@@ -64,7 +64,7 @@ public class DeviceController {
             map.put("endTime",endDate);
         }
         map.put("start",pageNumber*pageSize);
-       map.put("end",pageSize);
+        map.put("end",pageSize);
         List<Device> result = deviceDao.getDevice(map);
         Integer allNumber = deviceDao.countDevice(map);
         Map<String,Object> finalRes = new HashMap<>();
@@ -187,8 +187,8 @@ public class DeviceController {
             device.setPass(pass);
         }
         boolean flag = deviceImp.existsDeviceByDeviceId(deviceId);
-        if (flag == false){
-            Device flag2 =deviceImp.save(device);
+        if (!flag){
+            Device flag2 = deviceImp.save(device);
             System.out.println("flag:" +flag2);
             if (flag2 != null) {
                 return  ResultVo.success();

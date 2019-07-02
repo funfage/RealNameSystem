@@ -42,7 +42,7 @@ public class DeviceImp implements DeviceService {
 
     @Override
     public List<Device> findDutouOfmenjin(String projectId, Integer deciceType) {
-        return deviceRepository.findByProjectCodeAndDeviceType(projectId,deciceType);
+        return deviceRepository.findByProjectCodeAndDeviceType(projectId, deciceType);
     }
 
     @Override
