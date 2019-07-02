@@ -15,6 +15,11 @@ public class AttendanceException extends RuntimeException {
         this.message = message;
     }
 
+    public AttendanceException(String message) {
+        this.code = -1;
+        this.message = message;
+    }
+
     public AttendanceException(ResultError error) {
         this(error.getCode(), error.getMessage());
     }

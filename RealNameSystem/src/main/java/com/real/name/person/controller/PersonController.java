@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
-import com.real.name.common.utils.HTTPTool;
 import com.real.name.common.utils.ImageTool;
 import com.real.name.common.utils.NationalUtils;
 import com.real.name.face.entity.Record;
@@ -210,9 +209,8 @@ public class PersonController {
         String url = "face/takeImg";
         Map<String, String> map = new HashMap<>();
         map.put("personId", personId);
-        ResultVo rvo = HTTPTool.sendDataTo(url, map);
-        System.out.println(rvo);
-        return rvo;
+//        ResultVo rvo = HTTPTool.sendDataTo(url, map);
+        return null;
     }
 
     /**
@@ -229,7 +227,8 @@ public class PersonController {
         map.put("personId", person.getPersonId().toString());
 //        map.put("faceId", face.getFaceId().toString());
         map.put("imgBase64", imgBase64);
-        return HTTPTool.sendDataTo(url, map);
+//        return HTTPTool.sendDataTo(url, map);
+        return null;
     }
 
     /**

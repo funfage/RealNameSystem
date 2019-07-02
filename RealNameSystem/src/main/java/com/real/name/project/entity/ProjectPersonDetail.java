@@ -42,6 +42,10 @@ public class ProjectPersonDetail {
      */
     private Integer personStatus;
 
+    /**
+     * 下发转态 0:下发失败 1:下发成功
+     */
+
     public ProjectPersonDetail() {
     }
 

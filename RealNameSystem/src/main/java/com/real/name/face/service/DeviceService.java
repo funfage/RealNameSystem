@@ -39,5 +39,19 @@ public interface DeviceService {
      */
     List<Device> findDutouOfmenjin(String projectId, Integer deciceType);
 
+    /**
+     * 查找某个设备是否存在
+     */
     boolean existsDeviceByDeviceId(String deviceId);
+
+    /**
+     * 根据设备类型查询所有与设备
+     */
+    List<Device> findAllByDeviceType(Integer deviceType);
+
+    /**
+     * 根据项目id和设备类型查找某个设备
+     */
+    List<Device> findByProjectCodeAndDeviceType(String projectId, Integer deciceType);
+
 }

@@ -69,7 +69,8 @@ public class CallBackController {
         Map<String, String> map = new HashMap<>();
         map.put("pass", pass);
         map.put("callbackUrl", callbackUrl);
-        return HTTPTool.sendDataTo(url, map);
+//        return HTTPTool.sendDataTo(url, map);
+        return null;
     }
 
     /**
@@ -92,7 +93,8 @@ public class CallBackController {
         Map<String, String> map = new HashMap<>();
         map.put("pass", pass);
         map.put("url", url);
-        return HTTPTool.sendDataTo(baseURL, map);
+//        return HTTPTool.sendDataTo(baseURL, map);
+        return null;
     }
 
     @PostMapping("attendance")

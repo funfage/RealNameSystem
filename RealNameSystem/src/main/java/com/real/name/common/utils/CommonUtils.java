@@ -14,6 +14,11 @@ public class CommonUtils {
         return  StringUtils.hasText(phone) && phone.length() == 11 && phone.startsWith("1");
     }
 
+    public static boolean isRightIp(String ip) {
+        String pattern = "((?:(?:25[0-5]|2[0-4]\\d|((1\\d{2})|([1-9]?\\d)))\\.){3}(?:25[0-5]|2[0-4]\\d|((1\\d{2})|([1-9]?\\d))))";
+        return ip.matches(pattern);
+    }
+
     /**
      * 将日期转换为yyyy-MM-dd字符串格式
      * @param date

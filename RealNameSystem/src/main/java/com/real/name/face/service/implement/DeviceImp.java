@@ -49,4 +49,14 @@ public class DeviceImp implements DeviceService {
     public boolean existsDeviceByDeviceId(String deviceId) {
         return deviceRepository.existsDeviceByDeviceId(deviceId);
     }
+
+    @Override
+    public List<Device> findAllByDeviceType(Integer deviceType) {
+        return deviceRepository.findAllByDeviceType(deviceType);
+    }
+
+    @Override
+    public List<Device> findByProjectCodeAndDeviceType(String projectId, Integer deciceType) {
+        return deviceRepository.findByProjectCodeAndDeviceType(projectId, deciceType);
+    }
 }

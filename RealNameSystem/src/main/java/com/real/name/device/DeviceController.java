@@ -3,20 +3,22 @@ package com.real.name.device;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
+import com.real.name.common.utils.CommonUtils;
 import com.real.name.face.entity.Device;
+import com.real.name.face.service.DeviceService;
 import com.real.name.face.service.implement.DeviceImp;
 import com.real.name.face.service.repository.DeviceRepository;
 import com.real.name.netty.dao.DeviceDao;
+import com.real.name.project.entity.Project;
+import com.real.name.project.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 设备添加、关联到项目管理
@@ -26,12 +28,11 @@ import java.util.Map;
 @RequestMapping("/device")
 public class DeviceController {
     @Autowired
-    DeviceDao deviceDao;
+    private DeviceDao deviceDao;
     @Autowired
-    DeviceImp deviceImp;
+    private ProjectService projectService;
     @Autowired
-    DeviceRepository deviceRepository;
-
+    private DeviceService deviceService;
     /**
      * 查询设备信息
      * @param startTime
@@ -95,61 +96,23 @@ public class DeviceController {
                                  String phone,
                                  String pass,
                                  String remark){
-        //Map<String,Object> map = new HashMap<>();
-        //不能直接new实体，必须通过hibernate获得实体，否则deviceRepository.save方法会把没有更新的字段变为null
-        Device device = deviceRepository.findDeviceByDeviceId(deviceId);
-        //map.put("projectCode",projectCode);
-        //map.put("deviceId",deviceId);
-        device.setProjectCode(projectCode);
-        //device.setDeviceId(deviceId);
-        if ( factory != null) {
-            //map.put("factory",factory);
-            device.setFactory(factory);
+        if (!StringUtils.hasText(deviceId)) {
+            throw AttendanceException.emptyMessage("设备id");
         }
-        if ( deviceType!= null) {
-           // map.put("deviceType",deviceType);
-            device.setDeviceType(deviceType);
+        //查询设备是否存在
+        Optional<Device> deviceOptional = deviceService.findByDeviceId(deviceId);
+        if (!deviceOptional.isPresent()) {
+            throw new AttendanceException(ResultError.DEVICE_NOT_EXIST);
         }
-        if ( ip!= null) {
-            //map.put("ip",ip);
-            device.setIp(ip);
+        Device selectDevice = deviceOptional.get();
+        //校验参数并设置
+        verifyParam(factory, deviceType,ip, direction, channel, installTime, outPort, phone, remark, projectCode, pass, selectDevice);
+        //更新数据
+        Device device = deviceService.save(selectDevice);
+        if (device == null) {
+            throw new AttendanceException(ResultError.UPDATE_ERROR);
         }
-        if ( direction!= null) {
-            //map.put("direction",direction);
-            device.setDirection(direction);
-        }
-        if ( channel!= null) {
-            //map.put("channel",channel);
-            device.setChannel(channel);
-        }
-        if ( installTime!= null) {
-           // map.put("installTime",new Date(installTime));
-            device.setInstallTime(new Date(installTime));
-        }
-        if ( outPort!= null) {
-           // map.put("outPort",outPort);
-            device.setOutPort(outPort);
-        }
-        if ( phone!= null) {
-            //map.put("phone",phone);
-            device.setPhone(phone);
-        }
-
-        if(pass != null){
-            //map.put("pass",pass);
-            device.setPass(pass);
-        }
-        if(remark != null){
-            //map.put("remark",remark);
-            device.setRemark(remark);
-        }
-        System.out.println("updateTT:" + device);
-        Device flag = deviceRepository.save(device);
-        System.out.println("falg:" +flag);
-        if (flag != null){
-            return ResultVo.success();
-        }else return ResultVo.failure(1,"error");
-
+        return ResultVo.success();
     }
 
     @PostMapping("/adddevice")
@@ -165,34 +128,84 @@ public class DeviceController {
                                  String phone,
                                  String pass,
                                  String remark){
-        Device device =new Device();
-        device.setDeviceId(deviceId);
-        device.setDeviceType(deviceType);
-        device.setFactory(factory);
-        device.setIp(ip);
-        device.setChannel(channel);
-        device.setDirection(direction);
-        device.setInstallTime(new Date(installTime));
-        device.setOutPort(outPort);
-        if (phone != null) {
+        if (!StringUtils.hasText(deviceId)) {
+            throw AttendanceException.emptyMessage("设备id");
+        }
+        //查询设备是否存在
+        Optional<Device> deviceOptional = deviceService.findByDeviceId(deviceId);
+        if (deviceOptional.isPresent()) {
+            throw new AttendanceException(ResultError.DEVICE_EXIST);
+        }
+        Device device = new Device();
+        verifyParam(factory, deviceType,ip, direction, channel, installTime, outPort, phone, remark, projectCode, pass, device);
+        //更新数据
+        Device newDevice = deviceService.save(device);
+        if (newDevice == null) {
+            throw new AttendanceException(ResultError.INSERT_ERROR);
+        }
+        return ResultVo.success();
+    }
+
+    private void verifyParam(String factory, Integer deviceType, String ip, Integer direction, Integer channel,
+                            Long installTime, Integer outPort, String phone, String remark, String projectCode,
+                             String pass, Device device) {
+        if (StringUtils.hasText(factory)) {
+            device.setFactory(factory);
+        }
+        if (deviceType != null) {
+            if (deviceType != 1 && deviceType != 2 && deviceType != 3) {
+                throw AttendanceException.errorMessage("设备类型");
+            }
+            device.setDeviceType(deviceType);
+        }
+        if (StringUtils.hasText(ip)) {
+            if (!CommonUtils.isRightIp(ip)) {
+                throw AttendanceException.errorMessage("ip地址");
+            }
+            device.setIp(ip);
+        }
+        if (direction != null) {
+            if (direction != 1 && direction != 2) {
+                throw AttendanceException.errorMessage("进出方向");
+            }
+            device.setDirection(direction);
+        }
+        if (channel != null) {
+            throw AttendanceException.errorMessage("通道号");
+        }
+        if (installTime != null) {
+            if (installTime < 0 || installTime > System.currentTimeMillis()) {
+                throw AttendanceException.errorMessage("设备安装时间");
+            }
+            device.setInstallTime(new Date(installTime));
+        }
+        if (outPort != null) {
+            if (outPort < 0 && outPort > 65536) {
+                throw AttendanceException.errorMessage("设备安装时间");
+            }
+            device.setOutPort(outPort);
+        }
+        if (StringUtils.hasText(phone)) {
+            if (CommonUtils.isRightPhone(phone)) {
+                throw AttendanceException.errorMessage("电话号码");
+            }
             device.setPhone(phone);
         }
-        if (remark != null) {
+        if (StringUtils.hasText(remark)) {
             device.setRemark(remark);
         }
-        if (projectCode != null) {
+        if (StringUtils.hasText(projectCode)) {
+            //从数据库中查询该项目编码是否存在
+            Optional<Project> projectOptional = projectService.findByProjectCode(projectCode);
+            if (projectOptional.isPresent()) {
+                throw new AttendanceException(ResultError.PROJECT_NOT_EXIST);
+            }
             device.setProjectCode(projectCode);
         }
-        if (pass != null) {
+        if (StringUtils.hasText(pass)) {
             device.setPass(pass);
         }
-        boolean flag = deviceImp.existsDeviceByDeviceId(deviceId);
-        if (!flag){
-            Device flag2 = deviceImp.save(device);
-            System.out.println("flag:" +flag2);
-            if (flag2 != null) {
-                return  ResultVo.success();
-            }else return  ResultVo.failure(1,"error");
-        }else throw new AttendanceException(ResultError.DEVICE_EXIST);
     }
+
+
 }

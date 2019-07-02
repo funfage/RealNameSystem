@@ -48,4 +48,8 @@ public class Device {
 
     public Device() {
     }
+
+    public Device(String deviceId) {
+        this.deviceId = deviceId;
+    }
 }

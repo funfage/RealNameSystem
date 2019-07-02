@@ -2,10 +2,18 @@ package com.real.name.common.utils;
 
 import com.alibaba.fastjson.JSONObject;
 import com.real.name.common.exception.AttendanceException;
+import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.face.entity.Device;
 import com.real.name.face.service.DeviceService;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -19,13 +27,15 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 public class HTTPTool {
+
+    private static Logger logger = LoggerFactory.getLogger(HTTPTool.class);
+
+    //编码格式。发送编码格式统一用UTF-8
+    private static final String ENCODING = "UTF-8";
 
     @Autowired
     private DeviceService deviceService;
@@ -37,23 +47,6 @@ public class HTTPTool {
         httpTool = this;
     }
 
-    /**
-     * 给硬件设备发数据
-     *
-     * @param deviceId 设备id
-     * @param url      请求路径
-     * @param param    请求参数
-     */
-    public static ResultVo sendDataTo(String deviceId, String url, Map<String, String> param) {
-
-        if (StringUtils.hasText(deviceId)) {
-            Optional<Device> device = httpTool.deviceService.findByDeviceId(deviceId);
-            if (device.isPresent() && StringUtils.hasText(device.get().getIp())) {
-                postToDevice(device.get(), url, param);
-            }
-        }
-        return ResultVo.success();
-    }
 
     /**
      * 发送数据给某个项目中的设备
@@ -62,20 +55,59 @@ public class HTTPTool {
      * @param param       请求参数
      * @param projectCode 项目id
      */
-    public static ResultVo sendDataTo(String url, Map<String, String> param, String projectCode) {
-        if (!StringUtils.hasText(url) || !StringUtils.hasText(projectCode)) return null;
-
-        List<Device> devices = httpTool.deviceService.findAll();
-        for (Device device : devices) {
-            if (!StringUtils.hasText(device.getIp()) ||
-                    device.getOutPort() == null ||
-                    device.getOutPort() < 1 ||
-                    !device.getProjectCode().equals(projectCode))
-                continue;
-            postToDevice(device, url, param);
+    public static Map<String, Object> sendDataToFaceDeviceByProjectCode(String url, Map<String, Object> param, String projectCode, boolean method) {
+        Map<String, Object> modelMap = new HashMap<>();
+        List<String> deviceIds = new ArrayList<>();
+        List<Device> devices = httpTool.deviceService.findByProjectCodeAndDeviceType(projectCode, DeviceConstant.faceDeviceType);
+        if (devices != null && devices.size() > 0) {
+            for (Device device : devices) {
+                if (!StringUtils.hasText(device.getIp()) || device.getOutPort() == null || device.getOutPort() < 1) {
+                    continue;
+                }
+                deviceIds.add(device.getDeviceId());
+                String response = (method == DeviceConstant.postMethod ? postToDevice(device, url, param) : getToDevce(device, url, param));
+                if (!StringUtils.hasText(response)) {
+                    logger.error("获取设备响应信息：{}失败", response);
+                    throw new AttendanceException("获取设备响应信息失败");
+                }
+                modelMap.put(device.getDeviceId(), response);
+            }
+            //将所查询的所有设备id放入集合
+            modelMap.put("deviceIds", deviceIds);
+            return modelMap;
+        }else{
+            throw new AttendanceException("该项目未绑定设备");
         }
-        return ResultVo.success();
     }
+
+    /**
+     * 发送数据给某个项目中的设备
+     *
+     * @param url         请求路径
+     * @param param       请求参数
+     * @param deviceId 项目id
+     */
+    public static Map<String, Object> sendDataToFaceDeviceByDeviceId(String url, Map<String, Object> param, String deviceId, boolean method) {
+        Map<String, Object> modelMap = new HashMap<>();
+        Optional<Device> optionalDevice = httpTool.deviceService.findByDeviceId(deviceId);
+        if (optionalDevice.isPresent()) {
+            Device device = optionalDevice.get();
+            if (StringUtils.hasText(device.getIp()) && device.getOutPort() != null && device.getOutPort() > 0 && device.getOutPort() < 65536) {
+                String response = (method == DeviceConstant.postMethod ? postToDevice(device, url, param) : getToDevce(device, url, param));
+                if (!StringUtils.hasText(response)) {
+                    logger.error("获取设备响应信息：{}失败", response);
+                    throw new AttendanceException("获取设备响应信息失败");
+                }
+                modelMap.put(device.getDeviceId(), response);
+                return modelMap;
+            }else{
+                throw new AttendanceException("设备id为:" + deviceId + "的设备的ip地址或端口不合法");
+            }
+        }else{
+            throw new AttendanceException("设备id为:" + deviceId + "的设备未添加");
+        }
+    }
+
 
     /**
      * 给所有硬件设备发数据
@@ -83,26 +115,42 @@ public class HTTPTool {
      * @param url   请求路径
      * @param param 请求参数
      */
-    public static ResultVo sendDataTo(String url, Map<String, String> param) {
-
-        if (!StringUtils.hasText(url)) return null;
-
-        List<Device> devices = httpTool.deviceService.findAll();
-        for (Device device : devices) {
-            if (!StringUtils.hasText(device.getIp()) || device.getOutPort() == null || device.getOutPort() < 1)
-                continue;
-            postToDevice(device, url, param);
+    public static Map<String, Object> sendDataToFaceDevice(String url, Map<String, Object> param, boolean method) {
+        Map<String, Object> modelMap = new HashMap<>();
+        List<String> deviceIds = new ArrayList<>();
+        //查询出所有读头设备
+        List<Device> devices = httpTool.deviceService.findAllByDeviceType(DeviceConstant.faceDeviceType);
+        if (devices != null && devices.size() > 0) {
+            for (Device device : devices) {
+                if (!StringUtils.hasText(device.getIp()) || device.getOutPort() == null || device.getOutPort() < 1) {
+                    continue;
+                }
+                deviceIds.add(device.getDeviceId());
+                String response = (method == DeviceConstant.postMethod ? postToDevice(device, url, param) : getToDevce(device, url, param));
+                if (!StringUtils.hasText(response)) {
+                    logger.error("获取设备响应信息：{}失败", response);
+                    throw new AttendanceException("获取设备响应信息失败");
+                }
+                modelMap.put(device.getDeviceId(), response);
+            }
+            //将所查询的所有设备id放入集合
+            modelMap.put("deviceIds", deviceIds);
+            return modelMap;
+        }else{
+            throw new AttendanceException("没有上线的设备");
         }
-        return ResultVo.success();
     }
 
-    private static void postToDevice(Device device, String url, Map<String, String> param) {
-        if (device == null) return;
+    private static String postToDevice(Device device, String url, Map<String, Object> param) {
         if (param == null) param = new HashMap<>();
-
         param.put("pass", device.getPass());
-        ResultVo resultVo = postUrlForParam("http://" + device.getIp() + ":" + device.getOutPort() + "/" + url, param);
-        System.out.println("Send data to device result: " + resultVo);
+        return postUrlForParam("http://" + device.getIp() + ":" + device.getOutPort() + "/" + url, param);
+    }
+
+    private static String getToDevce(Device device, String url, Map<String, Object> param) {
+        if (param == null) param = new HashMap<>();
+        param.put("pass", device.getPass());
+        return getUrlForParam("http://" + device.getIp() + ":" + device.getOutPort() + "/" + url, param);
     }
 
     /**
@@ -112,27 +160,69 @@ public class HTTPTool {
      * @param param 参数
      * @return POST请求的结果，Json格式
      */
-    public static ResultVo postUrlForParam(String url, Map<String, String> param) {
+    public static String postUrlForParam(String url, Map<String, Object> param) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(6000);// 设置超时
-        requestFactory.setReadTimeout(6000);
+        requestFactory.setConnectTimeout(10000);// 设置超时
+        requestFactory.setReadTimeout(10000);
 
         RestTemplate restTemplate = new RestTemplate(requestFactory);
 
         MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
         if (param != null) {
-            for (Map.Entry<String, String> entry : param.entrySet()) {
+            for (Map.Entry<String, Object> entry : param.entrySet()) {
                 params.add(entry.getKey(), entry.getValue());
             }
         }
         HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(params);
-        String response;
         try {
-            response = restTemplate.postForObject(url, entity, String.class);
+            //获取响应的内容
+            return restTemplate.postForObject(url, entity, String.class);
         } catch (Exception e) {
-            throw new AttendanceException(ResultError.NETWORK_ERROR);
+            logger.error("postUrlForParam error e:{}", e);
+            throw new AttendanceException("POST请求" + ResultError.NETWORK_ERROR.getMessage());
         }
-        return JSONObject.parseObject(response, ResultVo.class);
+    }
+
+    /**
+     * 基于HttpClient 4.5的通用GET方法
+     *
+     * @param url       提交的URL
+     * @return 提交响应
+     */
+    public static String getUrlForParam(String url, Map<String, Object> param) throws RuntimeException {
+        try {
+            url += "?";
+            String data = "";
+            for (String key : param.keySet()) {
+                data += key + "=" + param.get(key) + "&";
+            }
+            //将参数拼接到URL
+            url += data.substring(0, data.length() - 1);
+            CloseableHttpClient client = HttpClients.createDefault();
+            String responseText = "";
+            CloseableHttpResponse response = null;
+            try {
+                HttpGet get = new HttpGet(url);
+                response = client.execute(get);
+                org.apache.http.HttpEntity entity = response.getEntity();
+                if (entity != null) {
+                    responseText = EntityUtils.toString(entity, ENCODING);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            } finally {
+                try {
+                    if (response != null)
+                        response.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            return responseText;
+        } catch (RuntimeException e) {
+            logger.error("getUrlForParam error e:{}", e);
+            throw new AttendanceException("GET请求" + ResultError.NETWORK_ERROR.getMessage());
+        }
     }
 
     public static void main(String[] args) {
@@ -140,7 +230,7 @@ public class HTTPTool {
         m.put("username", "guest");
         m.put("password", "123456");
         try {
-            ResultVo resultVo = postUrlForParam("http://139.9.47.19:9901/attendance/login", m);
+//            ResultVo resultVo = postUrlForParam("http://139.9.47.19:9901/attendance/login", m);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

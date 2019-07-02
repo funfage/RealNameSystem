@@ -117,7 +117,10 @@ public class GroupController {
                 return ResultVo.failure(ResultError.NATIONAL_ERROR.getCode(),ResultError.NATIONAL_ERROR.getMessage() + jsonObject.getString("message"));
             }
             //修改本地班组信息
-            groupService.updateByTeamSysNo(selectWorkerGroup);
+            WorkerGroup updateGroup = groupService.updateByTeamSysNo(selectWorkerGroup);
+            if (updateGroup == null) {
+                throw new AttendanceException(ResultError.UPDATE_ERROR);
+            }
             return ResultVo.success();
         } catch (Exception e) {
             e.printStackTrace();
