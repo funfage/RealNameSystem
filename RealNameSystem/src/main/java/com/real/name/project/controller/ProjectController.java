@@ -6,17 +6,16 @@ import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.NationalUtils;
-import com.real.name.face.entity.Record;
-import com.real.name.face.service.RecordService;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.group.service.GroupService;
-//import com.real.name.person.entity.Person2;
+import com.real.name.person.entity.Person;
+import com.real.name.person.service.PersonService;
 import com.real.name.project.entity.Project;
+import com.real.name.project.entity.ProjectDetail;
+import com.real.name.project.service.IssueDetailService;
 import com.real.name.project.service.ProjectDetailService;
 import com.real.name.project.service.ProjectPersonDetailService;
 import com.real.name.project.service.ProjectService;
-import io.netty.util.internal.StringUtil;
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +24,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+//import com.real.name.person.entity.Person2;
 
 
 @RestController
@@ -37,6 +41,9 @@ public class ProjectController {
     private ProjectService projectService;
 
     @Autowired
+    private PersonService personService;
+
+    @Autowired
     private GroupService groupService;
 
     @Autowired
@@ -46,7 +53,7 @@ public class ProjectController {
     private ProjectPersonDetailService projectPersonDetailService;
 
     @Autowired
-    private RecordService recordService;
+    private IssueDetailService issueDetailService;
 
     /**
      * 本地创建项目
@@ -152,23 +159,47 @@ public class ProjectController {
     public ResultVo addPerson(@RequestParam(value = "persons[]") Integer[] persons,
                               @RequestParam("projectCode") String projectCode,
                               @RequestParam("teamSysNo") Integer teamSysNo) {
-        // 判断是存在该项目
+        // 判断是否存在该项目
         Optional<Project> project = projectService.findByProjectCode(projectCode);
         if (!project.isPresent()) {
             throw new AttendanceException(ResultError.PROJECT_NOT_EXIST);
         }
-
         // 判断是否存在该班组
         Optional<WorkerGroup> group = groupService.findById(teamSysNo);
         if (!group.isPresent()) {
             throw new AttendanceException(ResultError.GROUP_NOT_EXIST);
         }
-
+       /* // 判断该班组中，是否已经添加了该人员
+        Optional<ProjectDetail> projectDetail1 = projectDetailService.findByTeamSysNoAndPersonId(teamSysNo, personId);
+        // 判断该项目中，是否已经添加了该人员
+        Optional<ProjectDetail> projectDetailOp = projectDetailService.findByProjectCodeAndPersonId(projectCode, personId);*/
         // 添加人员到项目中
         for (Integer personId : persons) {
-            projectDetailService.addPersonToProject(projectCode, teamSysNo, personId);
+            // 判断是否有该人员
+            Optional<Person> personOptional = personService.findById(personId);
+            if (!personOptional.isPresent()){
+                continue;
+            }
+            Optional<ProjectDetail> detailOptional = projectDetailService.findByProjectCodeAndPersonIdAndTeamSysNo(projectCode, personId, teamSysNo);
+            //如果为空则添加项目人员信息关联
+            if (!detailOptional.isPresent()) {
+                ProjectDetail save = projectDetailService.save(new ProjectDetail(projectCode, personId, teamSysNo));
+                if (save == null) {
+                    throw new AttendanceException(ResultError.INSERT_ERROR);
+                }
+            }
+            //下发人员信息到设备
+            projectDetailService.addPersonToDevice(projectCode, personId, personOptional.get());
         }
-        return ResultVo.success();
+        //从数据库中查询下发信息
+        List<Integer> issueSuccessId = issueDetailService.findIdByIssueStatus(1, 1);
+        List<Integer> issuePersonFailId = issueDetailService.findIdByIssuePersonStatus(1);
+        List<Integer> issueImageFailId = issueDetailService.findIdByIssueImageStatus(1);
+        Map<String, List<Integer>> map = new HashMap<>();
+        map.put("issueSuccessId", issueSuccessId);
+        map.put("issuePersonFailId", issuePersonFailId);
+        map.put("issueImageFailId", issueImageFailId);
+        return ResultVo.success(map);
     }
 
     /**

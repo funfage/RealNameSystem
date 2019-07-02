@@ -11,6 +11,9 @@ import com.real.name.face.service.repository.DeviceRepository;
 import com.real.name.netty.dao.DeviceDao;
 import com.real.name.project.entity.Project;
 import com.real.name.project.service.ProjectService;
+import io.netty.util.internal.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +30,8 @@ import java.util.*;
 @RestController
 @RequestMapping("/device")
 public class DeviceController {
+    private Logger logger = LoggerFactory.getLogger(DeviceController.class);
+
     @Autowired
     private DeviceDao deviceDao;
     @Autowired
@@ -106,7 +111,7 @@ public class DeviceController {
         }
         Device selectDevice = deviceOptional.get();
         //校验参数并设置
-        verifyParam(factory, deviceType,ip, direction, channel, installTime, outPort, phone, remark, projectCode, pass, selectDevice);
+        verifyParam(factory, deviceType, ip, direction, channel, installTime, outPort, phone, remark, projectCode, pass, selectDevice);
         //更新数据
         Device device = deviceService.save(selectDevice);
         if (device == null) {
@@ -122,7 +127,7 @@ public class DeviceController {
                                  @RequestParam("ip")String ip,
                                  @RequestParam("direction")Integer direction,
                                  @RequestParam("channel")Integer channel,
-                                 @RequestParam("installTime")long installTime,
+                                 @RequestParam("installTime")Long installTime,
                                  @RequestParam("outPort")Integer outPort,
                                  String projectCode,
                                  String phone,
@@ -130,6 +135,20 @@ public class DeviceController {
                                  String remark){
         if (!StringUtils.hasText(deviceId)) {
             throw AttendanceException.emptyMessage("设备id");
+        } else if (deviceType == null) {
+            throw AttendanceException.emptyMessage("设备类型");
+        } else if (!StringUtils.hasText(factory)) {
+            throw AttendanceException.emptyMessage("厂商");
+        } else if (!StringUtils.hasText(ip)) {
+            throw AttendanceException.emptyMessage("ip地址");
+        } else if (direction == null) {
+            throw AttendanceException.emptyMessage("方向");
+        } else if (installTime == null) {
+            throw AttendanceException.emptyMessage("安装时间");
+        } else if (channel == null) {
+            throw AttendanceException.emptyMessage("通道号");
+        } else if (outPort == null) {
+            throw AttendanceException.emptyMessage("外部端口");
         }
         //查询设备是否存在
         Optional<Device> deviceOptional = deviceService.findByDeviceId(deviceId);
@@ -137,8 +156,8 @@ public class DeviceController {
             throw new AttendanceException(ResultError.DEVICE_EXIST);
         }
         Device device = new Device();
-        verifyParam(factory, deviceType,ip, direction, channel, installTime, outPort, phone, remark, projectCode, pass, device);
-        //更新数据
+        device.setDeviceId(deviceId);
+        verifyParam(factory, deviceType, ip, direction, channel, installTime, outPort, phone, remark, projectCode, pass, device);
         Device newDevice = deviceService.save(device);
         if (newDevice == null) {
             throw new AttendanceException(ResultError.INSERT_ERROR);
@@ -171,9 +190,11 @@ public class DeviceController {
             device.setDirection(direction);
         }
         if (channel != null) {
-            throw AttendanceException.errorMessage("通道号");
+            device.setChannel(channel);
         }
         if (installTime != null) {
+            System.out.println(System.currentTimeMillis());
+            System.out.println(installTime > System.currentTimeMillis());
             if (installTime < 0 || installTime > System.currentTimeMillis()) {
                 throw AttendanceException.errorMessage("设备安装时间");
             }
@@ -186,7 +207,7 @@ public class DeviceController {
             device.setOutPort(outPort);
         }
         if (StringUtils.hasText(phone)) {
-            if (CommonUtils.isRightPhone(phone)) {
+            if (!CommonUtils.isRightPhone(phone)) {
                 throw AttendanceException.errorMessage("电话号码");
             }
             device.setPhone(phone);
@@ -197,7 +218,7 @@ public class DeviceController {
         if (StringUtils.hasText(projectCode)) {
             //从数据库中查询该项目编码是否存在
             Optional<Project> projectOptional = projectService.findByProjectCode(projectCode);
-            if (projectOptional.isPresent()) {
+            if (!projectOptional.isPresent()) {
                 throw new AttendanceException(ResultError.PROJECT_NOT_EXIST);
             }
             device.setProjectCode(projectCode);

@@ -11,7 +11,7 @@ public class CommonUtils {
     private static SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
     public static boolean isRightPhone(String phone) {
-        return  StringUtils.hasText(phone) && phone.length() == 11 && phone.startsWith("1");
+        return StringUtils.hasText(phone) && phone.length() == 11 && phone.startsWith("1");
     }
 
     public static boolean isRightIp(String ip) {

@@ -11,16 +11,22 @@ public class DeviceConstant {
     //人脸识别设备
     public final static Integer faceDeviceType = 3;
 
-    //下发成功标识
-    public final static Integer issueSuccess = 1;
+    //人员下发失败标识
+    public final static Integer issuePersonFailure = 0;
 
-    //下发失败标识
-    public final static Integer issueFailure = 0;
+    //人员下发成功标识
+    public final static Integer issuePersonSuccess = 1;
+
+    //照片下发失败标识
+    public final static Integer issueImageFailure = 0;
+
+    //照片下发成功标识
+    public final static Integer issueImageSuccess = 1;
 
     //get方法
-    public final static boolean getMethod = true;
+    public final static Integer getMethod = 0;
 
     //post方法
-    public final static boolean postMethod = true;
+    public final static Integer postMethod = 1;
 
 }

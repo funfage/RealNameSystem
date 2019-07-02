@@ -40,26 +40,21 @@ public class ProjectDetailImp implements ProjectDetailService {
     private IssueDetailRepository issueDetailRepository;
 
 
+    @Override
+    public ProjectDetail save(ProjectDetail projectDetail) {
+        return projectDetailRepository.save(projectDetail);
+    }
+
     @SuppressWarnings("unchecked")
     @Override
-    public void addPersonToProject(String projectCode, Integer teamSysNo, Integer personId) {
-        // 判断是否有该人员
-        Optional<Person> personOptional = personService.findById(personId);
-        if (!personOptional.isPresent()) return;
-        // 判断该班组中，是否已经添加了该人员
-        Optional<ProjectDetail> projectDetail1 = projectDetailRepository.findByTeamSysNoAndPersonId(teamSysNo, personId);
-        if (projectDetail1.isPresent()) return;
-        // 判断该项目中，是否已经添加了该人员
-        Optional<ProjectDetail> projectDetailOp = projectDetailRepository.findByProjectCodeAndPersonId(projectCode, personId);
-        if (projectDetailOp.isPresent()) return;
-        Person person = personOptional.get();
-
+    public void addPersonToDevice(String projectCode, Integer personId, Person person) {
         // 给设备发送人员信息
         String url = "person/create";
         Map<String, Object> map = new HashMap<>();
-        map.put("person", personOptional.get().toJSON());
+        map.put("person", person.toJSON());
         // 根据工人类型，发送人员信息给不同的设备
         Integer workRole = person.getWorkRole();
+        //根据员工类型下发到设备
         Map<String, Object> personMap = sendPersonInfo(workRole, url, map, projectCode);
         //给下发成功的设备添加人员照片,否则查询设备是否有该人员的信息,若无则设置下发失败的标识
         //获取所有下发设备的id
@@ -68,27 +63,31 @@ public class ProjectDetailImp implements ProjectDetailService {
         for (String deviceId : deviceIds) {
             Boolean isSuccess;
             Device device = new Device(deviceId);
-            IssueDetail issueDetail = new IssueDetail(personId, device);
-            //获取该设备的返回信息
+            //创建下发信息
+            IssueDetail issueDetail = new IssueDetail(personId, device, projectCode);
+            //获取指定设备的返回信息
             String response = (String) personMap.get(deviceId);
-            if (!StringUtils.hasText(response)) {
+            if (!StringUtils.hasText(response)) { //接收参数为空
                 logger.error("获取设备响应信息：{}失败", response);
                 //查询设备信息是否有人员信息
-                Map<String, Object> queryMap = sendQuery(person.getPersonId().toString(), 1, 0, deviceId);
+                Map<String, Object> queryMap = sendQueryPerson(person.getPersonId().toString(), 1, 0, deviceId);
                 String queryResponse = (String) queryMap.get(deviceId);
                 if (!StringUtils.hasText(queryResponse)) {
                     logger.error("获取设备响应queryResponse信息：{}失败", response);
-                    //下发失败,设置失败标识
-                    issueDetail.setIssueStatus(DeviceConstant.issueFailure);
-                }else{
+                    //人员下发失败,设置失败标识
+                    issueDetail.setIssuePersonStatus(DeviceConstant.issuePersonFailure);
+                } else {
                     FaceResult queryResult = JSONObject.parseObject(queryResponse, FaceResult.class);
                     isSuccess = queryResult.getSuccess();
                     if(isSuccess != null && isSuccess){
-                        //下发成功,设置成功标识
-                        issueDetail.setIssueStatus(DeviceConstant.issueSuccess);
+                        //人员下发成功,设置成功标识
+                        issueDetail.setIssuePersonStatus(DeviceConstant.issuePersonSuccess);
+                        //下发照片
+                        issueImage(workRole, projectCode, deviceId, person, issueDetail);
                     }else{
-                        //下发失败,设置失败标识
-                        issueDetail.setIssueStatus(DeviceConstant.issueFailure);
+                        //人员下发失败,设置失败标识
+                        issueDetail.setIssuePersonStatus(DeviceConstant.issuePersonFailure);
+                        issueDetail.setIssueImageStatus(DeviceConstant.issueImageFailure);
                     }
                 }
                 //保存到数据库
@@ -97,51 +96,35 @@ public class ProjectDetailImp implements ProjectDetailService {
             }
             FaceResult personResult = JSONObject.parseObject(response, FaceResult.class);
             isSuccess = personResult.getSuccess();
-            if (isSuccess != null && isSuccess) {//下发成功
-                //下发人员照片
-                Map<String, Object> imgMap = sendHeadImg(workRole, person.getPersonId().toString(), person.getHeadImage(), projectCode);
-                String imgResponse = (String) imgMap.get(deviceId);
-                FaceResult imgResult = JSONObject.parseObject(imgResponse, FaceResult.class);
-                isSuccess = imgResult.getSuccess();
-                if(isSuccess != null && isSuccess){
-                    //下发失败,设置失败标识
-                    issueDetail.setIssueStatus(DeviceConstant.issueSuccess);
-                }else{
-                    //下发成功,设置成功标识
-                    issueDetail.setIssueStatus(DeviceConstant.issueFailure);
-                }
-                issueDetailRepository.save(issueDetail);
-            }else{//下发失败
+            if (isSuccess != null && isSuccess) { //下发成功
+                //人员下发成功,设置成功标识
+                issueDetail.setIssuePersonStatus(DeviceConstant.issuePersonSuccess);
+                //下发照片
+                issueImage(workRole, projectCode, deviceId, person, issueDetail);
+            } else {  //下发失败
                 //查询设备信息是否有人员信息
-                Map<String, Object> queryMap = sendQuery(person.getPersonId().toString(), 1, 0, deviceId);
+                Map<String, Object> queryMap = sendQueryPerson(person.getPersonId().toString(), 1, 0, deviceId);
                 String queryResponse = (String) queryMap.get(deviceId);
                 if (!StringUtils.hasText(queryResponse)) {
                     logger.error("获取设备响应queryResponse信息：{}失败", response);
-                    //下发失败,设置失败标识
-                    issueDetail.setIssueStatus(DeviceConstant.issueFailure);
-                }else{
+                    //人员下发失败,设置失败标识
+                    issueDetail.setIssuePersonStatus(DeviceConstant.issuePersonFailure);
+                } else {
                     FaceResult queryResult = JSONObject.parseObject(queryResponse, FaceResult.class);
                     isSuccess = queryResult.getSuccess();
                     if(isSuccess != null && isSuccess){
-                        //下发成功,设置成功标识
-                        issueDetail.setIssueStatus(DeviceConstant.issueSuccess);
+                        //人员下发成功,设置成功标识
+                        issueDetail.setIssuePersonStatus(DeviceConstant.issuePersonSuccess);
+                        //下发照片
+                        issueImage(workRole, projectCode, deviceId, person, issueDetail);
                     }else{
-                        //下发失败,设置失败标识
-                        issueDetail.setIssueStatus(DeviceConstant.issueFailure);
+                        //人员下发失败,设置失败标识
+                        issueDetail.setIssuePersonStatus(DeviceConstant.issuePersonFailure);
+                        issueDetail.setIssueImageStatus(DeviceConstant.issueImageFailure);
                     }
                 }
                 issueDetailRepository.save(issueDetail);
             }
-        }
-        //将项目,人员,班组信息绑定并保存
-        ProjectDetail projectDetail = new ProjectDetail(projectCode, personId, teamSysNo);
-        try {
-            ProjectDetail save = projectDetailRepository.save(projectDetail);
-            if (save == null) {
-                throw new AttendanceException("添加人员到项目失败");
-            }
-        } catch (Exception e) {
-            logger.error("添加人员到项目失败, e:{}", e);
         }
     }
 
@@ -168,6 +151,49 @@ public class ProjectDetailImp implements ProjectDetailService {
         }
         return detail.get().getProject();
     }
+
+    @Override
+    public Optional<ProjectDetail> findByTeamSysNoAndPersonId(Integer teamSysNo, Integer personId) {
+        return projectDetailRepository.findByTeamSysNoAndPersonId(teamSysNo, personId);
+    }
+
+    @Override
+    public Optional<ProjectDetail> findByProjectCodeAndPersonId(String projectId, Integer personId) {
+        return projectDetailRepository.findByProjectCodeAndPersonId(projectId, personId);
+    }
+
+    @Override
+    public Optional<ProjectDetail> findByProjectCodeAndPersonIdAndTeamSysNo(String projectId, Integer personId, Integer teamSysNo) {
+        return projectDetailRepository.findByProjectCodeAndPersonIdAndTeamSysNo(projectId, personId, teamSysNo);
+    }
+
+    /**
+     * 下发照片
+     * @param workRole
+     * @param projectCode
+     * @param deviceId
+     * @param person
+     * @param issueDetail
+     * @return
+     */
+    private Boolean issueImage(Integer workRole, String projectCode, String deviceId, Person person, IssueDetail issueDetail) {
+        //下发人员照片
+        Map<String, Object> imgMap = sendHeadImg(workRole, person.getPersonId().toString(), person.getHeadImage(), projectCode);
+        String imgResponse = (String) imgMap.get(deviceId);
+        FaceResult imgResult = JSONObject.parseObject(imgResponse, FaceResult.class);
+        Boolean isSuccess = imgResult.getSuccess();
+        if(isSuccess != null && isSuccess){
+            //照片下发成功,设置成功标识
+            issueDetail.setIssueImageStatus(DeviceConstant.issueImageSuccess);
+        }else{
+            //照片下发失败,设置失败标识
+            issueDetail.setIssueImageStatus(DeviceConstant.issueImageFailure);
+        }
+        issueDetailRepository.save(issueDetail);
+        return isSuccess;
+    }
+
+
 
     /**
      * 向人脸识别设备发送信息
@@ -210,7 +236,7 @@ public class ProjectDetailImp implements ProjectDetailService {
      * @param size 每页最大数量
      * @param index 页码
      */
-    private Map<String, Object> sendQuery(String personId, Integer size, Integer index, String deviceId) {
+    private Map<String, Object> sendQueryPerson(String personId, Integer size, Integer index, String deviceId) {
         String url = "/person/findByPage";
         Map<String, Object> map = new HashMap<>();
         map.put("personId", personId);
@@ -218,5 +244,7 @@ public class ProjectDetailImp implements ProjectDetailService {
         map.put("index", index);
         return HTTPTool.sendDataToFaceDeviceByDeviceId(url, map, deviceId, DeviceConstant.getMethod);
     }
+
+
 
 }

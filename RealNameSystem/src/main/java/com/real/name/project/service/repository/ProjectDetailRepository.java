@@ -16,4 +16,6 @@ public interface ProjectDetailRepository extends JpaRepository<ProjectDetail, In
     Page<ProjectDetail> findByProjectCode(String projectId, Pageable pageable);
 
     Optional<ProjectDetail> findByPersonId(Integer personId);
+
+    Optional<ProjectDetail> findByProjectCodeAndPersonIdAndTeamSysNo(String projectId, Integer personId, Integer teamSysNo);
 }

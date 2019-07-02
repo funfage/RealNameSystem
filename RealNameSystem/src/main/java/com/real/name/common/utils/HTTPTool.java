@@ -1,10 +1,8 @@
 package com.real.name.common.utils;
 
-import com.alibaba.fastjson.JSONObject;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.result.ResultError;
-import com.real.name.common.result.ResultVo;
 import com.real.name.face.entity.Device;
 import com.real.name.face.service.DeviceService;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -55,7 +53,7 @@ public class HTTPTool {
      * @param param       请求参数
      * @param projectCode 项目id
      */
-    public static Map<String, Object> sendDataToFaceDeviceByProjectCode(String url, Map<String, Object> param, String projectCode, boolean method) {
+    public static Map<String, Object> sendDataToFaceDeviceByProjectCode(String url, Map<String, Object> param, String projectCode, Integer method) {
         Map<String, Object> modelMap = new HashMap<>();
         List<String> deviceIds = new ArrayList<>();
         List<Device> devices = httpTool.deviceService.findByProjectCodeAndDeviceType(projectCode, DeviceConstant.faceDeviceType);
@@ -83,13 +81,13 @@ public class HTTPTool {
      * @param param       请求参数
      * @param deviceId 项目id
      */
-    public static Map<String, Object> sendDataToFaceDeviceByDeviceId(String url, Map<String, Object> param, String deviceId, boolean method) {
+    public static Map<String, Object> sendDataToFaceDeviceByDeviceId(String url, Map<String, Object> param, String deviceId, Integer method) {
         Map<String, Object> modelMap = new HashMap<>();
         Optional<Device> optionalDevice = httpTool.deviceService.findByDeviceId(deviceId);
         if (optionalDevice.isPresent()) {
             Device device = optionalDevice.get();
             if (StringUtils.hasText(device.getIp()) && device.getOutPort() != null && device.getOutPort() > 0 && device.getOutPort() < 65536) {
-                String response = (method == DeviceConstant.postMethod ? postToDevice(device, url, param) : getToDevce(device, url, param));
+                String response = ((method == DeviceConstant.postMethod) ? postToDevice(device, url, param) : getToDevce(device, url, param));
                 modelMap.put(device.getDeviceId(), response);
                 return modelMap;
             }else{
@@ -107,7 +105,7 @@ public class HTTPTool {
      * @param url   请求路径
      * @param param 请求参数
      */
-    public static Map<String, Object> sendDataToFaceDevice(String url, Map<String, Object> param, boolean method) {
+    public static Map<String, Object> sendDataToFaceDevice(String url, Map<String, Object> param, Integer method) {
         Map<String, Object> modelMap = new HashMap<>();
         List<String> deviceIds = new ArrayList<>();
         //查询出所有读头设备
@@ -118,7 +116,7 @@ public class HTTPTool {
                     continue;
                 }
                 deviceIds.add(device.getDeviceId());
-                String response = (method == DeviceConstant.postMethod ? postToDevice(device, url, param) : getToDevce(device, url, param));
+                String response = ((method == DeviceConstant.postMethod) ? postToDevice(device, url, param) : getToDevce(device, url, param));
                 modelMap.put(device.getDeviceId(), response);
             }
             //将所查询的所有设备id放入集合

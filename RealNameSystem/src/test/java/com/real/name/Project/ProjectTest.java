@@ -3,6 +3,7 @@ package com.real.name.Project;
 import com.real.name.BaseTest;
 import com.real.name.project.entity.Project;
 import com.real.name.project.service.ProjectService;
+import com.real.name.project.service.repository.ProjectDetailRepository;
 import com.real.name.project.service.repository.ProjectRepository;
 import org.junit.Assert;
 import org.junit.Test;
@@ -44,5 +45,7 @@ public class ProjectTest extends BaseTest {
         }*/
         System.out.println(all.get());
     }
+
+
 
 }
