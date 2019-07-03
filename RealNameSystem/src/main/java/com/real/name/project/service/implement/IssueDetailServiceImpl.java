@@ -4,9 +4,10 @@ import com.real.name.project.entity.IssueDetail;
 import com.real.name.project.service.IssueDetailService;
 import com.real.name.project.service.repository.IssueDetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+@Service
 public class IssueDetailServiceImpl implements IssueDetailService {
 
     @Autowired

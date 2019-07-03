@@ -1,8 +1,10 @@
 package com.real.name.project.service;
 
 import com.real.name.project.entity.IssueDetail;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
+
 
 public interface IssueDetailService {
 

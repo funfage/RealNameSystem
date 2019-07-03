@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Date;
 import java.util.Optional;
 
 @Service
@@ -38,6 +39,9 @@ public class ProjectImp implements ProjectService {
         }
         //为项目生成一个唯一的projectCode
         project.setProjectCode(CommonUtils.getUniqueString(32));
+        //此处日期可能要修改
+        project.setStartDate(new Date(25));
+        project.setCompleteDate(new Date(100000));
         return projectRepository.save(project);
     }
 

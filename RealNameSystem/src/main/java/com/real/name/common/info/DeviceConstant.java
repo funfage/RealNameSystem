@@ -29,4 +29,7 @@ public class DeviceConstant {
     //post方法
     public final static Integer postMethod = 1;
 
+    //连接超时
+    public final static String connectTimeOut = "connectTimeOut";
+
 }

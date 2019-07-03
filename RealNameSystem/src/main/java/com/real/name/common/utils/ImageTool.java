@@ -1,5 +1,7 @@
 package com.real.name.common.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
@@ -7,6 +9,8 @@ import sun.misc.BASE64Encoder;
 import java.io.*;
 
 public class ImageTool {
+
+    private static Logger logger = LoggerFactory.getLogger(ImageTool.class);
 
     public static final String imageBase = "/root/headImage/";
 
@@ -29,7 +33,7 @@ public class ImageTool {
             BASE64Encoder encoder = new BASE64Encoder();
             return encoder.encode(data);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("getImageStr error e:{}", e);
             return null;
         }finally {
             try {
@@ -37,7 +41,7 @@ public class ImageTool {
                     inputStream.close();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("getImageStr error e:{}", e);
             }
         }
     }
@@ -69,6 +73,7 @@ public class ImageTool {
             out.flush();
             return true;
         } catch (Exception e) {
+            logger.error("generateImage error e:{}", e);
             return false;
         }finally{
             try {
@@ -76,7 +81,7 @@ public class ImageTool {
                     out.close();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("generateImage error e:{}", e);
             }
         }
     }

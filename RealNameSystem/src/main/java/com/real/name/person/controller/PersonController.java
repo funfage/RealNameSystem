@@ -52,14 +52,27 @@ public class PersonController {
         if (person.contains("data:image/jpeg;base64,")) {
             person = person.replace("data:image/jpeg;base64,", "");
         }
-        Person p = JSON.parseObject(person, Person.class);
-        //保存人员信息到数据库
-        p = personService.createPerson(p);
-        //保存头像
-        ImageTool.generateImage(p.getHeadImage(), p.getPersonId().toString());
-        Map<String, Object> m = new HashMap<>();
-        m.put("personId", p.getPersonId());
-        return ResultVo.success(m);
+        Map<String, Object> m = null;
+        try {
+            Person p = JSON.parseObject(person, Person.class);
+            //保存人员信息到数据库
+            p = personService.createPerson(p);
+            if (p == null) {
+                throw new AttendanceException(ResultError.INSERT_ERROR);
+            }
+            //保存头像
+            boolean genSuss = ImageTool.generateImage(p.getHeadImage(), p.getPersonId().toString());
+            if (genSuss) {
+                throw new AttendanceException(ResultError.GENERATE_IMAGE_ERROR);
+            }
+            m = new HashMap<>();
+            m.put("personId", p.getPersonId());
+            return ResultVo.success(m);
+        } catch (Exception e) {
+            logger.error("savePerson error e:{}", e);
+            throw new AttendanceException(ResultError.INSERT_ERROR);
+        }
+
     }
 
     /**
@@ -165,11 +178,15 @@ public class PersonController {
                 }
             }
             //修改本地工人信息
-            personService.updateByPersonId(selectPerson);
+            Person updatePerson = personService.updateByPersonId(selectPerson);
+            if (updatePerson == null) {
+                throw new AttendanceException(ResultError.UPDATE_ERROR);
+            }
             return ResultVo.success();
         } catch (Exception e) {
             e.printStackTrace();
-            return ResultVo.failure(e.getMessage());
+            logger.error("updatePerson error e:{}", e);
+            throw new AttendanceException(ResultError.UPDATE_ERROR);
         }
     }
 
