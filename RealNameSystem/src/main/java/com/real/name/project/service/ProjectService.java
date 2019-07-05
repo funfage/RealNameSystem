@@ -37,4 +37,11 @@ public interface ProjectService {
      * 删除项目信息
      */
     int deleteByProjectCode(String Project);
+
+    /**
+     *
+     * @param projectName
+     * @return
+     */
+    Optional<Project> findByName(String projectName);
 }

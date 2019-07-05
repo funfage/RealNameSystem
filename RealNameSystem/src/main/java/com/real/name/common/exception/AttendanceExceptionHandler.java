@@ -40,7 +40,7 @@ public class AttendanceExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public ResultVo exceptionHandler(Exception e) {
-        logger.error("出现异常,错误信息为", e);
+        logger.error("出现异常，e:{}", e);
         return ResultVo.failure(e.getMessage());
     }
 }

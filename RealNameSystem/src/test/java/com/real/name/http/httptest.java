@@ -28,7 +28,7 @@ public class httptest extends BaseTest {
         map.put("name", "23");
         map.put("password", "34");
         map.put("gender", 1);
-        runService.testPost(map);
+        runService.testPost(map, "");
     }
 
 }

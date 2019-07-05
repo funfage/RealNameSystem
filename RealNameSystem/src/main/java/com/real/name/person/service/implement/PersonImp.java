@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.Date;
@@ -29,23 +30,9 @@ public class PersonImp implements PersonService {
     @Autowired
     private Person2Rep person2Rep;
 
+    @Transactional
     @Override
     public Person createPerson(Person person) {
-        if (person.getIdCardNumber() == null || person.getIdCardNumber().trim().length() != 18) {
-            throw new AttendanceException(ResultError.ID_CARD_ERROR);
-        } else if (!StringUtils.hasText(person.getPersonName())) {
-            throw new AttendanceException(ResultError.PERSON_NAME_ERROR);
-        } else if (!StringUtils.hasText(person.getNation())) {
-            throw AttendanceException.emptyMessage("名族");
-        } else if (person.getGender() == null || person.getGender() > 3) {
-            throw AttendanceException.errorMessage("性别");
-        } else if (!StringUtils.hasText(person.getHeadImage())) {
-            throw AttendanceException.emptyMessage("头像");
-        } else if (!StringUtils.hasText(person.getGrantOrg())) {
-            throw AttendanceException.emptyMessage("签发机关");
-        } else if (personRepository.findByIdCardNumber(person.getIdCardNumber()).isPresent()) {
-            throw new AttendanceException(ResultError.PERSON_EXIST);
-        }
         return personRepository.save(person);
     }
 
@@ -105,6 +92,21 @@ public class PersonImp implements PersonService {
     @Override
     public Person updateByPersonId(Person person) {
         return personRepository.save(person);
+    }
+
+    @Override
+    public Person findIssuePersonInfo(Integer personId) {
+        return personRepository.findIssuePersonInfo(personId);
+    }
+
+    @Override
+    public Person findIssueImageInfo(Integer personId) {
+        return personRepository.findIssueImageInfo(personId);
+    }
+
+    @Override
+    public Person findIssuePersonImageInfo(Integer personId) {
+        return personRepository.findIssuePersonImageInfo(personId);
     }
 
 

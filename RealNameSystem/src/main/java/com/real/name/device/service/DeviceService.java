@@ -1,6 +1,6 @@
-package com.real.name.face.service;
+package com.real.name.device.service;
 
-import com.real.name.face.entity.Device;
+import com.real.name.device.entity.Device;
 
 import java.util.List;
 import java.util.Optional;

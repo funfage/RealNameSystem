@@ -1,10 +1,10 @@
 package com.real.name.IssueDetai;
 
 import com.real.name.BaseTest;
-import com.real.name.common.result.ResultVo;
-import com.real.name.face.entity.Device;
+import com.real.name.device.entity.Device;
 import com.real.name.project.entity.IssueDetail;
 import com.real.name.project.service.repository.IssueDetailRepository;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -53,6 +53,18 @@ public class IssueDetailTest extends BaseTest {
             IssueDetail issueDetail = new IssueDetail(88, new Device("6667"), "44010620190510008");
             repository.save(issueDetail);
         }
-
     }
+    @Test
+    public void findByCondition() {
+        List<IssueDetail> issueDetails = repository.findByCondition("6667", "067R9HQR0dmw178890C4BKubNU2d9gG7", 1, 1);
+        System.out.println(issueDetails);
+    }
+
+    @Test
+    public void updateIssueStatusTest() {
+        int i = repository.updateIssueStatus(1, 1, 18L);
+        Assert.assertEquals(1, i);
+    }
+
+
 }

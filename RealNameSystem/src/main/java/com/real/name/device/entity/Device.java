@@ -1,4 +1,4 @@
-package com.real.name.face.entity;
+package com.real.name.device.entity;
 
 import lombok.Data;
 import org.hibernate.annotations.DynamicInsert;

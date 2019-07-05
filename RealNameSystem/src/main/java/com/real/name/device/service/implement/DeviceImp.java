@@ -1,8 +1,8 @@
-package com.real.name.face.service.implement;
+package com.real.name.device.service.implement;
 
-import com.real.name.face.entity.Device;
-import com.real.name.face.service.DeviceService;
-import com.real.name.face.service.repository.DeviceRepository;
+import com.real.name.device.entity.Device;
+import com.real.name.device.service.DeviceService;
+import com.real.name.device.service.repository.DeviceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

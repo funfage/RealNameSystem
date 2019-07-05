@@ -4,9 +4,9 @@ import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.UDPTool;
-import com.real.name.face.entity.Device;
-import com.real.name.face.service.implement.DeviceImp;
-import com.real.name.face.service.repository.DeviceRepository;
+import com.real.name.device.entity.Device;
+import com.real.name.device.service.implement.DeviceImp;
+import com.real.name.device.service.repository.DeviceRepository;
 import com.real.name.netty.DutouCmdSend;
 import com.real.name.netty.Entity.Controller;
 import com.real.name.netty.ControllerContainer;
@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 //向所有读头注册身份证信息

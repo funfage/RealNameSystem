@@ -1,34 +1,38 @@
 package com.real.name.person;
 
+import com.alibaba.fastjson.JSONObject;
+import com.real.name.BaseTest;
+import com.real.name.common.utils.ImageTool;
+import com.real.name.httptest.RunService;
+import com.real.name.person.controller.PersonController;
 import com.real.name.person.entity.Person;
 import com.real.name.person.entity.PersonQuery;
 import com.real.name.person.service.PersonService;
 import com.real.name.person.service.repository.PersonRepository;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.*;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class PersonTest {
+public class PersonTest extends BaseTest {
     @Autowired
     private PersonRepository personRepository;
 
     @Autowired
     private PersonService personService;
+
+    @Autowired
+    private RunService runService;
 
     @Test
     public void testGetPersonAll(){
@@ -88,6 +92,86 @@ public class PersonTest {
         PageRequest p = PageRequest.of(0, 10);
         Page<Person> work = personRepository.findByWorkRole(p, 10);
         System.out.println(work);
+    }
+
+    @Test
+    public void createPersonTest() {
+        Person person = new Person();
+        person.setPersonName("1111");
+        person.setIdCardNumber("437438478");
+        person.setWorkType("10");
+        person.setIssueCardDate(new Date());
+        person.setNation("han");
+        person.setGrantOrg("aaa");
+        person.setAddress("address");
+        person.setHeadImage("dfjdk");
+        PersonController personController = new PersonController();
+        personController.testSavePerson(person);
+    }
+
+    @Test
+    public void createPerson() {
+        Map<String, Object> map = new HashMap<>();
+       /* map.put("personName", "1111");
+        map.put("idCardNumber", "1111");
+        map.put("workType", "1111");
+        map.put("issueCardDate","1111" );
+        map.put("nation", "1111");
+        map.put("grantOrg", "1111");
+        map.put("address", "1111");
+        map.put("headImage", "1111");*/
+       /* File file = new File("C:\\Users\\admin\\Pictures\\Saved Pictures\\99.jpg");
+        map.put("imageFile", file);*/
+        Person person = new Person();
+        person.setPersonName("1111");
+        person.setIdCardNumber("437438478");
+        person.setWorkType("10");
+        person.setIssueCardDate(new Date());
+        person.setNation("han");
+        person.setGrantOrg("aaa");
+        person.setAddress("address");
+        person.setHeadImage("dfjdk");
+        String pstr = JSONObject.toJSONString(person);
+        File file = new File("C:\\Users\\admin\\Pictures\\Saved Pictures\\99.jpg");
+        map.put("person", pstr);
+        map.put("imageFile", file);
+        runService.testPost(map, BaseTest.baseUrl + "person/savePerson");
+    }
+
+    @Test
+    public void generateImgTest() {
+        File file = new File("C:\\Users\\admin\\Pictures\\Saved Pictures\\99.jpg");
+    }
+
+    @Test
+    public void imageToBase64() {
+        try {
+            File file = new File("C:\\Users\\admin\\Pictures\\Saved Pictures\\99.jpg");
+            InputStream inputStream = new FileInputStream(file);
+            String str = ImageTool.imageToBase64(inputStream);
+            System.out.println(str);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void findIssuePerson() {
+        Person issuePersonInfo = personRepository.findIssuePersonInfo(87);
+        System.out.println(issuePersonInfo);
+    }
+
+
+    @Test
+    public void findIssueImageInfoTest() {
+        Person issueImageInfo = personRepository.findIssueImageInfo(87);
+        System.out.println(issueImageInfo);
+    }
+
+    @Test
+    public void findIssuePersonImageInfoTest() {
+        Person issuePersonInfo = personRepository.findIssuePersonImageInfo(87);
+        System.out.println(issuePersonInfo);
     }
 
 }

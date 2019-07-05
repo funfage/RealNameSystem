@@ -1,9 +1,8 @@
 package com.real.name.netty.dao;
 
 
-import com.real.name.face.entity.Device;
+import com.real.name.device.entity.Device;
 import com.real.name.netty.Entity.Controller;
-import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;

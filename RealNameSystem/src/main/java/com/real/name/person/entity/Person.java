@@ -1,17 +1,13 @@
 package com.real.name.person.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.real.name.project.entity.ProjectPersonDetail;
-import lombok.Data;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @Setter
@@ -209,6 +205,11 @@ public class Person {
      */
     private Integer groupNo;
 
+    /**
+     * 后缀名
+     */
+    private String suffixName;
+
     /*@JsonIgnore
     @OneToMany(mappedBy = "person", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     private List<ProjectPersonDetail> projectPersonDetails;*/
@@ -248,6 +249,22 @@ public class Person {
         this.age = age;
         this.gender = gender;
         this.address = address;
+        this.headImage = headImage;
+    }
+
+    public Person(Integer personId, String personName) {
+        this.personId = personId;
+        this.personName = personName;
+    }
+
+    public Person(Integer personId, String personName, String headImage) {
+        this.personId = personId;
+        this.personName = personName;
+        this.headImage = headImage;
+    }
+
+    public Person(String headImage, Integer personId) {
+        this.personId = personId;
         this.headImage = headImage;
     }
 

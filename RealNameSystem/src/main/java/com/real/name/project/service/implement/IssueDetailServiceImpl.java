@@ -32,4 +32,14 @@ public class IssueDetailServiceImpl implements IssueDetailService {
     public List<Integer> findIdByIssueStatus(Integer issuePersonStatus, Integer issueImageStatus) {
         return issueDetailRepository.findIdByIssueStatus(issuePersonStatus, issueImageStatus);
     }
+
+    @Override
+    public List<IssueDetail> findByCondition(String deviceId, String projectCode, Integer issuePersonStatus, Integer issueImageStatus) {
+        return issueDetailRepository.findByCondition(deviceId, projectCode, issuePersonStatus, issueImageStatus);
+    }
+
+    @Override
+    public int updateIssueStatus(Integer issuePersonStatus, Integer issueImageStatus, Long issueId) {
+        return issueDetailRepository.updateIssueStatus(issuePersonStatus, issueImageStatus, issueId);
+    }
 }

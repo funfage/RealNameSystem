@@ -1,14 +1,11 @@
-package com.real.name.face.controller;
+package com.real.name.device.controller;
 
 import com.real.name.common.result.ResultVo;
-import com.real.name.face.entity.Record;
-import com.real.name.face.service.repository.RecordRepository;
-import com.real.name.netty.dao.DeviceDao;
+import com.real.name.device.entity.Record;
+import com.real.name.device.service.repository.RecordRepository;
 import com.real.name.netty.dao.RecordDao;
-import com.real.name.person.entity.Person;
 import com.real.name.person.entity.Person3;
 import com.real.name.person.service.implement.PersonImp;
-import com.real.name.person.service.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

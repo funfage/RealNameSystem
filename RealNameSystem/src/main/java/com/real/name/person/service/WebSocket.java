@@ -64,7 +64,7 @@ public class WebSocket  {
 //
 //        if (rvo.getSuccess()) {
 //            // 给设备添加人员照片
-//            url = HTTPTool.baseURL + "face/create";
+//            url = HTTPTool.baseURL + "device/create";
 //            map.put("personId", person.getPersonId().toString());
 //            map.put("imgBase64", person.getHeadImage());
 //            ResultVo rv = HTTPTool.postUrlForParam(url, map);

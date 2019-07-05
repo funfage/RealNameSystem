@@ -32,6 +32,7 @@ public enum ResultError {
     FACE_EMPTY(24, "查询不到人脸设备"),
     PROJECT_NO_BIND_FACE(25, "该项目未绑定人脸设备"),
     GENERATE_IMAGE_ERROR(26, "生成头像失败"),
+    ID_CARD_NUMBER_REPEAT(27, "身份证卡号重复"),
     LOGIN_TOKEN_ERROR(98, "登录信息中没有Token"),
     NETWORK_ERROR(99, "网络超时,请重试"),
     DELETE_ERROR(100, "删除失败"),

@@ -8,7 +8,6 @@ import org.hibernate.annotations.DynamicUpdate;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.util.Date;
-
 @Setter
 @Getter
 @Entity
@@ -155,6 +154,11 @@ public class Project {
      * 按照《世界各国和地区名称代码》GB/T 2659-2000 规定的国家和地区名称及代码。
      */
     private Integer nationNum;
+
+    /**
+     * 是否上传到全国平台
+     */
+    private Integer isUpload;
 
     /*@OneToMany(mappedBy = "project", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     private List<ProjectPersonDetail> projectPersonDetailList;*/

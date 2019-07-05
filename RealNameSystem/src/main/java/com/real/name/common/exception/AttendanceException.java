@@ -25,7 +25,7 @@ public class AttendanceException extends RuntimeException {
     }
 
     public static AttendanceException emptyMessage(String message) {
-        return new AttendanceException(ResultError.CONTENT_ERROR.getCode(), message + ResultError.CONTENT_EMPTY.getMessage());
+        return new AttendanceException(ResultError.CONTENT_EMPTY.getCode(), message + ResultError.CONTENT_EMPTY.getMessage());
     }
 
     public static AttendanceException errorMessage(String message) {
@@ -34,5 +34,9 @@ public class AttendanceException extends RuntimeException {
 
     public static AttendanceException errorMessage(ResultError error, String desc) {
         return new AttendanceException(error.getCode(), desc + error.getMessage());
+    }
+
+    public static AttendanceException errorMessage(ResultError error) {
+        return new AttendanceException(error.getCode(), error.getMessage());
     }
 }

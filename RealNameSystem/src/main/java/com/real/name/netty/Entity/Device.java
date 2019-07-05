@@ -1,3 +1,4 @@
+/*
 package com.real.name.netty.Entity;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -16,3 +17,4 @@ public class Device {
     private int direction;
     private ChannelHandlerContext ctx;
 }
+*/

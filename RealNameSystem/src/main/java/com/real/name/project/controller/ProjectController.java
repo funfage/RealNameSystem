@@ -6,9 +6,10 @@ import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
+import com.real.name.common.utils.CommonUtils;
 import com.real.name.common.utils.NationalUtils;
-import com.real.name.face.entity.Device;
-import com.real.name.face.service.DeviceService;
+import com.real.name.device.entity.Device;
+import com.real.name.device.service.DeviceService;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.group.service.GroupService;
 import com.real.name.person.entity.Person;
@@ -27,10 +28,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 //import com.real.name.person.entity.Person2;
 
@@ -66,15 +64,27 @@ public class ProjectController {
      */
     @PostMapping("/createProject")
     public ResultVo createProject(@RequestBody Project project) {
+        if (!StringUtils.hasText(project.getName())) {
+            throw  AttendanceException.emptyMessage("项目名称");
+        }
         try {
+            // 判断项目名称是否唯一
+            Optional<Project> optionalProject = projectService.findByName(project.getName());
+            if (optionalProject.isPresent()) {
+                throw new AttendanceException(ResultError.PROJECT_EXIST);
+            }
+            //为项目生成一个唯一的projectCode
+            project.setProjectCode(CommonUtils.getUniqueString(32));
+            //此处日期可能要修改
             Project insertProject = projectService.createProject(project);
             if (insertProject == null) {
+                logger.error("项目添加失败");
                 throw new AttendanceException(ResultError.INSERT_ERROR);
             }
             return ResultVo.success();
         } catch (Exception e) {
-            logger.error("项目添加失败", e);
-            return ResultVo.failure(ResultError.INSERT_ERROR);
+            logger.error("项目添加异常", e);
+            return ResultVo.failure(ResultError.INSERT_ERROR, e.getMessage());
         }
     }
 
@@ -202,7 +212,8 @@ public class ProjectController {
         for (Integer personId : persons) {
             // 判断是否有该人员
             Optional<Person> personOptional = personService.findById(personId);
-            if (!personOptional.isPresent()){
+            if (!personOptional.isPresent() || !StringUtils.hasText(personOptional.get().getHeadImage()) || !StringUtils.hasText(personOptional.get().getPersonName())) {
+                //若人员不存在则跳过
                 continue;
             }
             Optional<ProjectDetail> detailOptional = projectDetailService.findByProjectCodeAndPersonIdAndTeamSysNo(projectCode, personId, teamSysNo);
@@ -210,21 +221,21 @@ public class ProjectController {
             if (!detailOptional.isPresent()) {
                 ProjectDetail save = projectDetailService.save(new ProjectDetail(projectCode, personId, teamSysNo));
                 if (save == null) {
-                    throw new AttendanceException(ResultError.INSERT_ERROR);
+                    throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "添加人员到项目");
                 }
             }
             //下发人员信息到设备
-            projectDetailService.addPersonToDevice(projectCode, personId, personOptional.get(), projectDevices, allDevices);
+            projectDetailService.addPersonToDevice(projectCode, personOptional.get(), projectDevices, allDevices);
         }
         //从数据库中查询下发信息
-        List<Integer> issueSuccessId = issueDetailService.findIdByIssueStatus(1, 1);
+        /*List<Integer> issueSuccessId = issueDetailService.findIdByIssueStatus(1, 1);
         List<Integer> issuePersonFailId = issueDetailService.findIdByIssuePersonStatus(0);
         List<Integer> issueImageFailId = issueDetailService.findIdByIssueImageStatus(0);
         Map<String, List<Integer>> map = new HashMap<>();
         map.put("issueSuccessId", issueSuccessId);
         map.put("issuePersonFailId", issuePersonFailId);
-        map.put("issueImageFailId", issueImageFailId);
-        return ResultVo.success(map);
+        map.put("issueImageFailId", issueImageFailId);*/
+        return ResultVo.success();
     }
 
     /**
@@ -289,10 +300,8 @@ public class ProjectController {
         if(StringUtils.hasText(project.getCategory())){
             selectProject.setCategory(project.getCategory());
         }
+        //竣工日期
         if(project.getCompleteDate() != null){
-            if (System.currentTimeMillis() - project.getCompleteDate().getTime() < 0) {
-                throw AttendanceException.errorMessage("竣工日期");
-            }
             selectProject.setCompleteDate(project.getCompleteDate());
         }
         if(StringUtils.hasText(project.getContractorCorpCode())){
@@ -354,9 +363,7 @@ public class ProjectController {
             selectProject.setPropertyNum(project.getPropertyNum());
         }
         if(project.getStartDate() != null){
-            if (project.getCompleteDate() == null) {
-                throw AttendanceException.errorMessage("开工日期大于竣工日期,");
-            } else if (project.getCompleteDate().getTime() - project.getStartDate().getTime() <= 0) {
+            if (project.getCompleteDate() == null || project.getStartDate().getTime() > project.getCompleteDate().getTime()) {
                 throw AttendanceException.errorMessage("开工日期大于竣工日期,");
             }
             selectProject.setStartDate(project.getStartDate());

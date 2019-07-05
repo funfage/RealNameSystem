@@ -1,7 +1,7 @@
 package com.real.name;
 
-import com.real.name.face.entity.Device;
-import com.real.name.face.service.DeviceService;
+import com.real.name.device.entity.Device;
+import com.real.name.device.service.DeviceService;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;

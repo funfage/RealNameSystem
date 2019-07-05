@@ -39,4 +39,16 @@ public interface PersonRepository extends JpaRepository<Person, Integer> {
     @Query("from Person p where p.personName like %:#{#pq.nameOrIDCard}%")
     List<Person> findPeopleByCondition(@Param("pq") PersonQuery personQuery);
 
+    //查询下发设备需要的指定的人员字段信息
+    @Query(value = "select new com.real.name.person.entity.Person(p.personId, p.personName) from Person p where p.personId = ?1")
+    Person findIssuePersonInfo(Integer personId);
+
+    //查询下发照片所需要的字段
+    @Query(value = "select new com.real.name.person.entity.Person(p.headImage, p.personId) from Person p where  p.personId = ?1")
+    Person findIssueImageInfo(Integer personId);
+
+    //查询下发人员和照片所需要的字段
+    @Query(value = "select new com.real.name.person.entity.Person(p.personId, p.personName, p.headImage) from Person p where  p.personId = ?1")
+    Person findIssuePersonImageInfo(Integer personId);
+
 }

@@ -1,13 +1,11 @@
-package com.real.name.face.service.repository;
+package com.real.name.device.service.repository;
 
-import com.real.name.face.entity.Record;
+import com.real.name.device.entity.Record;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public interface RecordRepository extends JpaRepository<Record, Integer> {
 

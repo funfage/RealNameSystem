@@ -2,25 +2,13 @@ package com.real.name.common.utils;
 
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.info.DeviceConstant;
-import com.real.name.common.result.ResultError;
-import com.real.name.face.entity.Device;
-import com.real.name.face.service.DeviceService;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import com.real.name.device.DeviceUtils;
+import com.real.name.device.entity.Device;
+import com.real.name.device.service.DeviceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -30,16 +18,9 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.InetAddress;
-import java.net.URL;
 import java.net.UnknownHostException;
-import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 @Component
 public class HTTPTool {
@@ -73,6 +54,7 @@ public class HTTPTool {
             if (StringUtils.hasText(device.getIp()) && device.getOutPort() != null && device.getOutPort() > 0 && device.getOutPort() < 65536) {
                 deviceIds.add(device.getDeviceId());
                 String response = (method == DeviceConstant.postMethod ? postToDevice(device, url, param) : getToDevce(device, url, param));
+                logger.info("设备返回的信息返回的信息:{}", response);
                 modelMap.put(device.getDeviceId(), response);
             } else {
                 modelMap.put(device.getDeviceId(), null);
@@ -95,6 +77,7 @@ public class HTTPTool {
         Map<String, Object> modelMap = new HashMap<>();
         if (StringUtils.hasText(device.getIp()) && device.getOutPort() != null && device.getOutPort() > 0 && device.getOutPort() < 65536) {
             String response = ((method == DeviceConstant.postMethod) ? postToDevice(device, url, param) : getToDevce(device, url, param));
+            logger.info("设备返回的信息返回的信息:{}", response);
             modelMap.put(device.getDeviceId(), response);
         }else{
             logger.warn("设备id为{}的ip地址为{}设备的ip地址或端口不合法", device.getDeviceId(), device.getIp());
@@ -110,7 +93,7 @@ public class HTTPTool {
      * @param url   请求路径
      * @param param 请求参数
      */
-    public static Map<String, Object> sendDataToFaceDevice(String url, Map<String, Object> param, Integer method, List<Device> allDevices) throws AttendanceException{
+    public static Map<String, Object> sendDataToFaceDevice(String url, Map<String, Object> param, Integer method, List<Device> allDevices){
         Map<String, Object> modelMap = new HashMap<>();
         List<String> deviceIds = new ArrayList<>();
         //查询出所有读头设备
@@ -118,6 +101,7 @@ public class HTTPTool {
             if (StringUtils.hasText(device.getIp()) && device.getOutPort() != null && device.getOutPort() > 0 && device.getOutPort() < 65536) {
                 deviceIds.add(device.getDeviceId());
                 String response = ((method == DeviceConstant.postMethod) ? postToDevice(device, url, param) : getToDevce(device, url, param));
+                logger.info("设备返回的信息返回的信息:{}", response);
                 modelMap.put(device.getDeviceId(), response);
             } else {
                 logger.warn("设备id为{}的ip地址为{}设备的ip地址或端口不合法", device.getDeviceId(), device.getIp());
@@ -132,13 +116,13 @@ public class HTTPTool {
     private static String postToDevice(Device device, String url, Map<String, Object> param) {
         if (param == null) param = new HashMap<>();
         param.put("pass", device.getPass());
-        return postUrlForParam("http://" + device.getIp() + ":" + device.getOutPort() + "/" + url, param);
+        return postUrlForParam(DeviceUtils.getWholeUrl(url, device), param);
     }
 
     private static String getToDevce(Device device, String url, Map<String, Object> param) {
         if (param == null) param = new HashMap<>();
         param.put("pass", device.getPass());
-        return getUrlForParam("http://" + device.getIp() + ":" + device.getOutPort() + "/" + url, param);
+        return getUrlForParam(DeviceUtils.getWholeUrl(url, device), param);
     }
 
     /**
@@ -150,6 +134,9 @@ public class HTTPTool {
      */
     public static String postUrlForParam(String url, Map<String, Object> param) {
         HttpHeaders headers = new HttpHeaders();
+        /*MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        headers.setContentType(type);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());*/
         MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
         if (param != null) {
             for (Map.Entry<String, Object> entry : param.entrySet()) {
@@ -174,6 +161,9 @@ public class HTTPTool {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
         HttpEntity entity = new HttpEntity(headers);
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        headers.setContentType(type);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
         try {
             ResponseEntity<String> exchange = httpTool.restTemplate.exchange(baseUrl, HttpMethod.GET, entity, String.class, params);
             logger.info("GetRequest Body:{}", exchange.getBody());

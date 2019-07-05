@@ -1,6 +1,6 @@
 package com.real.name.project.entity;
 
-import com.real.name.face.entity.Device;
+import com.real.name.device.entity.Device;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;

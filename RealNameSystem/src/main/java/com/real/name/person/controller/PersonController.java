@@ -7,8 +7,8 @@ import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.ImageTool;
 import com.real.name.common.utils.NationalUtils;
-import com.real.name.face.entity.Record;
-import com.real.name.face.service.RecordService;
+import com.real.name.device.entity.Record;
+import com.real.name.device.service.RecordService;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
 import com.real.name.project.entity.ProjectPersonDetail;
@@ -21,7 +21,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 @RestController
@@ -41,38 +44,80 @@ public class PersonController {
     @Autowired
     private ProjectDetailService projectDetailService;
 
+    public void testSavePerson(Person person) {
+        personService.createPerson(person);
+        throw new AttendanceException("test");
+    }
+
     /**
      * 添加工人
-     * @param person
-     * @return
      */
     @PostMapping("/savePerson")
-    public ResultVo savePerson(@RequestParam(name = "person") String person) {
-
-        if (person.contains("data:image/jpeg;base64,")) {
-            person = person.replace("data:image/jpeg;base64,", "");
-        }
-        Map<String, Object> m = null;
+    public ResultVo savePerson(@RequestParam("person") String personStr, @RequestParam("imageFile") MultipartFile imageFile) {
+        Person person = null;
         try {
-            Person p = JSON.parseObject(person, Person.class);
+            person = JSONObject.parseObject(personStr, Person.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("将personStr转换为json字符串出现异常");
+            throw AttendanceException.errorMessage(ResultError.OPERATOR_ERROR);
+        }
+        if (person.getIdCardNumber() == null || person.getIdCardNumber().trim().length() != 18) {
+            throw new AttendanceException(ResultError.ID_CARD_ERROR);
+        } else if (!StringUtils.hasText(person.getPersonName())) {
+            throw new AttendanceException(ResultError.PERSON_NAME_ERROR);
+        } else if (!StringUtils.hasText(person.getNation())) {
+            throw AttendanceException.emptyMessage("名族");
+        } else if (person.getGender() == null || person.getGender() > 3) {
+            throw AttendanceException.errorMessage("性别");
+        } else if (!StringUtils.hasText(person.getGrantOrg())) {
+            throw AttendanceException.emptyMessage("签发机关");
+        } else if (personService.findByIdCardNumber(person.getIdCardNumber()).isPresent()) {
+            throw new AttendanceException(ResultError.PERSON_EXIST);
+        } else if (!StringUtils.hasText(person.getAddress())) {
+            throw AttendanceException.emptyMessage("地址");
+        } else if (imageFile.isEmpty()) {
+            throw AttendanceException.emptyMessage("照片");
+        } else if (person.getStartDate() != null) {
+            if (person.getExpiryDate() == null) {
+                throw AttendanceException.errorMessage("证件有效期开始日期不能大于结束日期");
+            }
+            if (person.getStartDate().getTime() > person.getExpiryDate().getTime()) {
+                throw AttendanceException.errorMessage("证件有效期开始日期不能大于结束日期");
+            }
+        }
+        try {
+            String imageStr = ImageTool.imageToBase64(imageFile.getInputStream());
+            logger.info("照片base64编码:{}", imageStr);
+            if (!StringUtils.hasText(imageStr)) {
+                throw new AttendanceException("照片转换成base64编码失败");
+            }
+            String fileName = imageFile.getOriginalFilename();
+            String suffixName = fileName.substring(fileName.lastIndexOf("."));
+            person.setSuffixName(suffixName);
+            person.setHeadImage(imageStr.trim());
+        } catch (IOException e) {
+            logger.error("照片转换成base64编码失败, e:{}", e);
+            throw new AttendanceException("照片转换成base64编码失败");
+        }
+        Person selectPerson = null;
+        try {
             //保存人员信息到数据库
-            p = personService.createPerson(p);
-            if (p == null) {
-                throw new AttendanceException(ResultError.INSERT_ERROR);
+            selectPerson = personService.createPerson(person);
+            if (selectPerson == null) {
+                throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "人员");
             }
-            //保存头像
-            boolean genSuss = ImageTool.generateImage(p.getHeadImage(), p.getPersonId().toString());
-            if (genSuss) {
-                throw new AttendanceException(ResultError.GENERATE_IMAGE_ERROR);
-            }
-            m = new HashMap<>();
-            m.put("personId", p.getPersonId());
-            return ResultVo.success(m);
         } catch (Exception e) {
             logger.error("savePerson error e:{}", e);
             throw new AttendanceException(ResultError.INSERT_ERROR);
         }
-
+        boolean isSuccess = ImageTool.generateImage(imageFile, imageFile.getOriginalFilename(), selectPerson.getPersonId().toString());
+        if (!isSuccess) {
+            throw new AttendanceException("照片生成失败");
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("personId", selectPerson.getPersonId());
+        return ResultVo.success(m);
     }
 
     /**
@@ -108,7 +153,7 @@ public class PersonController {
      * @return
      */
     @PostMapping("updatePerson")
-    public ResultVo updatePerson(@RequestBody Person person){
+    public ResultVo updatePerson(Person person){
         if(person.getPersonId() == null || person.getPersonId() <= 0){
             throw AttendanceException.errorMessage("person_id");
         }
@@ -223,7 +268,7 @@ public class PersonController {
 
     @PostMapping("takeImg")
     public ResultVo takeImg(@RequestParam(name = "personId") String personId) {
-        String url = "face/takeImg";
+        String url = "device/takeImg";
         Map<String, String> map = new HashMap<>();
         map.put("personId", personId);
 //        ResultVo rvo = HTTPTool.sendDataTo(url, map);
@@ -238,11 +283,11 @@ public class PersonController {
                                @RequestParam("imgBase64") String imgBase64) {
 
         Person person = personService.saveImgBase64(personId, imgBase64);
-        String url = "face/create";
+        String url = "device/create";
         Map<String, String> map = new HashMap<>();
         map.put("pass", pass);
         map.put("personId", person.getPersonId().toString());
-//        map.put("faceId", face.getFaceId().toString());
+//        map.put("faceId", device.getFaceId().toString());
         map.put("imgBase64", imgBase64);
 //        return HTTPTool.sendDataTo(url, map);
         return null;
@@ -257,6 +302,10 @@ public class PersonController {
                                    @RequestParam("endTime") Long endTime) {
         List<Record> records = recordService.findByPersonIdAndTimeBetween(personId, new Date(beginTime), new Date(endTime));
         return ResultVo.success(records);
+    }
+
+    public void verifyParams(Person person) {
+
     }
 
     @GetMapping("logtest")

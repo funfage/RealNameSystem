@@ -25,7 +25,6 @@ public class RestTemplateConfig {
 
     @Bean
     public ClientHttpRequestFactory httpRequestFactory() {
-
         return new HttpComponentsClientHttpRequestFactory(httpClient());
 
     }

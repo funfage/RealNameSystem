@@ -1,10 +1,9 @@
-package com.real.name.face.service.repository;
+package com.real.name.device.service.repository;
 
-import com.real.name.face.entity.Device;
+import com.real.name.device.entity.Device;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface DeviceRepository extends JpaRepository<Device, String> {
 

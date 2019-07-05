@@ -39,7 +39,7 @@ public class RunService {
     }
 
     @PostMapping
-    public void testPost(Map<String, Object> param) {
+    public void testPost(Map<String, Object> param, String url) {
         HttpHeaders headers = new HttpHeaders();
         MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
         if (param != null) {
@@ -50,10 +50,12 @@ public class RunService {
         HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(params, headers);
         try {
             //获取响应的内容
-            String result = restTemplate.postForObject(POST_URL, entity, String.class);
+            String result = restTemplate.postForObject(url, entity, String.class);
             System.out.println(result);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+
 }

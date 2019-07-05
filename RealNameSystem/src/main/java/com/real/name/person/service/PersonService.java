@@ -73,4 +73,12 @@ public interface PersonService {
     //更新员工信息
     Person updateByPersonId(Person person);
 
+    //查询下发设备需要的人员的字段信息
+    Person findIssuePersonInfo(Integer personId);
+
+    Person findIssueImageInfo(Integer personId);
+
+    Person findIssuePersonImageInfo(Integer personId);
+
+
 }

@@ -16,4 +16,8 @@ public interface IssueDetailService {
 
     List<Integer> findIdByIssueStatus(Integer issuePersonStatus, Integer issueImageStatus);
 
+    List<IssueDetail> findByCondition(String deviceId, String projectCode, Integer issuePersonStatus, Integer issueImageStatus);
+
+    int updateIssueStatus(Integer issuePersonStatus, Integer issueImageStatus, Long issueId);
+
 }

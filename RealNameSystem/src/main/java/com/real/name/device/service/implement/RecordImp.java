@@ -1,8 +1,8 @@
-package com.real.name.face.service.implement;
+package com.real.name.device.service.implement;
 
-import com.real.name.face.entity.Record;
-import com.real.name.face.service.RecordService;
-import com.real.name.face.service.repository.RecordRepository;
+import com.real.name.device.entity.Record;
+import com.real.name.device.service.RecordService;
+import com.real.name.device.service.repository.RecordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

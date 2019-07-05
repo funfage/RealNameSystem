@@ -1,6 +1,6 @@
-package com.real.name.face.service;
+package com.real.name.device.service;
 
-import com.real.name.face.entity.Record;
+import com.real.name.device.entity.Record;
 
 import java.util.Date;
 import java.util.List;

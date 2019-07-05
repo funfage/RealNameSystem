@@ -1,9 +1,10 @@
-package com.real.name.device;
+package com.real.name.device.controller;
 
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.CommonUtils;
+import com.real.name.device.DeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import com.real.name.netty.dao.DeviceDao;
@@ -72,7 +73,6 @@ public class DeviceController {
         Integer allNumber = deviceDao.countDevice(map);
         Map<String,Object> finalRes = new HashMap<>();
         if (result != null && allNumber != null){
-
             finalRes.put("totalCount",allNumber);
             finalRes.put("rows",result);
             return ResultVo.success(finalRes);
@@ -155,6 +155,11 @@ public class DeviceController {
         Device device = new Device();
         device.setDeviceId(deviceId);
         verifyParam(factory, deviceType, ip, direction, channel, installTime, outPort, phone, remark, projectCode, pass, device);
+        //注册设备心跳回调
+        boolean success = DeviceUtils.registerHeartBeat(device);
+        if (!success) {
+            throw new AttendanceException("设备注册心跳失败, 请检查设备是否启动");
+        }
         Device newDevice = deviceService.save(device);
         if (newDevice == null) {
             throw new AttendanceException(ResultError.INSERT_ERROR);

@@ -12,5 +12,5 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BaseTest {
-
+    public static String baseUrl = "http://localhost:9901/attendance/";
 }

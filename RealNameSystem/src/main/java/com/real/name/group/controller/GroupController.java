@@ -8,9 +8,11 @@ import com.real.name.common.utils.CommonUtils;
 import com.real.name.common.utils.NationalUtils;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.group.service.GroupService;
+import com.real.name.project.entity.Project;
 import com.real.name.project.entity.ProjectDetail;
 import com.real.name.project.service.ProjectDetailService;
 import com.real.name.project.service.ProjectPersonDetailService;
+import com.real.name.project.service.ProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,9 @@ public class GroupController {
     @Autowired
     private ProjectPersonDetailService projectPersonDetailService;
 
+    @Autowired
+    private ProjectService projectService;
+
     /**
      * 创建班组
      */
@@ -41,36 +46,53 @@ public class GroupController {
 
         if (!StringUtils.hasText(group.getProjectCode())) {
             throw AttendanceException.emptyMessage("项目编码");
-        } else if (!StringUtils.hasText(group.getCorpName())) {
-            throw AttendanceException.emptyMessage("班组所在企业名称");
         } else if (!StringUtils.hasText(group.getTeamName())) {
             throw AttendanceException.emptyMessage("班组名称");
-        } else if (!StringUtils.hasText(group.getCorpCode())) {
-            throw AttendanceException.emptyMessage("班组所在企业统一社会信用代码");
         } else if (groupService.findByTeamName(group.getTeamName()).isPresent()) {
             throw new AttendanceException(ResultError.GROUP_EXIST);
         }
-        if (!CommonUtils.isRightPhone(group.getResponsiblePersonPhone())) {
-            throw new AttendanceException(ResultError.PHONE_ERROR);
+
+        // 如果有手机号，判断手机号是否正确
+        if (StringUtils.hasText(group.getResponsiblePersonPhone())) {
+            if (!CommonUtils.isRightPhone(group.getResponsiblePersonPhone())) {
+                throw new AttendanceException(ResultError.PHONE_ERROR);
+            }
         }
 
-        JSONObject gr = NationalUtils.uploadGroup(group);
-        System.out.println(gr);
-        JSONObject data = gr.getJSONObject("data");
+        // 判断班组是否存在
+        Optional<Project> project = projectService.findByProjectCode(group.getProjectCode());
+        if (!project.isPresent()) {
+            throw new AttendanceException(ResultError.PROJECT_NOT_EXIST);
+        }
 
-        if (data.toString().contains("teamSysNo")) {
-            JSONObject result = data.getJSONObject("result");
-            System.out.println(result);
-            Integer teamSysNo = result.getInteger("teamSysNo");
-            System.out.println(teamSysNo);
-            if (teamSysNo != null && teamSysNo > 0) {
-                group.setTeamSysNo(teamSysNo);
-                groupService.create(group);
-                return ResultVo.success(group);
+        Project project1 = project.get();
+
+        group.setCorpCode(project1.getContractorCorpCode());
+        group.setCorpName(project1.getContractorCorpName());
+
+        // 判断是否需要上传到全国平台
+        if (project1.getIsUpload() == 1) {
+            JSONObject gr = NationalUtils.uploadGroup(group);
+            System.out.println(gr);
+            JSONObject data = gr.getJSONObject("data");
+
+            if (data.toString().contains("teamSysNo")) {
+                JSONObject result = data.getJSONObject("result");
+                Integer teamSysNo = result.getInteger("teamSysNo");
+                System.out.println(teamSysNo);
+                if (teamSysNo != null && teamSysNo > 0) {
+                    group.setTeamSysNo(teamSysNo);
+                    groupService.create(group);
+                    return ResultVo.success(group);
+                }
+            } else {
+                String result = data.getString("result");
+                return ResultVo.failure(8, result);
             }
         } else {
-            String result = data.getString("result");
-            return ResultVo.failure(8, result);
+            group.setTeamSysNo((int)(System.currentTimeMillis() / 1000));
+            groupService.create(group);
+            return ResultVo.success(group);
         }
         return ResultVo.failure(ResultError.NETWORK_ERROR);
     }
