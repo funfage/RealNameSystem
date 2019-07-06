@@ -1,12 +1,16 @@
-package com.real.name.project.service;
+package com.real.name.issue.service;
 
-import com.real.name.project.entity.IssueDetail;
-import org.springframework.stereotype.Service;
+import com.real.name.issue.entity.IssueDetail;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface IssueDetailService {
+
+    Optional<IssueDetail> findByDevice_DeviceIdAndPersonId(String deviceId, Integer personId);
 
     IssueDetail save(IssueDetail issueDetail);
 
@@ -19,5 +23,7 @@ public interface IssueDetailService {
     List<IssueDetail> findByCondition(String deviceId, String projectCode, Integer issuePersonStatus, Integer issueImageStatus);
 
     int updateIssueStatus(Integer issuePersonStatus, Integer issueImageStatus, Long issueId);
+
+    Page<Integer> findFailureIssue(String projectCode, String deviceId, Pageable pageable);
 
 }

@@ -1,17 +1,26 @@
-package com.real.name.project.service.implement;
+package com.real.name.issue.service.implement;
 
-import com.real.name.project.entity.IssueDetail;
-import com.real.name.project.service.IssueDetailService;
-import com.real.name.project.service.repository.IssueDetailRepository;
+import com.real.name.issue.entity.IssueDetail;
+import com.real.name.issue.service.IssueDetailService;
+import com.real.name.issue.service.repository.IssueDetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+
 @Service
 public class IssueDetailServiceImpl implements IssueDetailService {
 
     @Autowired
     private IssueDetailRepository issueDetailRepository;
+
+    @Override
+    public Optional<IssueDetail> findByDevice_DeviceIdAndPersonId(String deviceId, Integer personId) {
+        return issueDetailRepository.findByDevice_DeviceIdAndPersonId(deviceId, personId);
+    }
 
     @Override
     public IssueDetail save(IssueDetail issueDetail) {
@@ -42,4 +51,11 @@ public class IssueDetailServiceImpl implements IssueDetailService {
     public int updateIssueStatus(Integer issuePersonStatus, Integer issueImageStatus, Long issueId) {
         return issueDetailRepository.updateIssueStatus(issuePersonStatus, issueImageStatus, issueId);
     }
+
+    @Override
+    public Page<Integer> findFailureIssue(String projectCode, String deviceId, Pageable pageable) {
+        return issueDetailRepository.findFailureIssue(projectCode, deviceId, pageable);
+    }
+
+
 }

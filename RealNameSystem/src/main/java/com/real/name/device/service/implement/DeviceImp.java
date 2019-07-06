@@ -59,4 +59,9 @@ public class DeviceImp implements DeviceService {
     public List<Device> findByProjectCodeAndDeviceType(String projectId, Integer deciceType) {
         return deviceRepository.findByProjectCodeAndDeviceType(projectId, deciceType);
     }
+
+    @Override
+    public List<String> getDeviceIdList() {
+        return deviceRepository.getDeviceIdList();
+    }
 }

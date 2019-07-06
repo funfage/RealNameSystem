@@ -1,12 +1,18 @@
-package com.real.name.project.service.repository;
+package com.real.name.issue.service.repository;
 
-import com.real.name.project.entity.IssueDetail;
+import com.real.name.device.entity.Device;
+import com.real.name.issue.entity.IssueDetail;
+import com.real.name.person.entity.Person;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface IssueDetailRepository extends JpaRepository<IssueDetail, Integer> {
     @Query(value = "select s.issue_id from issue_detail s where s.issue_person_status = ?1", nativeQuery = true)
@@ -27,10 +33,21 @@ public interface IssueDetailRepository extends JpaRepository<IssueDetail, Intege
             "and s.device_id = d.device_id and (s.issue_image_status != ?3 or s.issue_person_status != ?4)", nativeQuery = true)
     List<IssueDetail> findByCondition(String deviceId, String projectCode, Integer issuePersonStatus, Integer issueImageStatus);
 
+    Optional<IssueDetail> findByDevice_DeviceIdAndPersonId(String deviceId, Integer personId);
+
+    @Query(value = "select s.personId from IssueDetail s where s.projectCode = ?1 and s.device.deviceId = ?2 " +
+            "and (s.issueImageStatus = 0 or s.issuePersonStatus = 0)")
+    Page<Integer> findFailureIssue(String projectCode, String deviceId, Pageable pageable);
+
     @Modifying
     @Transactional
     @Query("update IssueDetail i set i.issuePersonStatus = ?1, i.issueImageStatus = ?2 where i.issueId = ?3")
     int updateIssueStatus(Integer issuePersonStatus, Integer issueImageStatus, Long issueId);
+
+    @Modifying
+    @Transactional
+    @Query("update IssueDetail i set i.issuePersonStatus = ?1, i.issueImageStatus = ?2 where i.personId = ?3 and i.device.deviceId = ?4 ")
+    int updateByPersonIdAndDeviceId(Integer issuePersonStatus, Integer issueImageStatus, Integer personId, String deviceId);
 
     @Modifying
     @Transactional

@@ -1,9 +1,12 @@
 package com.real.name.IssueDetai;
 
+import com.alibaba.druid.support.json.JSONUtils;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.real.name.BaseTest;
 import com.real.name.device.entity.Device;
-import com.real.name.project.entity.IssueDetail;
-import com.real.name.project.service.repository.IssueDetailRepository;
+import com.real.name.issue.entity.IssueDetail;
+import com.real.name.issue.service.repository.IssueDetailRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,8 +59,11 @@ public class IssueDetailTest extends BaseTest {
     }
     @Test
     public void findByCondition() {
-        List<IssueDetail> issueDetails = repository.findByCondition("6667", "067R9HQR0dmw178890C4BKubNU2d9gG7", 1, 1);
-        System.out.println(issueDetails);
+        List<IssueDetail> issueDetails = repository.findByCondition("6668", "067R9HQR0dmw178890C4BKubNU2d9gG7", 1, 1);
+        String s = JSON.toJSON(issueDetails).toString();
+        System.out.println(s);
+        List<IssueDetail> list = JSONObject.parseArray(s, IssueDetail.class);
+        System.out.println(list);
     }
 
     @Test
@@ -66,5 +72,17 @@ public class IssueDetailTest extends BaseTest {
         Assert.assertEquals(1, i);
     }
 
+    @Test
+    public void findByDevice_DeviceIdAndPersonIdTest() {
+        Device device = new Device();
+        device.setDeviceId("6668");
+        repository.findByDevice_DeviceIdAndPersonId("6668", 87);
+    }
+
+    @Test
+    public void updateByPersonIdAndDeviceIdTest() {
+        int i = repository.updateByPersonIdAndDeviceId(0, 0, 87, "6668");
+        System.out.println(i);
+    }
 
 }

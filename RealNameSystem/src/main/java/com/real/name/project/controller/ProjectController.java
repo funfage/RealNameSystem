@@ -12,11 +12,12 @@ import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.group.service.GroupService;
+import com.real.name.issue.entity.IssueDetail;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
 import com.real.name.project.entity.Project;
 import com.real.name.project.entity.ProjectDetail;
-import com.real.name.project.service.IssueDetailService;
+import com.real.name.issue.service.IssueDetailService;
 import com.real.name.project.service.ProjectDetailService;
 import com.real.name.project.service.ProjectPersonDetailService;
 import com.real.name.project.service.ProjectService;
@@ -200,8 +201,8 @@ public class ProjectController {
         }
         //判断该项目是否绑定设备
         List<Device> projectDevices = deviceService.findByProjectCodeAndDeviceType(projectCode, DeviceConstant.faceDeviceType);
-        if (projectDevices != null && projectDevices.size() <= 0) {
-            logger.warn("该项目未绑定人脸设备");
+        //若查询结果为空则说明该项目未绑定设备
+        if (projectDevices == null || projectDevices.size() <= 0) {
             throw new AttendanceException(ResultError.PROJECT_NO_BIND_FACE);
         }
        /* // 判断该班组中，是否已经添加了该人员
@@ -224,17 +225,22 @@ public class ProjectController {
                     throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "添加人员到项目");
                 }
             }
+            Person person = personOptional.get();
+            //若果是管理工人则下发到该项目绑定的设备
+            if (person.getWorkRole() == 10) {
+                //为管理工人创建所有下发设备的标识
+                for (Device device : allDevices) {
+                    issueDetailService.save(new IssueDetail(person.getPersonId(), device,  0, 0));
+                }
+            } else if (person.getWorkRole() == 20) {//如果是普通工人则下发到所有设备
+                //为普通工人添加一条项目绑定设备的标识
+                for (Device device : projectDevices) {
+                    issueDetailService.save(new IssueDetail(person.getPersonId(), device, projectCode, 0, 0));
+                }
+            }
             //下发人员信息到设备
-            projectDetailService.addPersonToDevice(projectCode, personOptional.get(), projectDevices, allDevices);
+            projectDetailService.addPersonToDevice(projectCode, person, projectDevices, allDevices);
         }
-        //从数据库中查询下发信息
-        /*List<Integer> issueSuccessId = issueDetailService.findIdByIssueStatus(1, 1);
-        List<Integer> issuePersonFailId = issueDetailService.findIdByIssuePersonStatus(0);
-        List<Integer> issueImageFailId = issueDetailService.findIdByIssueImageStatus(0);
-        Map<String, List<Integer>> map = new HashMap<>();
-        map.put("issueSuccessId", issueSuccessId);
-        map.put("issuePersonFailId", issuePersonFailId);
-        map.put("issueImageFailId", issueImageFailId);*/
         return ResultVo.success();
     }
 

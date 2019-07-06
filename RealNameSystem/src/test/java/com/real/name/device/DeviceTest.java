@@ -24,5 +24,11 @@ public class DeviceTest extends BaseTest {
         System.out.println(byProjectCodeAndDeviceType);
     }
 
+    @Test
+    public void getDeviceIdList() {
+        List<String> deviceIdList = repository.getDeviceIdList();
+        System.out.println(deviceIdList);
+    }
+
 
 }

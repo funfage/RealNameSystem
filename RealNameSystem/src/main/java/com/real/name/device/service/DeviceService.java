@@ -54,4 +54,10 @@ public interface DeviceService {
      */
     List<Device> findByProjectCodeAndDeviceType(String projectId, Integer deciceType);
 
+    /**
+     * 获取设备所有的id
+     * @return
+     */
+    List<String> getDeviceIdList();
+
 }

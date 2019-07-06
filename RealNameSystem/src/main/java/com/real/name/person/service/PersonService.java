@@ -25,6 +25,13 @@ public interface PersonService {
     Page<Person> findAll(Pageable pageable);
 
     /**
+     * 查询该集合id下所有人员信息
+     * @param personIds
+     * @return
+     */
+    List<Person> findByPersonIdIn(List<Integer> personIds);
+
+    /**
      * 根据id查询人员
      */
     Optional<Person> findById(Integer personId);

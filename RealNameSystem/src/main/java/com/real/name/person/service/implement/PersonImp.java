@@ -42,6 +42,11 @@ public class PersonImp implements PersonService {
     }
 
     @Override
+    public List<Person> findByPersonIdIn(List<Integer> personIds) {
+        return personRepository.findByPersonIdIn(personIds);
+    }
+
+    @Override
     public Optional<Person> findById(Integer personId) {
         return personRepository.findById(personId);
     }

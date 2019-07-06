@@ -1,18 +1,17 @@
 package com.real.name.project.service.implement;
 
 import com.alibaba.fastjson.JSONObject;
-import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.info.DeviceConstant;
-import com.real.name.common.result.ResultError;
-import com.real.name.common.utils.HTTPTool;
 import com.real.name.device.DeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.repository.DeviceRepository;
+import com.real.name.issue.entity.IssueDetail;
+import com.real.name.issue.entity.FaceResult;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
 import com.real.name.project.entity.*;
 import com.real.name.project.service.ProjectDetailService;
-import com.real.name.project.service.repository.IssueDetailRepository;
+import com.real.name.issue.service.repository.IssueDetailRepository;
 import com.real.name.project.service.repository.ProjectDetailRepository;
 import com.real.name.project.service.repository.ProjectPersonDetailRepository;
 import org.slf4j.Logger;
@@ -53,14 +52,8 @@ public class ProjectDetailImp implements ProjectDetailService {
     @SuppressWarnings("unchecked")
     @Override
     public void addPersonToDevice(String projectCode, Person person, List<Device> projectDevice, List<Device> allDevices) {
-        // 给设备发送人员信息
-        String url = "person/create";
-        Map<String, Object> map = new HashMap<>();
-        map.put("person", person.toJSON());
-        // 根据工人类型，发送人员信息给不同的设备
-        Integer workRole = person.getWorkRole();
         //根据员工类型下发到设备
-        Map<String, Object> personMap = DeviceUtils.sendPersonInfo(workRole, url, map, projectDevice, allDevices);
+        Map<String, Object> personMap = DeviceUtils.sendPersonInfo(person, projectDevice, allDevices);
         //给下发成功的设备添加人员照片,否则查询设备是否有该人员的信息,若无则设置下发失败的标识
         //获取所下发设备的id;集合
         List<String> deviceIds = (List<String>) personMap.get("deviceIds");
@@ -68,12 +61,11 @@ public class ProjectDetailImp implements ProjectDetailService {
         for (String deviceId : deviceIds) {
             Boolean isSuccess;
             //创建下发信息
-            IssueDetail issueDetail = new IssueDetail(person.getPersonId(), new Device(deviceId), projectCode);
+            IssueDetail issueDetail = new IssueDetail();
             //查询设备信息
             Optional<Device> optionalDevice = deviceRepository.findById(deviceId);
             //获取指定设备的返回信息
             String response = (String) personMap.get(deviceId);
-            Boolean byDeviceId = DeviceUtils.queryPersonByDeviceId(optionalDevice.get(), person);
             //接收参数为空或者请求超时
             if (!StringUtils.hasText(response) || response.equals(DeviceConstant.connectTimeOut)) {
                 logger.error("获取设备响应信息失败：{}", response);
@@ -141,32 +133,11 @@ public class ProjectDetailImp implements ProjectDetailService {
                     }
                 }
             }
-            //保存下发信息到数据库
-            //查询数据库中是否已经存有下发信息
-            List<IssueDetail> issueDetailList = issueDetailRepository.findByCondition(person.getPersonId(), deviceId, projectCode);
-            List<Long> issueDeIntegers = new ArrayList<>();
-            if (issueDetailList.size() > 0) {
-                for (int i = 0; i < issueDetailList.size(); i++) {
-                    //若有则更新第一条信息
-                    if (i == 0) {
-                        IssueDetail select = issueDetailList.get(0);
-                        select.setIssueImageStatus(issueDetail.getIssueImageStatus());
-                        select.setPersonId(issueDetail.getPersonId());
-                        select.setProjectCode(issueDetail.getProjectCode());
-                        select.setDevice(issueDetail.getDevice());
-                        select.setIssuePersonStatus(issueDetail.getIssuePersonStatus());
-                        issueDetailRepository.save(select);
-                    } else {
-                        issueDeIntegers.add(issueDetailList.get(i).getIssueId());
-                    }
-                }
-                if (issueDeIntegers.size() > 0) {
-                    //删除其他多余的信息
-                    issueDetailRepository.deleteByIssueIdIn(issueDeIntegers);
-                }
-            } else {
-                //保存信息
-                issueDetailRepository.save(issueDetail);
+            //修改数据库中的下发状态
+            try {
+                issueDetailRepository.updateByPersonIdAndDeviceId(issueDetail.getIssuePersonStatus(), issueDetail.getIssueImageStatus(), person.getPersonId(), deviceId);
+            } catch (Exception e) {
+                logger.error("修改数据库中的下发状态失败", e.getMessage());
             }
         }
     }

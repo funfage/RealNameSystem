@@ -2,6 +2,7 @@ package com.real.name.device.service.repository;
 
 import com.real.name.device.entity.Device;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -21,4 +22,7 @@ public interface DeviceRepository extends JpaRepository<Device, String> {
     List<Device> findAllByDeviceType(Integer deciceType);
 
     Device findDeviceByDeviceId(String deviceId);
+
+    @Query("select d.deviceId from Device d")
+    List<String> getDeviceIdList();
 }

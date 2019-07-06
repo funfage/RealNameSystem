@@ -1,4 +1,4 @@
-package com.real.name.project.entity;
+package com.real.name.issue.entity;
 
 public class FaceResult<T> {
 

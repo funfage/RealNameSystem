@@ -3,8 +3,7 @@ package com.real.name.common.utils;
 import org.springframework.util.StringUtils;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Random;
+import java.util.*;
 
 public class CommonUtils {
 
@@ -59,6 +58,13 @@ public class CommonUtils {
 
         }
         return sb.toString();
+    }
+
+    public static List<Integer> getIntegerList(List<Integer> list) {
+        // 使用HashSet去掉重复
+        Set<Integer> set = new HashSet<Integer>(list);
+        // 得到去重后的新集合
+        return new ArrayList<Integer>(set);
     }
 
     public static void main(String[] args) {

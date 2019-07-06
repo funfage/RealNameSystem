@@ -134,9 +134,9 @@ public class HTTPTool {
      */
     public static String postUrlForParam(String url, Map<String, Object> param) {
         HttpHeaders headers = new HttpHeaders();
-        /*MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+        MediaType type = MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8");
         headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());*/
         MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
         if (param != null) {
             for (Map.Entry<String, Object> entry : param.entrySet()) {
@@ -148,7 +148,7 @@ public class HTTPTool {
             //获取响应的内容
             return httpTool.restTemplate.postForObject(url, entity, String.class);
         } catch (Exception e) {
-            logger.error("postUrlForParam error e:{}", e);
+            logger.error("postUrlForParam error e:{}", e.getMessage());
             return DeviceConstant.connectTimeOut;
         }
     }
@@ -159,17 +159,16 @@ public class HTTPTool {
      */
     public static String getUrlForParam(String baseUrl, Map<String, Object> params) throws RuntimeException {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Accept", "application/json");
+        headers.set("Accept", MediaType.APPLICATION_JSON.toString());
         HttpEntity entity = new HttpEntity(headers);
         MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
         headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
         try {
             ResponseEntity<String> exchange = httpTool.restTemplate.exchange(baseUrl, HttpMethod.GET, entity, String.class, params);
             logger.info("GetRequest Body:{}", exchange.getBody());
             return exchange.getBody();
         } catch (RestClientException e) {
-            logger.error("postUrlForParam error e:{}", e);
+            logger.error("postUrlForParam error e:{}", e.getMessage());
             return DeviceConstant.connectTimeOut;
         }
     }

@@ -6,8 +6,10 @@ import com.real.name.project.entity.Project;
 import com.real.name.project.entity.ProjectPersonDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ProjectPersonDetailRepository extends JpaRepository<ProjectPersonDetail, Integer> {
@@ -46,4 +48,7 @@ public interface ProjectPersonDetailRepository extends JpaRepository<ProjectPers
     @Modifying
     @Transactional
     int deleteByWorkerGroup(WorkerGroup workerGroup);
+
+   /* @Query("select pd.createTime, wg from ProjectPersonDetail pd, WorkerGroup wg where pd.person.personId = ")
+    List<ProjectPersonDetail> findPersonAndWorkerGroupInfo(List<Integer> personIds);*/
 }

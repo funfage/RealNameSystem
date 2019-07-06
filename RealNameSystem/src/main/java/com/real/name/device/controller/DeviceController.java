@@ -14,10 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
@@ -165,6 +162,12 @@ public class DeviceController {
             throw new AttendanceException(ResultError.INSERT_ERROR);
         }
         return ResultVo.success();
+    }
+
+    @GetMapping("getDeviceIdList")
+    public ResultVo getDeviceIdList() {
+        List<String> deviceIdList = deviceService.getDeviceIdList();
+        return ResultVo.success(deviceIdList);
     }
 
     private void verifyParam(String factory, Integer deviceType, String ip, Integer direction, Integer channel,

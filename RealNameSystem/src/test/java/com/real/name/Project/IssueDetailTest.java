@@ -2,8 +2,8 @@ package com.real.name.Project;
 
 import com.real.name.BaseTest;
 import com.real.name.device.entity.Device;
-import com.real.name.project.entity.IssueDetail;
-import com.real.name.project.service.repository.IssueDetailRepository;
+import com.real.name.issue.entity.IssueDetail;
+import com.real.name.issue.service.repository.IssueDetailRepository;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
