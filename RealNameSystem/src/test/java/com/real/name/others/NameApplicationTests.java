@@ -1,4 +1,4 @@
-package com.real.name;
+package com.real.name.others;
 
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;

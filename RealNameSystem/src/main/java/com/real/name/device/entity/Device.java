@@ -41,9 +41,11 @@ public class Device {
 
     private String remark;
 
-    public Device(String deviceId, String ip) {
+    public Device(String deviceId, Integer outPort, String ip, String pass) {
         this.deviceId = deviceId;
+        this.outPort = outPort;
         this.ip = ip;
+        this.pass = pass;
     }
 
     public Device() {

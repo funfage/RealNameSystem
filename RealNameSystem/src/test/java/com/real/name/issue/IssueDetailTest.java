@@ -1,17 +1,13 @@
 package com.real.name.issue;
 
-import com.real.name.BaseTest;
-import com.real.name.common.utils.CommonUtils;
-import com.real.name.issue.entity.IssueDetail;
+import com.real.name.others.BaseTest;
 import com.real.name.issue.service.repository.IssueDetailRepository;
-import com.real.name.person.entity.Person;
 import com.real.name.person.service.repository.PersonRepository;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

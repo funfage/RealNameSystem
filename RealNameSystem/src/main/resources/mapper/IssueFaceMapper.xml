@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.real.name.issue.service.repository.IssueFaceMapper">
+    <resultMap id="faceIssuePersonFailure" type="com.real.name.issue.entity.IssueFace">
+        <id property="issueFaceId" column="issue_face_id"/>
+        <result property="issueImageStatus" column="issue_image_status"/>
+        <result property="issuePersonStatus" column="issue_person_status"/>
+        <!--建立多对一关联关系-->
+        <association property="person" column="person_id" javaType="com.real.name.person.entity.Person">
+            <id property="personId" column="person_id"/>
+            <result property="personName" column="person_name"/>
+            <result property="headImage" column="head_image"/>
+        </association>
+        <association property="device" column="device_it" javaType="com.real.name.device.entity.Device">
+            <id property="deviceId" column="device_id"/>
+            <result property="deviceType" column="device_type"/>
+            <result property="ip" column="ip"/>
+            <result property="outPort" column="out_port"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="findIssueFailPersonInfo" type="com.real.name.issue.entity.IssueFace">
+        <id property="issueFaceId" column="issue_face_id"/>
+        <result property="issueImageStatus" column="issue_image_status"/>
+        <result property="issuePersonStatus" column="issue_person_status"/>
+        <association property="device" column="device_id" javaType="com.real.name.device.entity.Device">
+            <id property="deviceId" column="d_device_id"/>
+            <result property="projectCode" column="project_code"/>
+        </association>
+        <!--建立多对一关联关系-->
+        <association property="person" column="person_id" javaType="com.real.name.person.entity.Person">
+            <id property="personId" column="p_person_id"/>
+            <result property="personName" column="person_name"/>
+            <result property="gender" column="gender"/>
+            <result property="address" column="address"/>
+            <result property="age" column="age"/>
+            <result property="bankLinkNumber" column="bank_link_number"/>
+            <result property="cardNumber" column="card_number"/>
+            <result property="cellPhone" column="cell_phone"/>
+            <result property="cultureLevelType" column="culture_level_type"/>
+            <result property="expiryDate" column="expiry_date"/>
+            <result property="grantOrg" column="grant_org"/>
+            <result property="groupNo" column="group_no"/>
+            <result property="hasBadMedicalHistory" column="has_bad_medical_history"/>
+            <result property="hasBuyInsurance" column="has_buy_insurance"/>
+            <result property="hometown" column="hometown"/>
+            <result property="idCardIndex" column="id_card_index"/>
+            <result property="idCardNumber" column="id_card_number"/>
+            <result property="idCardType" column="id_card_type"/>
+            <result property="issueCardDate" column="issue_card_date"/>
+            <result property="issueCardPic" column="issue_card_pic"/>
+            <result property="isTeamLeader" column="is_team_leader"/>
+            <result property="joinedTime" column="joined_time"/>
+            <result property="maritalStatus" column="marital_status"/>
+            <result property="nation" column="nation"/>
+            <result property="negativeIdCardImage" column="negative_id_card_image"/>
+            <result property="payRollBankCardNumber" column="pay_roll_bank_card_number"/>
+            <result property="payRollBankName" column="pay_roll_bank_name"/>
+            <result property="payRollTopBankCode" column="pay_roll_top_bank_code"/>
+            <result property="politicsType" column="politics_type"/>
+            <result property="positiveIdCardImage" column="positive_id_card_image"/>
+            <result property="specialty" column="specialty"/>
+            <result property="startDate" column="start_date"/>
+            <result property="suffixName" column="suffix_name"/>
+            <result property="urgentLinkMan" column="urgent_link_man"/>
+            <result property="urgentLinkManPhone" column="urgent_link_man_phone"/>
+            <result property="workDate" column="work_date"/>
+            <result property="workRole" column="work_role"/>
+            <result property="workType" column="work_type"/>
+        </association>
+    </resultMap>
+
+    <sql id="issuePersonFailInfoWithImage">
+        f.issue_face_id, f.issue_image_status, f.issue_person_status,
+        d.device_id as d_device_id, d.project_code,
+        p.person_id as p_person_id, p.person_name, p.gender, p.address, p.age, p.bank_link_number, p.card_number,
+        p.cell_phone, p.culture_level_type, p.expiry_date, p.grant_org, p.group_no, p.has_bad_medical_history,
+        p.has_buy_insurance, p.hometown, p.id_card_index, p.id_card_number, p.id_card_type, p.issue_card_date,
+        p.issue_card_pic, p.is_team_leader, p.joined_time, p.marital_status, p.nation, p.negative_id_card_image,
+        p.pay_roll_bank_card_number, p.pay_roll_bank_name, p.pay_roll_top_bank_code, p.politics_type, p.positive_id_card_image,
+        p.specialty, p.start_date, p.suffix_name, p.urgent_link_man, p.urgent_link_man_phone, p.work_date,
+        p.work_role, p.work_type
+    </sql>
+
+    <select id="findAllFaceIssuePersonFailure" resultMap="faceIssuePersonFailure">
+      select
+      f.issue_face_id, f.issue_image_status, f.issue_person_status,
+      f.person_id as i_person_id, f.device_id as i_device_id,
+      p.person_id, p.person_name, p.head_image,
+      d.device_id, d.device_type, d.out_port, d.ip
+      from
+      issue_face f, person p, device d
+      where
+      f.issue_person_status = 0
+      and
+      f.device_id = d.device_id
+      and
+      f.person_id = p.person_id
+    </select>
+
+    <select id="findAllFaceIssueImageFailure" resultMap="faceIssuePersonFailure">
+        select
+      f.issue_face_id, f.issue_image_status, f.issue_person_status,
+      f.person_id as i_person_id, f.device_id as i_device_id,
+      p.person_id, p.person_name, p.head_image,
+      d.device_id, d.device_type, d.out_port, d.ip
+      from
+      issue_face f, person p, device d
+      where
+      f.issue_image_status = 0
+      and
+      f.issue_person_status = 1
+      and
+      f.device_id = d.device_id
+      and
+      f.person_id = p.person_id
+    </select>
+
+    <update id="updateByPersonIdAndDeviceId"  parameterType="com.real.name.issue.entity.IssueFace"
+            useGeneratedKeys="true" keyProperty="issueFaceId" keyColumn="issue_face_id">
+        update issue_face
+        <set>
+            <if test="issuePersonStatus != null">
+                issue_person_status = #{issuePersonStatus},
+            </if>
+            <if test="issueImageStatus != null">
+                issue_image_status = #{issueImageStatus}
+            </if>
+        </set>
+        where
+        person_id = #{person.personId}
+        and
+        device_id = #{device.deviceId}
+    </update>
+
+    <insert id="insertInitIssue" parameterType="com.real.name.issue.entity.IssueFace"
+            useGeneratedKeys="true" keyProperty="issueFaceId" keyColumn="issue_face_id">
+        insert into issue_face
+        (person_id, device_id, issue_person_status, issue_image_status)
+        values
+        (#{person.personId}, #{device.deviceId}, #{issuePersonStatus}, #{issueImageStatus})
+    </insert>
+
+    <select id="findAllFailDeviceIds" resultType="string">
+       select
+       device_id
+       from
+       issue_face
+    </select>
+
+    <select id="findAllFailDeviceIdsByProjectCode" resultType="string">
+       select
+       f.device_id as f_device_id
+       from
+       issue_face f, device d
+       where
+       (d.project_code is null
+       or
+       d.project_code = ""
+       or
+       d.project_code = #{projectCode})
+       and
+       f.device_id = d.device_id
+       and
+        (f.issue_person_status = 0
+        or
+        f.issue_image_status =0)
+    </select>
+
+    <select id="findIssueFailPersonInfoByProjectCode" resultMap="findIssueFailPersonInfo">
+        select
+        <include refid="issuePersonFailInfoWithImage"/>
+        from
+        issue_face f, person p, device d
+        where
+        f.device_id = d.device_id
+        and
+        f.person_id = p.person_id
+        and
+        (d.project_code is null
+        or
+        d.project_code = ""
+        or
+        d.project_code = #{projectCode})
+        and
+        (f.issue_person_status = 0
+        or
+        f.issue_image_status =0)
+    </select>
+
+    <select id="findIssueFailPersonInfoByDeviceId" resultMap="findIssueFailPersonInfo">
+        select
+        <include refid="issuePersonFailInfoWithImage"/>
+        from
+        issue_face f, person p, device d
+        where
+        f.device_id = d.device_id
+        and
+        f.person_id = p.person_id
+        and
+        d.device_id = #{deviceId}
+        and
+        (f.issue_person_status = 0
+        or
+        f.issue_image_status =0)
+    </select>
+
+</mapper>

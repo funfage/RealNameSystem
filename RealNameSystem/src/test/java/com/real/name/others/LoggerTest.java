@@ -1,4 +1,4 @@
-package com.real.name;
+package com.real.name.others;
 
 import org.junit.Test;
 import org.slf4j.Logger;

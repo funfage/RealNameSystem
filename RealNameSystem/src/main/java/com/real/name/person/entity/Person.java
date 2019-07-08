@@ -252,20 +252,23 @@ public class Person {
         this.headImage = headImage;
     }
 
-    public Person(Integer personId, String personName) {
+    public Person(Integer personId, String personName, Integer workRole) {
         this.personId = personId;
         this.personName = personName;
+        this.workRole = workRole;
     }
 
-    public Person(Integer personId, String personName, String headImage) {
+    public Person(Integer personId, String personName, String headImage, Integer workRole) {
         this.personId = personId;
         this.personName = personName;
         this.headImage = headImage;
+        this.workRole = workRole;
     }
 
-    public Person(String headImage, Integer personId) {
+    public Person(String headImage, Integer personId, Integer workRole) {
         this.personId = personId;
         this.headImage = headImage;
+        this.workRole = workRole;
     }
 
     public String toJSON() {

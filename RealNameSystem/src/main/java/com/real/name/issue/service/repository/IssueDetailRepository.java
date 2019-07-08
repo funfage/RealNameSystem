@@ -1,10 +1,7 @@
 package com.real.name.issue.service.repository;
 
-import com.real.name.device.entity.Device;
 import com.real.name.issue.entity.IssueDetail;
-import com.real.name.person.entity.Person;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

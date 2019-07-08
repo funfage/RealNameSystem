@@ -94,4 +94,9 @@ public class DutouCmdSend {
         byte [] result = frame.array();
         return result;
     }
+
+    public static byte[] deleteAllAuthority() {
+        return null;
+    }
+
 }

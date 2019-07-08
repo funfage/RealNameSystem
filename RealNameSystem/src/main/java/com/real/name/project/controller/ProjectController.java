@@ -13,6 +13,8 @@ import com.real.name.device.service.DeviceService;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.group.service.GroupService;
 import com.real.name.issue.entity.IssueDetail;
+import com.real.name.issue.entity.IssueFace;
+import com.real.name.issue.service.IssueFaceService;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
 import com.real.name.project.entity.Project;
@@ -26,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,7 +58,7 @@ public class ProjectController {
     private ProjectPersonDetailService projectPersonDetailService;
 
     @Autowired
-    private IssueDetailService issueDetailService;
+    private IssueFaceService issueFaceService;
 
     @Autowired
     private DeviceService deviceService;
@@ -179,6 +182,7 @@ public class ProjectController {
     /**
      * 项目添加人员
      */
+    @Transactional
     @PostMapping("/addPerson")
     public ResultVo addPerson(@RequestParam(value = "persons[]") Integer[] persons,
                               @RequestParam("projectCode") String projectCode,
@@ -212,8 +216,8 @@ public class ProjectController {
         // 添加人员到项目中
         for (Integer personId : persons) {
             // 判断是否有该人员
-            Optional<Person> personOptional = personService.findById(personId);
-            if (!personOptional.isPresent() || !StringUtils.hasText(personOptional.get().getHeadImage()) || !StringUtils.hasText(personOptional.get().getPersonName())) {
+            Person personImageInfo = personService.findIssuePersonImageInfo(personId);
+            if (personImageInfo == null || !StringUtils.hasText(personImageInfo.getPersonName()) || !StringUtils.hasText(personImageInfo.getPersonName())) {
                 //若人员不存在则跳过
                 continue;
             }
@@ -225,21 +229,26 @@ public class ProjectController {
                     throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "添加人员到项目");
                 }
             }
-            Person person = personOptional.get();
             //若果是管理工人则下发到该项目绑定的设备
-            if (person.getWorkRole() == 10) {
+            if (personImageInfo.getWorkRole() == 10) {
                 //为管理工人创建所有下发设备的标识
                 for (Device device : allDevices) {
-                    issueDetailService.save(new IssueDetail(person.getPersonId(), device,  0, 0));
+                    int effect = issueFaceService.insertInitIssue(new IssueFace(personImageInfo, device, 0, 0));
+                    if (effect <= 0) {
+                        throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "添加人员到项目");
+                    }
                 }
-            } else if (person.getWorkRole() == 20) {//如果是普通工人则下发到所有设备
+            } else if (personImageInfo.getWorkRole() == 20) {//如果是普通工人则下发到所有设备
                 //为普通工人添加一条项目绑定设备的标识
                 for (Device device : projectDevices) {
-                    issueDetailService.save(new IssueDetail(person.getPersonId(), device, projectCode, 0, 0));
+                    int effectNum = issueFaceService.insertInitIssue(new IssueFace(personImageInfo, device, 0, 0));
+                    if (effectNum <= 0) {
+                        throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "添加人员到项目");
+                    }
                 }
             }
             //下发人员信息到设备
-            projectDetailService.addPersonToDevice(projectCode, person, projectDevices, allDevices);
+            projectDetailService.addPersonToDevice(projectCode, personImageInfo, projectDevices, allDevices);
         }
         return ResultVo.success();
     }

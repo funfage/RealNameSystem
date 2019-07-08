@@ -1,6 +1,6 @@
 package com.real.name.Project;
 
-import com.real.name.BaseTest;
+import com.real.name.others.BaseTest;
 import com.real.name.project.entity.ProjectDetail;
 import com.real.name.project.service.repository.ProjectDetailRepository;
 import org.junit.Test;

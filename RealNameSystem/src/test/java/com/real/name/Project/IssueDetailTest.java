@@ -1,6 +1,6 @@
 package com.real.name.Project;
 
-import com.real.name.BaseTest;
+import com.real.name.others.BaseTest;
 import com.real.name.device.entity.Device;
 import com.real.name.issue.entity.IssueDetail;
 import com.real.name.issue.service.repository.IssueDetailRepository;

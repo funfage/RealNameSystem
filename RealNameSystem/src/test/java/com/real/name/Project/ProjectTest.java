@@ -1,17 +1,14 @@
 package com.real.name.Project;
 
-import com.real.name.BaseTest;
+import com.real.name.others.BaseTest;
 import com.real.name.project.entity.Project;
 import com.real.name.project.service.ProjectService;
-import com.real.name.project.service.repository.ProjectDetailRepository;
 import com.real.name.project.service.repository.ProjectRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-
-import java.awt.print.Pageable;
 
 public class ProjectTest extends BaseTest {
     @Autowired

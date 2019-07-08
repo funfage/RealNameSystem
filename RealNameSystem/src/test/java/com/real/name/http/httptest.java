@@ -1,6 +1,6 @@
 package com.real.name.http;
 
-import com.real.name.BaseTest;
+import com.real.name.others.BaseTest;
 import com.real.name.httptest.RunService;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;

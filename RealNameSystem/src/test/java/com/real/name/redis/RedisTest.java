@@ -1,7 +1,7 @@
 package com.real.name.redis;
 
 import com.alibaba.fastjson.JSONObject;
-import com.real.name.BaseTest;
+import com.real.name.others.BaseTest;
 import com.real.name.common.utils.JedisService;
 import com.real.name.device.entity.Device;
 import org.junit.Test;
@@ -22,9 +22,10 @@ public class RedisTest extends BaseTest {
         jedisStrings.set("password", "123", 1, TimeUnit.SECONDS);
         String name = (String) jedisStrings.get("name");
         System.out.println(name);
-        jedisStrings.setIfAbsent("age", 12, 100, TimeUnit.SECONDS);
-        jedisStrings.setIfAbsent("age", 18, 100, TimeUnit.SECONDS);
-        jedisStrings.setIfPresent("age", 20, 100, TimeUnit.SECONDS);
+        jedisStrings.setIfAbsent("age", 12);
+        jedisStrings.setIfAbsent("age", 18);
+        jedisStrings.setIfPresent("age", 20);
+        jedisStrings.set("age", 3434);
         jedisKeys.del("age");
         jedisStrings.setIfPresent("age", 22, 100, TimeUnit.SECONDS);
         jedisStrings.set("gender", "man");

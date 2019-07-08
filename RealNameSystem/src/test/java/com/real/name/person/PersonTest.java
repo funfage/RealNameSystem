@@ -1,7 +1,7 @@
 package com.real.name.person;
 
 import com.alibaba.fastjson.JSONObject;
-import com.real.name.BaseTest;
+import com.real.name.others.BaseTest;
 import com.real.name.common.utils.ImageTool;
 import com.real.name.httptest.RunService;
 import com.real.name.person.controller.PersonController;
@@ -157,20 +157,20 @@ public class PersonTest extends BaseTest {
 
     @Test
     public void findIssuePerson() {
-        Person issuePersonInfo = personRepository.findIssuePersonInfo(87);
+        Person issuePersonInfo = personRepository.findIssuePersonInfo(100);
         System.out.println(issuePersonInfo);
     }
 
 
     @Test
     public void findIssueImageInfoTest() {
-        Person issueImageInfo = personRepository.findIssueImageInfo(87);
+        Person issueImageInfo = personRepository.findIssueImageInfo(100);
         System.out.println(issueImageInfo);
     }
 
     @Test
     public void findIssuePersonImageInfoTest() {
-        Person issuePersonInfo = personRepository.findIssuePersonImageInfo(87);
+        Person issuePersonInfo = personRepository.findIssuePersonImageInfo(100);
         System.out.println(issuePersonInfo);
     }
 

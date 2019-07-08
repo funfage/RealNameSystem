@@ -9,21 +9,37 @@ import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.utils.HTTPTool;
 import com.real.name.device.entity.Device;
+import com.real.name.issue.entity.IssueFace;
+import com.real.name.issue.service.IssueFaceService;
 import com.real.name.person.entity.Person;
 import com.real.name.issue.entity.FaceResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class DeviceUtils {
 
     public final static String deviceHeartBeat = "setDeviceHeartBeat";
 
     private static Logger logger = LoggerFactory.getLogger(DeviceUtils.class);
+
+    @Autowired
+    private IssueFaceService issueFaceService;
+
+    private static DeviceUtils deviceUtils;
+
+    @PostConstruct
+    public void init() {
+        deviceUtils = this;
+    }
 
     //判断设备是否在线
     public static boolean isOnLine(String ip, Integer outPort) {
@@ -37,10 +53,10 @@ public class DeviceUtils {
      */
     public static boolean registerHeartBeat(Device device) {
         Map<String, Object> map = new HashMap<>();
-        //设备注册心跳地址
+        //注册心跳的设备地址
         String url = getWholeUrl(deviceHeartBeat, device);
         map.put("pass", device.getPass());
-        map.put("url", url);
+        map.put("url", "http://139.9.47.190:9901/attendance/heartbeat");
         String response = HTTPTool.postUrlForParam(url, map);
         if (StringUtils.hasText(response)) {
             FaceResult faceResult = JSONObject.parseObject(response, FaceResult.class);
@@ -62,6 +78,10 @@ public class DeviceUtils {
     /**
      * ===========================================================================================
      */
+    /**
+     *重发下发失败的信息
+     */
+
 
     /**
      * 根据workRole向人脸识别设备发送人员信息
@@ -81,6 +101,78 @@ public class DeviceUtils {
             throw new AttendanceException(ResultError.PERSON_EMPTY);
         }
         return resultMap;
+    }
+
+    /**
+     * 下发人员信息到多个设备
+     * @param times 表示下发的次数
+     */
+    public static void issuePersonToDevices(List<Device> deviceList, Person person, int times) {
+        for (Device device : deviceList) {
+            issuePersonToOneDevice(device, person, times);
+        }
+    }
+
+    /**
+     * 下发人员和照片信息到某个设备
+     */
+    public static void issuePersonToOneDevice(Device device, Person person, int times) {
+        //只有当deviceId和personId都不为空才修改
+        if (StringUtils.hasText(device.getDeviceId()) && person.getPersonId() != null) {
+            //记录下发的次数
+            int issuePerson = 0;
+            //下发三次
+            while (issuePerson < times) {
+                Boolean isSuccess = issuePersonByDeviceId(device, person);
+                if (isSuccess) { //成功则下发照片信息
+                    IssueFace issueFace = new IssueFace();
+                    issueFace.setDevice(device);
+                    issueFace.setPerson(person);
+                    issueFace.setIssuePersonStatus(1);
+                    issueFace.setIssueImageStatus(0);//防止前面设置过imageStatus的值
+                    int issueImage = 0;
+                    //下发三次照片信息
+                    while (issueImage < times) {
+                        Boolean isImageIssue = issueImageByDeviceId(device, person);
+                        if (isImageIssue) {
+                            issueFace.setIssueImageStatus(1);
+                            break;
+                        }
+                        issueImage++;
+                    }
+                    //更新设备信息
+                    deviceUtils.issueFaceService.updateByPersonIdAndDeviceId(issueFace);
+                    break;
+                }
+                issuePerson++;
+            }
+        } else {
+            logger.warn("issuePersonToOneDevice error 用户id或设备id为空");
+        }
+    }
+
+    public static void issueImageToOneDevice(Device device, Person person, int times) {
+        if (StringUtils.hasText(device.getDeviceId()) && person.getPersonId() != null) {
+            int issueImage = 0;
+            //下发三次照片信息
+            while (issueImage < times) {
+                Boolean isImageIssue = issueImageByDeviceId(device, person);
+                if (isImageIssue) {
+                    IssueFace issueFace = new IssueFace();
+                    issueFace.setDevice(device);
+                    issueFace.setPerson(person);
+                    //设置下发照片信息成功标识
+                    issueFace.setIssuePersonStatus(1);//防止前面设置过personStatus的值
+                    issueFace.setIssueImageStatus(1);
+                    //更新设备信息
+                    deviceUtils.issueFaceService.updateByPersonIdAndDeviceId(issueFace);
+                    break;
+                }
+                issueImage++;
+            }
+        } else {
+            logger.warn("issueImageToOneDevice error 用户id或设备id为空");
+        }
     }
 
     /**
@@ -105,7 +197,7 @@ public class DeviceUtils {
                 return isSuccess != null && isSuccess;
             }
         } catch (Exception e) {
-            logger.error("queryPersonByDeviceId error e:{}", e);
+            logger.error("queryPersonByDeviceId error e:{}", e.getMessage());
             return false;
         }
     }
@@ -131,7 +223,7 @@ public class DeviceUtils {
                 return isSuccess != null && isSuccess;
             }
         } catch (Exception e) {
-            logger.error("issuePersonByDeviceId error e:{}", e);
+            logger.error("issuePersonByDeviceId error e:{}", e.getMessage());
             return false;
         }
     }
@@ -159,7 +251,7 @@ public class DeviceUtils {
                 }
             }
         } catch (Exception e) {
-            logger.error("issueAndQueryImageByDeviceId error e:{}", e);
+            logger.error("issueAndQueryImageByDeviceId error e:{}", e.getMessage());
             return false;
         }
     }
@@ -184,7 +276,31 @@ public class DeviceUtils {
                 return isSuccess != null && isSuccess;
             }
         } catch (Exception e) {
-            logger.error("sendImageByDeviceId error e:{}", e);
+            logger.error("sendImageByDeviceId error e:{}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 发送发送重置报文到设备
+     * @param device
+     * @return
+     */
+    public static Boolean issueResetDevice(Device device) {
+        try {
+            Map<String, Object> sendMap = sendResetDevice(device);
+            String sendResponse = (String) sendMap.get(device.getDeviceId());
+            if (!StringUtils.hasText(sendResponse) || sendResponse.equals(DeviceConstant.connectTimeOut)) {
+                logger.warn("issueResetDevice获取设备响应信息失败, e:{}", sendResponse);
+                return false;
+            } else {
+                FaceResult sendResult = JSONObject.parseObject(sendResponse, FaceResult.class);
+                Boolean isSuccess = sendResult.getSuccess();
+                //返回是否查询成功
+                return isSuccess != null && isSuccess;
+            }
+        } catch (Exception e) {
+            logger.error("issueResetDevice error,  e:", e.getMessage());
             return false;
         }
     }
@@ -210,7 +326,7 @@ public class DeviceUtils {
             //返回是否查询成功
             return isSuccess != null && isSuccess;
         } catch (Exception e) {
-            logger.error("queryImageByDeviceId error, e{}", e);
+            logger.error("queryImageByDeviceId error, e{}", e.getMessage());
             return false;
         }
     }
@@ -291,6 +407,17 @@ public class DeviceUtils {
         String url = "/face/find";
         Map<String, Object> map = new HashMap<>();
         map.put("personId", personId);
+        return HTTPTool.sendDataToFaceDeviceByDeviceId(url, map, DeviceConstant.postMethod, device);
+    }
+
+    /**
+     *发送重置设备信息请求
+     * @return true则重置成功
+     */
+    private static Map<String, Object> sendResetDevice(Device device) {
+        String url = "/device/reset";
+        Map<String, Object> map = new HashMap<>();
+        map.put("delete", true);
         return HTTPTool.sendDataToFaceDeviceByDeviceId(url, map, DeviceConstant.postMethod, device);
     }
 

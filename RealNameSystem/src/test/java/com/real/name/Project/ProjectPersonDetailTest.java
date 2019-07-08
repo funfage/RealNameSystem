@@ -1,6 +1,6 @@
 package com.real.name.Project;
 
-import com.real.name.BaseTest;
+import com.real.name.others.BaseTest;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.person.entity.Person;
 import com.real.name.person.entity.Person2;

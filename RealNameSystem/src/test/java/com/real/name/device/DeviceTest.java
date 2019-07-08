@@ -1,6 +1,6 @@
 package com.real.name.device;
 
-import com.real.name.BaseTest;
+import com.real.name.others.BaseTest;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.repository.DeviceRepository;
 import org.junit.Test;

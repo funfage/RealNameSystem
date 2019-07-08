@@ -1,4 +1,4 @@
-package com.real.name;
+package com.real.name.others;
 
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;

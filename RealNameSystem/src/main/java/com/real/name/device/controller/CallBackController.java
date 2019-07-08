@@ -119,50 +119,17 @@ public class CallBackController {
         String routerIP = HTTPTool.getIpAddr(request);
         String result = "ip: " + ip + ", deviceKey: " + deviceKey + ", personCount: " + personCount + ", time: " + time + ", faceCount: " + faceCount + ", version: " + version + ", routerIP: " + routerIP + "\n";
         logger.info("设备心跳信息:{}", result);
-        Device selectDevcie = null;
-        //如果从redis查询不到则从数据库中查询
-        if (!jedisKeys.hasKey(deviceKey)) {
-            selectDevcie = updateDeviceIp(deviceKey, routerIP);
-        } else {
-            //从redis查询设备的信息
-            String deviceInfo = (String) jedisStrings.get(deviceKey);
-            //解析出设备信息
-            Device device = JSONObject.parseObject(deviceInfo, Device.class);
-            //判断ip是否一致 不一致则修改
+        //将设备id存入redis
+        jedisStrings.set(deviceKey, routerIP);
+        //判断数据库中是否有设备的信息
+        Optional<Device> deviceOptional = deviceService.findByDeviceId(deviceKey);
+        if (deviceOptional.isPresent()) {
+            Device device = deviceOptional.get();
+            //如过存在该设备信息则判断设备的ip是否发生改变
             if (device.getIp() == null || !device.getIp().equals(routerIP)) {
-                selectDevcie = updateDeviceIp(deviceKey, routerIP);
-            } else {
-                selectDevcie = device;
-            }
-        }
-        if (selectDevcie != null && selectDevcie.getDeviceId() != null && selectDevcie.getProjectCode() != null) {
-            logger.info("heartbeat selectDevice:{}", selectDevcie.toString());
-            try {
-                List<IssueDetail> issueList = issueDetailService.findByCondition(selectDevcie.getDeviceId(), selectDevcie.getProjectCode(), 1, 1);
-                logger.info("heartbeat mysql issueListStr:{}", issueList.toString());
-                //重发
-                resend(issueList);
-                /*//查询出该设备项目下发失败的人员
-                if (!jedisKeys.hasKey(selectDevcie.getDeviceId() + selectDevcie.getProjectCode())) {
-                    //从数据库中该设备获取下发失败信息
-                    List<IssueDetail> issueList = issueDetailService.findByCondition(selectDevcie.getDeviceId(), selectDevcie.getProjectCode(), 1, 1);
-                    String issueListStr = JSON.toJSON(issueList).toString();
-                    logger.info("heartbeat mysql issueListStr:{}", issueListStr);
-                    //存入redis
-                    jedisStrings.set(selectDevcie.getDeviceId() + selectDevcie.getProjectCode(), issueListStr);
-                    //重发
-                    resend(issueList);
-                } else {
-                    //从redis获取需要下发信息
-                    String issueListStr = (String) jedisStrings.get(selectDevcie.getDeviceId() + selectDevcie.getProjectCode());
-                    logger.info("heartbeat redis issueListStr:{}", issueListStr);
-                    List<IssueDetail> issueList = JSONObject.parseArray(issueListStr, IssueDetail.class);
-                    //重发
-                    resend(issueList);
-                }*/
-            } catch (Exception e) {
-                logger.error("heartbeat issue error:{}", e);
-               // jedisKeys.del(selectDevcie.getDeviceId() + selectDevcie.getProjectCode());
+                //如果ip发生改变则修改数据库中的ip值
+                device.setIp(routerIP);
+                deviceService.save(device);
             }
         }
         //返回成功信息给设备

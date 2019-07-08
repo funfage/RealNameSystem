@@ -1,13 +1,10 @@
 package com.real.name.Group;
 
-import com.real.name.BaseTest;
-import com.real.name.group.entity.WorkerGroup;
+import com.real.name.others.BaseTest;
 import com.real.name.group.service.repository.GroupRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Optional;
 
 public class GroupTest extends BaseTest {
 

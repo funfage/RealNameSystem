@@ -4,6 +4,7 @@ import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.CommonUtils;
+import com.real.name.common.utils.JedisService;
 import com.real.name.device.DeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
@@ -13,6 +14,7 @@ import com.real.name.project.service.ProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +28,12 @@ import java.util.*;
 @RequestMapping("/device")
 public class DeviceController {
     private Logger logger = LoggerFactory.getLogger(DeviceController.class);
+
+    @Autowired
+    private JedisService.JedisKeys jedisKeys;
+
+    @Autowired
+    private JedisService.JedisStrings jedisStrings;
 
     @Autowired
     private DeviceDao deviceDao;
@@ -115,6 +123,7 @@ public class DeviceController {
     }
 
     @PostMapping("/adddevice")
+    @Transactional
     public ResultVo adddevice(@RequestParam("factory")String factory,
                                  @RequestParam("deviceType")Integer deviceType,
                                  @RequestParam("deviceId")String deviceId,
@@ -149,14 +158,18 @@ public class DeviceController {
         if (deviceOptional.isPresent()) {
             throw new AttendanceException(ResultError.DEVICE_EXIST);
         }
+        //从redis中判断是否收到设备的心跳
+        if (!jedisKeys.hasKey(deviceId)) {
+            throw new AttendanceException(ResultError.NO_HEARTBEAT);
+        }
+        //发送重置报文
+        Boolean isSuccess = DeviceUtils.issueResetDevice(new Device(deviceId, outPort, ip, pass));
+        if (!isSuccess) {
+            throw new AttendanceException(ResultError.RESET_DEVICE_ERROR);
+        }
         Device device = new Device();
         device.setDeviceId(deviceId);
         verifyParam(factory, deviceType, ip, direction, channel, installTime, outPort, phone, remark, projectCode, pass, device);
-        //注册设备心跳回调
-        boolean success = DeviceUtils.registerHeartBeat(device);
-        if (!success) {
-            throw new AttendanceException("设备注册心跳失败, 请检查设备是否启动");
-        }
         Device newDevice = deviceService.save(device);
         if (newDevice == null) {
             throw new AttendanceException(ResultError.INSERT_ERROR);
@@ -207,7 +220,7 @@ public class DeviceController {
         }
         if (outPort != null) {
             if (outPort < 0 && outPort > 65536) {
-                throw AttendanceException.errorMessage("设备安装时间");
+                throw AttendanceException.errorMessage("端口号");
             }
             device.setOutPort(outPort);
         }
