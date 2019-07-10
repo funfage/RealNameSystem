@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface DeviceRepository extends JpaRepository<Device, String> {
 
@@ -12,8 +13,8 @@ public interface DeviceRepository extends JpaRepository<Device, String> {
 
     List<Device> findByProjectCodeNotNull();
 
-    //查找该项目的所有门禁读头，devicetype传入为1
-    List<Device> findByProjectCodeAndDeviceType(String projectId, Integer deciceType);
+    //查找该项目的所有门禁读头，deviceType传入为1
+    List<Device> findByProjectCodeAndDeviceType(String projectId, Integer deviceType);
 
     //数据库是否存在此设备
     boolean existsDeviceByDeviceId(String deviceId);
@@ -21,8 +22,16 @@ public interface DeviceRepository extends JpaRepository<Device, String> {
     //根据deviceType查询指定类型的设备
     List<Device> findAllByDeviceType(Integer deciceType);
 
-    Device findDeviceByDeviceId(String deviceId);
-
     @Query("select d.deviceId from Device d")
     List<String> getDeviceIdList();
+
+    //根据ip和端口查询某个设备
+    Optional<Device> findByIpAndOutPort(String ip, Integer outPort);
+
+    //查询在projectCodes集合中的所有设备
+    List<Device> findByProjectCodeIn(List<String> projectCodes);
+
+    //查询在projectCodes集合中的所有人脸设备
+    List<Device> findByProjectCodeInAndDeviceType(List<String> projectCodes, Integer deviceType);
+
 }

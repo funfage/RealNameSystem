@@ -43,4 +43,12 @@ public interface GroupService {
      * 删除班组信息
      */
     int deleteByTeamSysNo(Integer teamSysNo);
+
+    /**
+     * 查询某个项目下是否有管理员班组
+     * @param status
+     * @param projectCode
+     * @return
+     */
+    Optional<WorkerGroup> findByIsAdminGroupAndProjectCode(Integer status, String projectCode);
 }

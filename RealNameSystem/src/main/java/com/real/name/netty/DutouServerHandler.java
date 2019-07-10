@@ -1,12 +1,13 @@
 package com.real.name.netty;
 
 import com.alibaba.fastjson.JSON;
+import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.utils.ConvertCode;
 import com.real.name.common.utils.SpringUtil;
 import com.real.name.device.entity.Device;
 import com.real.name.device.entity.Record;
 import com.real.name.device.service.DeviceService;
-import com.real.name.device.service.repository.RecordRepository;
+import com.real.name.device.service.repository.RecordMapper;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.WebSocket;
 import com.real.name.person.service.implement.PersonImp;
@@ -33,6 +34,7 @@ public class DutouServerHandler extends SimpleChannelInboundHandler<DatagramPack
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet) throws Exception {
+        logger.info("DutouServerHandler start....");
         ByteBuf buf = packet.copy().content();
         String hostName =  packet.sender().getHostName();
         logger.info("hostname", hostName);
@@ -63,14 +65,16 @@ public class DutouServerHandler extends SimpleChannelInboundHandler<DatagramPack
                //根据身份证索引号在person表获得人员ID
                ApplicationContext appCtx = SpringUtil.getApplicationContext();
                PersonImp personImp = appCtx.getBean(PersonImp.class);
-               Optional<Person> person = personImp.findByIdCardIndex(cardNo);
+               //根据身份证索引号查询人员信息
+               Optional<Person> personOptional = personImp.findByIdCardIndex(cardNo);
                int personId =0;
-               if (person.isPresent()){
-                   //System.out.println("person:" +person.get());
-                   personId =person.get().getPersonId();
-                   person.get().setHeadImage(null);
+               String personName = null;
+               if (personOptional.isPresent()){
+                   Person person = personOptional.get();
+                   personId =personOptional.get().getPersonId();
+                   personName = person.getPersonName();
                    //map存储返回给前端的人员信息
-                   map.put("person", person.get());
+                   map.put("person", personOptional.get());
                }
 
                //direction 1:in,2:out
@@ -88,25 +92,26 @@ public class DutouServerHandler extends SimpleChannelInboundHandler<DatagramPack
                SimpleDateFormat format =  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                ParsePosition pos = new ParsePosition(0);
                Date strtodate = format.parse(time.toString(), pos);
-
-               //保存记录
-               Record recordSave = new Record(ip, equipmentID, personId, strtodate,"dutou", direction);
-               RecordRepository recordRepository = appCtx.getBean(RecordRepository.class);
-               recordRepository.save(recordSave);
-               System.out.println("recordSave to DB:" + recordSave);
                //返回给前端
                // 获取设备信息
                DeviceService deviceService = appCtx.getBean(DeviceService.class);
-               Optional<Device> device = deviceService.findByDeviceId(equipmentID);
-
-               WebSocket webSocket = appCtx.getBean(WebSocket.class);
-
-               if (device.isPresent()) {
-                   map.put("device", device.get());
+               Optional<Device> deviceOptional = deviceService.findByDeviceId(equipmentID);
+               Integer channel = null;
+               if (deviceOptional.isPresent()) {
+                   Device device = new Device();
+                   channel = device.getChannel();
+                   map.put("device", device);
                }
+               //保存记录
+               Record recordSave = new Record(equipmentID, DeviceConstant.DutouDeviceType, personId, personName, strtodate.getTime(), equipmentID, null, direction, channel);
+               RecordMapper recordMapper = appCtx.getBean(RecordMapper.class);
+               recordMapper.saveRecord(recordSave);
                String s = JSON.toJSONString(map);
+               WebSocket webSocket = appCtx.getBean(WebSocket.class);
                webSocket.sendMessage(s);
            }
+            logger.info("DutouServerHandler stop....");
+
         }
         //System.out.println(functionID);
 

@@ -97,6 +97,8 @@ public class WorkerGroup {
     private Date exitTime;
     private String entryAttachments;
     private String exitAttachments;
+    //是否是管理员班组
+    private Integer isAdminGroup;
 
     public WorkerGroup() {
     }
@@ -122,6 +124,7 @@ public class WorkerGroup {
                 ", exitTime=" + exitTime +
                 ", entryAttachments='" + entryAttachments + '\'' +
                 ", exitAttachments='" + exitAttachments + '\'' +
+                ", isAdminGroup=" + isAdminGroup +
                 '}';
     }
 }

@@ -8,6 +8,16 @@ import java.util.Optional;
 public interface DeviceService {
 
     /**
+     * 添加人脸设备
+     * @param device
+     * @return
+     */
+    Device addFaceDevice(Device device);
+
+    Device updateFaceDevice(Device device);
+
+
+    /**
      * 查询项目中的设备
      * @param projectId 项目id
      */
@@ -59,5 +69,21 @@ public interface DeviceService {
      * @return
      */
     List<String> getDeviceIdList();
+
+    /**
+     * 判断设备的ip和端口是否重发
+     */
+    Optional<Device> findByIpAndOutPort(String ip, Integer outPort);
+
+    /**
+     *
+     */
+    List<Device> findByProjectCodeIn(List<String> projectCodes);
+
+    /**
+     * 查询在某个项目集合中的所有人脸设备
+     */
+    List<Device> findByProjectCodeInAndDeviceType(List<String> projectCodes, Integer deviceType);
+
 
 }

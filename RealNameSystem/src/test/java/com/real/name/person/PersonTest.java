@@ -156,22 +156,29 @@ public class PersonTest extends BaseTest {
     }
 
     @Test
-    public void findIssuePerson() {
-        Person issuePersonInfo = personRepository.findIssuePersonInfo(100);
-        System.out.println(issuePersonInfo);
-    }
-
-
-    @Test
-    public void findIssueImageInfoTest() {
-        Person issueImageInfo = personRepository.findIssueImageInfo(100);
-        System.out.println(issueImageInfo);
-    }
-
-    @Test
     public void findIssuePersonImageInfoTest() {
         Person issuePersonInfo = personRepository.findIssuePersonImageInfo(100);
         System.out.println(issuePersonInfo);
     }
+
+    @Test
+    public void findByIdCardIndex() {
+        Optional<Person> personOptional = personRepository.findByIdCardIndex("123456");
+        System.out.println(personOptional.get());
+    }
+
+    @Test
+    public void findPersonNameByPersonId() {
+        Optional<Person> personOptional = personRepository.findPersonNameByPersonId(102);
+        System.out.println(personOptional.get());
+    }
+
+    @Test
+    public void findAllPersonRole() {
+        List<Person> allPersonRole = personRepository.findAllPersonRole();
+        System.out.println(allPersonRole);
+    }
+
+
 
 }

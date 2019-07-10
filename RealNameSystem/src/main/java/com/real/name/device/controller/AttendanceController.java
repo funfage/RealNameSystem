@@ -2,7 +2,6 @@ package com.real.name.device.controller;
 
 import com.real.name.common.result.ResultVo;
 import com.real.name.device.entity.Record;
-import com.real.name.device.service.repository.RecordRepository;
 import com.real.name.netty.dao.RecordDao;
 import com.real.name.person.entity.Person3;
 import com.real.name.person.service.implement.PersonImp;
@@ -24,8 +23,6 @@ import java.util.*;
 public class AttendanceController {
 
     @Autowired
-    RecordRepository recordRepository;
-    @Autowired
     RecordDao recordDao;
     @Autowired
     PersonImp personImp;
@@ -41,7 +38,7 @@ public class AttendanceController {
          Date startDate = new Date(startTime);
          Date endDate = new Date(endTime);
          System.out.println("start:" +startDate);
-         Map<String,Object> map = new HashMap();
+         Map<String,Object> map = new HashMap<>();
          map.put("startDate",startDate);
          map.put("endDate",endDate);
          //得到时间范围内所有人的person_id
@@ -235,7 +232,7 @@ public class AttendanceController {
                             //该人出勤天数加1
                             hours[k][today] +=1;
                             //计算该人当天出勤小时，可能有多次出入，records已经按时间排序
-                            for (int j = 0; j < records.size(); j = j+2) {
+                            /*for (int j = 0; j < records.size(); j = j+2) {
                                 Record in = records.get(j);
                                 Date inDate = in.getTime();
                                 if (j+1<records.size()){
@@ -247,7 +244,7 @@ public class AttendanceController {
                                 }
 
 
-                            }
+                            }*/
                             //result[i] = hours;
                         }
                     } catch (Exception e) {

@@ -1,20 +1,12 @@
 package com.real.name.others;
 
-import com.alibaba.druid.support.json.JSONUtils;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.real.name.device.entity.Device;
-import com.real.name.issue.entity.IssueDetail;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class MyTest {
 
     public static void main(String[] args) {
-        testC();
+        dateTest();
     }
 
     public static void testMap() {
@@ -46,23 +38,28 @@ public class MyTest {
         System.out.println(url);
     }
 
-    public static void testC() {
-        List<IssueDetail> list = new ArrayList<>();
-        IssueDetail issue1 = new IssueDetail();
-        issue1.setPersonId(23);
-        issue1.setProjectCode("sfdfdfd");
-        issue1.setIssueId(34L);
-        issue1.setIssueImageStatus(1);
-        issue1.setIssuePersonStatus(0);
-        Device device = new Device();
-        device.setDeviceId("dfdf");
-        device.setOutPort(3);
-        device.setIp("34.34.344");
-        issue1.setDevice(device);
-        list.add(issue1);
-//        String s = JSON.toJSONString(list);
-        String s = JSON.toJSON(list).toString();
-        List<IssueDetail> issueDetails = JSONObject.parseArray("{\"projectCode\":\"\",\"ip\":\"113.101.245.2\",\"outPort\":8092,\"deviceId\":\"E0F28CF710E2812AF8\"}", IssueDetail.class);
-        System.out.println(issueDetails);
+    public static void listTest() {
+        List<String> excludeType = new ArrayList<>();
+        excludeType.add("face_1");
+        excludeType.add("face_2");
+        excludeType.add("card_1");
+        excludeType.add("faceAndcard_1");
+        excludeType.add("faceAndcard_2");
+        excludeType.add("idcard_2");
+        if (excludeType.contains("face_0")) {
+            System.out.println("true");
+        }
     }
+
+    public static void dateTest() {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date startTime = new Date(System.currentTimeMillis() - 86400000);
+        String start = format.format(startTime);
+        Date endTime = new Date(System.currentTimeMillis());
+        String end = format.format(endTime);
+        System.out.println("start:" + start);
+        System.out.println("end:" + end);
+    }
+
+
 }

@@ -2,6 +2,8 @@ package com.real.name.project.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.result.ResultError;
@@ -12,14 +14,14 @@ import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.group.service.GroupService;
-import com.real.name.issue.entity.IssueDetail;
 import com.real.name.issue.entity.IssueFace;
 import com.real.name.issue.service.IssueFaceService;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
 import com.real.name.project.entity.Project;
 import com.real.name.project.entity.ProjectDetail;
-import com.real.name.issue.service.IssueDetailService;
+import com.real.name.project.entity.ProjectDetailQuery;
+import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.ProjectDetailService;
 import com.real.name.project.service.ProjectPersonDetailService;
 import com.real.name.project.service.ProjectService;
@@ -62,6 +64,9 @@ public class ProjectController {
 
     @Autowired
     private DeviceService deviceService;
+
+    @Autowired
+    private ProjectDetailQueryService projectDetailQueryService;
 
     /**
      * 本地创建项目
@@ -209,13 +214,9 @@ public class ProjectController {
         if (projectDevices == null || projectDevices.size() <= 0) {
             throw new AttendanceException(ResultError.PROJECT_NO_BIND_FACE);
         }
-       /* // 判断该班组中，是否已经添加了该人员
-        Optional<ProjectDetail> projectDetail1 = projectDetailService.findByTeamSysNoAndPersonId(teamSysNo, personId);
-        // 判断该项目中，是否已经添加了该人员
-        Optional<ProjectDetail> projectDetailOp = projectDetailService.findByProjectCodeAndPersonId(projectCode, personId);*/
         // 添加人员到项目中
         for (Integer personId : persons) {
-            // 判断是否有该人员
+            //判断是否有该人员
             Person personImageInfo = personService.findIssuePersonImageInfo(personId);
             if (personImageInfo == null || !StringUtils.hasText(personImageInfo.getPersonName()) || !StringUtils.hasText(personImageInfo.getPersonName())) {
                 //若人员不存在则跳过
@@ -260,9 +261,19 @@ public class ProjectController {
     public ResultVo personInProject(@RequestParam("projectCode") String  projectCode,
                                     @RequestParam(name = "pageIndex", defaultValue = "0") Integer page,
                                     @RequestParam(name = "pageSize", defaultValue = "20") Integer size) {
-
-        Map<String, Object> personList = projectDetailService.getPersonInProject(projectCode, PageRequest.of(page, size));
-        return ResultVo.success(personList);
+        try {
+            PageHelper.startPage(page + 1, size);
+            List<ProjectDetailQuery> detailQueries = projectDetailQueryService.getPersonAndWorkerGroupInfo(projectCode);
+            PageInfo<ProjectDetailQuery> pageInfo = new PageInfo<>(detailQueries);
+            Map<String, Object> map = new HashMap<>();
+            map.put("pageNum", pageInfo.getPageNum());
+            map.put("pageSize", pageInfo.getPageSize());
+            map.put("detailQueries", detailQueries);
+            return ResultVo.success(map);
+        } catch (Exception e) {
+            logger.error("查询某个项目下的人员信息和班组信息失败, e:{}", e.getMessage());
+            return ResultVo.failure();
+        }
     }
 
 
@@ -385,32 +396,4 @@ public class ProjectController {
         }
     }
 
-
-//    /**
-//     * 查询项目考勤记录
-//     */
-//    @GetMapping("/attendancePerson")
-//    public ResultVo attendancePerson(@RequestParam("projectId") Integer projectId,
-//                                     @RequestParam("beginTime") Long beginTime,
-//                                     @RequestParam("endTime") Long endTime /*,
-//                                     @RequestParam(name = "page", defaultValue = "0") Integer page,
-//                                     @RequestParam(name = "size", defaultValue = "20") Integer size*/) {
-//        // 获取项目中全部人员
-//        Map<String, Object> personMap = projectDetailService.getPersonInProject(projectId, PageRequest.of(0, 999));
-//        List<Person2> personList = (List<Person2>) personMap.get("personList");
-//
-//        List<Object> recordList = new ArrayList<>();
-//
-//        // 遍历人员，在时间范围内是否有考勤记录
-//        for (Person2 person : personList) {
-//            List<Record> records = recordService.findByPersonIdAndTimeBetween(person.getPersonId(), new Date(beginTime), new Date(endTime));
-//            if (records != null && records.size() > 0) {
-//                Map<String, Object> map = new HashMap<>();
-//                map.put("person", person);
-//                map.put("records", records);
-//                recordList.add(map);
-//            }
-//        }
-//        return ResultVo.success(recordList);
-//    }
 }

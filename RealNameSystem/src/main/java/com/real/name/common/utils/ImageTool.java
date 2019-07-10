@@ -48,43 +48,6 @@ public class ImageTool {
         }
     }
 
-    /**
-     * base64字符串转化成图片,对字节数组字符串进行Base64解码并生成图片
-     */
-    public static boolean generateImage(String imgStr, String personId) {
-        if (!StringUtils.hasText(imgStr)) //图像数据为空
-            return false;
-        BASE64Decoder decoder = new BASE64Decoder();
-        OutputStream out = null;
-        try
-        {
-            byte[] b = decoder.decodeBuffer(imgStr);
-            for(int i=0;i<b.length;++i)
-            {
-                if(b[i]<0) // 调整异常数据
-                {
-                    b[i]+=256;
-                }
-            }
-            //生成jpeg图片
-            String imgFilePath = PathUtil.getImgBasePath() + personId + imgSuffix;//新生成的图片
-            out = new FileOutputStream(imgFilePath);
-            out.write(b);
-            out.flush();
-            return true;
-        } catch (Exception e) {
-            logger.error("generateImage error e:{}", e);
-            return false;
-        }finally{
-            try {
-                if(out != null){
-                    out.close();
-                }
-            } catch (IOException e) {
-                logger.error("generateImage error e:{}", e);
-            }
-        }
-    }
 
     /**
      * 生成照片
@@ -114,6 +77,11 @@ public class ImageTool {
         }
     }
 
+    /**
+     * 生成base64编码
+     * @param imageStream
+     * @return
+     */
     public static String imageToBase64(InputStream imageStream) {
         //将图片文件转化为字节数组字符串，并对其进行Base64编码处理
         String imgFile = "d://test.jpg";//待处理的图片
@@ -151,9 +119,11 @@ public class ImageTool {
         return true;
     }
 
-    public static void main(String[] args) {
-//        System.out.println(getImageStr("/Users/terry-jri/Desktop/a.jpg"));/root/headImage
-        String imageStr = getImageStr("/Users/terry-jri/Desktop/b.png");
-        generateImage(imageStr, "1");
+    /**
+     * 判断文件后缀名是否正确
+     */
+    public static boolean isRightSuffix(String imgSuffix) {
+        return true;
     }
+
 }

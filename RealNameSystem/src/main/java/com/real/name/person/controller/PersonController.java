@@ -1,14 +1,11 @@
 package com.real.name.person.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.ImageTool;
 import com.real.name.common.utils.NationalUtils;
-import com.real.name.device.entity.Record;
-import com.real.name.device.service.RecordService;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
 import com.real.name.project.entity.ProjectPersonDetail;
@@ -23,7 +20,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -35,14 +31,9 @@ public class PersonController {
     @Autowired
     private PersonService personService;
 
-    @Autowired
-    private RecordService recordService;
 
     @Autowired
     private ProjectPersonDetailService projectPersonDetailService;
-
-    @Autowired
-    private ProjectDetailService projectDetailService;
 
     public void testSavePerson(Person person) {
         personService.createPerson(person);
@@ -88,11 +79,13 @@ public class PersonController {
         }
         try {
             String imageStr = ImageTool.imageToBase64(imageFile.getInputStream());
-            logger.info("照片base64编码:{}", imageStr);
             if (!StringUtils.hasText(imageStr)) {
                 throw new AttendanceException("照片转换成base64编码失败");
             }
             String fileName = imageFile.getOriginalFilename();
+            if (!StringUtils.hasText(fileName)) {
+                throw new AttendanceException(ResultError.EMPTY_NAME);
+            }
             String suffixName = fileName.substring(fileName.lastIndexOf("."));
             person.setSuffixName(suffixName);
             person.setHeadImage(imageStr.trim());
@@ -153,7 +146,7 @@ public class PersonController {
      * @return
      */
     @PostMapping("updatePerson")
-    public ResultVo updatePerson(Person person){
+    public ResultVo updatePerson(@RequestBody Person person){
         if(person.getPersonId() == null || person.getPersonId() <= 0){
             throw AttendanceException.errorMessage("person_id");
         }
@@ -264,56 +257,6 @@ public class PersonController {
                 return ResultVo.failure("查询信息为空");
             }
         }
-    }
-
-    @PostMapping("takeImg")
-    public ResultVo takeImg(@RequestParam(name = "personId") String personId) {
-        String url = "device/takeImg";
-        Map<String, String> map = new HashMap<>();
-        map.put("personId", personId);
-//        ResultVo rvo = HTTPTool.sendDataTo(url, map);
-        return null;
-    }
-
-    /**
-     * 给人员添加照片，必须先创建人员，后添加该人员的照片
-     */
-    @PostMapping("/face/create")
-    public ResultVo faceCreate(@RequestParam("pass") String pass, @RequestParam("personId") Integer personId,
-                               @RequestParam("imgBase64") String imgBase64) {
-
-        Person person = personService.saveImgBase64(personId, imgBase64);
-        String url = "device/create";
-        Map<String, String> map = new HashMap<>();
-        map.put("pass", pass);
-        map.put("personId", person.getPersonId().toString());
-//        map.put("faceId", device.getFaceId().toString());
-        map.put("imgBase64", imgBase64);
-//        return HTTPTool.sendDataTo(url, map);
-        return null;
-    }
-
-    /**
-     * 查询人员考勤记录
-     */
-    @GetMapping("/findAttendance")
-    public ResultVo findAttendance(@RequestParam("personId") Integer personId,
-                                   @RequestParam("beginTime") Long beginTime,
-                                   @RequestParam("endTime") Long endTime) {
-        List<Record> records = recordService.findByPersonIdAndTimeBetween(personId, new Date(beginTime), new Date(endTime));
-        return ResultVo.success(records);
-    }
-
-    public void verifyParams(Person person) {
-
-    }
-
-    @GetMapping("logtest")
-    public ResultVo logTest() {
-        logger.info("info test");
-        logger.warn("warn test");
-        logger.error("error test");
-        return ResultVo.success();
     }
 
 }

@@ -2,6 +2,7 @@ package com.real.name.common.utils;
 
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.springframework.util.StringUtils;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -26,6 +27,9 @@ public final class AesUtils {
      * encrypt
      */
     public static String encrypt( String content, String key) {
+        if (!StringUtils.hasText(content)) {
+            return null;
+        }
         byte[] result = null;
         try {
             Cipher cipher = Cipher.getInstance(ALGORITHM);
@@ -43,6 +47,9 @@ public final class AesUtils {
      * decrypt
      */
     public static String decrypt( String content, String key) {
+        if (!StringUtils.hasText(content)) {
+            return null;
+        }
         try {
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(CHARSET_NAME), AES_NAME);

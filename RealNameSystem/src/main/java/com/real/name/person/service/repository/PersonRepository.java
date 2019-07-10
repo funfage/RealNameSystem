@@ -22,9 +22,22 @@ public interface PersonRepository extends JpaRepository<Person, Integer> {
     List<Person> findByPersonIdIn(List<Integer> personIds);
 
     //根据身份证索引号搜索
-    Optional<Person> findByIdCardIndex(String idcardIndex);
+    @Query("select new com.real.name.person.entity.Person(p.personId, p.personName, p.idCardNumber) from Person p where p.idCardIndex = :idCardIndex")
+    Optional<Person> findByIdCardIndex(@Param("idCardIndex") String idCardIndex);
 
-    //根据PersonId
+    //查询用户名
+    @Query("select new com.real.name.person.entity.Person(p.personId, p.personName) from Person p where p.personId = :personId")
+    Optional<Person> findPersonNameByPersonId(@Param("personId") Integer personId);
+
+    //查询所有人员id
+    @Query("select new com.real.name.person.entity.Person(p.personId) from Person p")
+    List<Integer> findAllPersonId();
+
+    //查询所有人员id和workRole
+    @Query("select new com.real.name.person.entity.Person(p.personId, p.workRole) from Person p")
+    List<Person> findAllPersonRole();
+
+        //根据PersonId
     Person3 findByPersonId(Integer id);
 
     //根据工作类型查询所有人员
@@ -38,14 +51,6 @@ public interface PersonRepository extends JpaRepository<Person, Integer> {
     //根据条件查询人员信息
     @Query("from Person p where p.personName like %:#{#pq.nameOrIDCard}%")
     List<Person> findPeopleByCondition(@Param("pq") PersonQuery personQuery);
-
-    //查询下发设备需要的指定的人员字段信息
-    @Query(value = "select new com.real.name.person.entity.Person(p.personId, p.personName, p.workRole) from Person p where p.personId = ?1")
-    Person findIssuePersonInfo(Integer personId);
-
-    //查询下发照片所需要的字段
-    @Query(value = "select new com.real.name.person.entity.Person(p.headImage, p.personId, p.workRole) from Person p where  p.personId = ?1")
-    Person findIssueImageInfo(Integer personId);
 
     //查询下发人员和照片所需要的字段
     @Query(value = "select new com.real.name.person.entity.Person(p.personId, p.personName, p.headImage, p.workRole) from Person p where  p.personId = ?1")

@@ -221,41 +221,20 @@ public class Person {
         this.personId = personId;
     }
 
-    public Person(String personName, String idCardNumber, String nation, Integer age, Date startDate, Date expiryDate, Integer gender, String address, String headImage, String grantOrg) {
-        this.personName = personName;
-        this.idCardNumber = idCardNumber;
-        this.nation = nation;
-        this.startDate = startDate;
-        this.expiryDate = expiryDate;
-        this.gender = gender;
-        this.address = address;
-        this.headImage = headImage;
-        this.grantOrg = grantOrg;
-        this.age = age;
-    }
-
-    public Person(String personName, String idCardNumber, Integer isTeamLeader,
-                  Integer idCardType, String workType, Integer workRole, String nation,
-                  String cellPhone, Integer age, Integer gender, String address,
-                  String headImage) {
-        this.personName = personName;
-        this.idCardNumber = idCardNumber;
-        this.isTeamLeader = isTeamLeader;
-        this.idCardType = idCardType;
-        this.workType = workType;
+    public Person(Integer personId, Integer workRole) {
+        this.personId = personId;
         this.workRole = workRole;
-        this.nation = nation;
-        this.cellPhone = cellPhone;
-        this.age = age;
-        this.gender = gender;
-        this.address = address;
-        this.headImage = headImage;
     }
 
-    public Person(Integer personId, String personName, Integer workRole) {
+    public Person(Integer personId, String personName) {
         this.personId = personId;
         this.personName = personName;
-        this.workRole = workRole;
+    }
+
+    public Person(Integer personId, String personName, String idCardNumber) {
+        this.personId = personId;
+        this.personName = personName;
+        this.idCardNumber = idCardNumber;
     }
 
     public Person(Integer personId, String personName, String headImage, Integer workRole) {
@@ -263,16 +242,6 @@ public class Person {
         this.personName = personName;
         this.headImage = headImage;
         this.workRole = workRole;
-    }
-
-    public Person(String headImage, Integer personId, Integer workRole) {
-        this.personId = personId;
-        this.headImage = headImage;
-        this.workRole = workRole;
-    }
-
-    public String toJSON() {
-        return "{\"id\":\"" + personId + "\",\"name\":\"" + personName + "\",\"idcardNum\":\"" + "\"}";
     }
 
     @Override

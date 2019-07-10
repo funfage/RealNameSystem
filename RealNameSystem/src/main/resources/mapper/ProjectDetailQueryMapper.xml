@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.real.name.project.service.repository.ProjectDetailQueryMapper">
+    <resultMap id="queryAllMap" type="com.real.name.project.entity.ProjectDetailQuery">
+        <id property="id" column="id"/>
+        <association property="person" column="person" javaType="com.real.name.person.entity.Person">
+            <id property="personId" column="p_person_id"/>
+            <result property="personName" column="person_name"/>
+            <result property="gender" column="gender"/>
+            <result property="address" column="p_address"/>
+            <result property="age" column="age"/>
+            <result property="bankLinkNumber" column="bank_link_number"/>
+            <result property="cardNumber" column="card_number"/>
+            <result property="cellPhone" column="cell_phone"/>
+            <result property="cultureLevelType" column="culture_level_type"/>
+            <result property="expiryDate" column="expiry_date"/>
+            <result property="grantOrg" column="grant_org"/>
+            <result property="groupNo" column="group_no"/>
+            <result property="hasBadMedicalHistory" column="has_bad_medical_history"/>
+            <result property="hasBuyInsurance" column="has_buy_insurance"/>
+            <result property="hometown" column="hometown"/>
+            <result property="idCardIndex" column="id_card_index"/>
+            <result property="idCardNumber" column="id_card_number"/>
+            <result property="idCardType" column="id_card_type"/>
+            <result property="issueCardDate" column="issue_card_date"/>
+            <result property="issueCardPic" column="issue_card_pic"/>
+            <result property="isTeamLeader" column="is_team_leader"/>
+            <result property="joinedTime" column="joined_time"/>
+            <result property="maritalStatus" column="marital_status"/>
+            <result property="nation" column="nation"/>
+            <result property="negativeIdCardImage" column="negative_id_card_image"/>
+            <result property="payRollBankCardNumber" column="pay_roll_bank_card_number"/>
+            <result property="payRollBankName" column="pay_roll_bank_name"/>
+            <result property="payRollTopBankCode" column="pay_roll_top_bank_code"/>
+            <result property="politicsType" column="politics_type"/>
+            <result property="positiveIdCardImage" column="positive_id_card_image"/>
+            <result property="specialty" column="specialty"/>
+            <result property="startDate" column="p_start_date"/>
+            <result property="suffixName" column="suffix_name"/>
+            <result property="urgentLinkMan" column="urgent_link_man"/>
+            <result property="urgentLinkManPhone" column="urgent_link_man_phone"/>
+            <result property="workDate" column="work_date"/>
+            <result property="workRole" column="work_role"/>
+            <result property="workType" column="work_type"/>
+        </association>
+        <association property="project" javaType="com.real.name.project.entity.Project">
+            <id property="projectCode" column="project_code"/>
+            <result property="startDate" column="start_date"/>
+            <result property="address" column="address"/>
+            <result property="name" column="name"/>
+            <result property="approvalLevelNum" column="approval_level_num"/>
+            <result property="approvalNum" column="approval_num"/>
+            <result property="areaCode" column="area_code"/>
+            <result property="buildCorpCode" column="build_corp_code"/>
+            <result property="buildCorpName" column="build_corp_name"/>
+            <result property="builderLicenses" column="builder_licenses"/>
+            <result property="buildingArea" column="building_area"/>
+            <result property="buildingLength" column="building_length"/>
+            <result property="buildPlanNum" column="build_plan_num"/>
+            <result property="category" column="category"/>
+            <result property="completeDate" column="complete_date"/>
+            <result property="contractorCorpCode" column="contractor_corp_code"/>
+            <result property="contractorCorpName" column="contractor_corp_name"/>
+            <result property="description" column="description"/>
+            <result property="functionNum" column="function_num"/>
+            <result property="invest" column="invest"/>
+            <result property="isUpload" column="is_upload"/>
+            <result property="lat" column="lat"/>
+            <result property="linkMan" column="link_man"/>
+            <result property="linkPhone" column="link_phone"/>
+            <result property="lng" column="lng"/>
+            <result property="nationNum" column="nation_num"/>
+            <result property="prjPlanNum" column="prj_plan_num"/>
+            <result property="prjSize" column="prj_size"/>
+            <result property="prjStatus" column="prj_status"/>
+            <result property="propertyNum" column="property_num"/>
+        </association>
+        <association property="workerGroup" javaType="com.real.name.group.entity.WorkerGroup">
+            <id property="teamSysNo" column="wg_team_sys_no"/>
+            <result property="projectCode" column="wg_project_code"/>
+            <result property="teamName" column="team_name"/>
+            <result property="corpCode" column="corp_code"/>
+            <result property="corpName" column="corp_name"/>
+            <result property="entryAttachments" column="entry_attachments"/>
+            <result property="entryTime" column="entry_time"/>
+            <result property="exitAttachments" column="exit_attachments"/>
+            <result property="exitTime" column="exit_time"/>
+            <result property="isAdminGroup" column="is_admin_group"/>
+            <result property="remark" column="remark"/>
+            <result property="responsiblePersonIdCardType" column="responsible_person_id_card_type"/>
+            <result property="responsiblePersonIdNumber" column="responsible_person_id_number"/>
+            <result property="responsiblePersonIdCardType" column="responsible_person_id_card_type"/>
+            <result property="responsiblePersonName" column="responsible_person_name"/>
+            <result property="responsiblePersonPhone" column="responsible_person_phone"/>
+        </association>
+    </resultMap>
+
+    <sql id="personSql">
+        p.person_id as p_person_id, p.person_name, p.gender, p.address as p_address, p.age, p.bank_link_number, p.card_number,
+        p.cell_phone, p.culture_level_type, p.expiry_date, p.grant_org, p.group_no, p.has_bad_medical_history,
+        p.has_buy_insurance, p.hometown, p.id_card_index, p.id_card_number, p.id_card_type, p.issue_card_date,
+        p.issue_card_pic, p.is_team_leader, p.joined_time, p.marital_status, p.nation, p.negative_id_card_image,
+        p.pay_roll_bank_card_number, p.pay_roll_bank_name, p.pay_roll_top_bank_code, p.politics_type, p.positive_id_card_image,
+        p.specialty, p.start_date as p_start_date, p.suffix_name, p.urgent_link_man, p.urgent_link_man_phone, p.work_date,
+        p.work_role, p.work_type
+    </sql>
+
+    <sql id="workerGroupSql">
+        wg.team_sys_no as wg_team_sys_no, wg.project_code as wg_project_code, wg.corp_code, wg.corp_name, wg.team_name, wg.responsible_person_name,
+        wg.responsible_person_phone, wg.responsible_person_id_card_type, wg.responsible_person_id_number, 
+        wg.remark, wg.entry_time, wg.exit_time, wg.entry_attachments, wg.exit_attachments, wg.is_admin_group
+    </sql>
+
+    <select id="findOtherAdmins" resultMap="queryAllMap">
+        select
+          <include refid="personSql"/>
+        from
+        person p
+        where
+        work_role = 10
+        and
+        not exists
+        (select pd.person_id from project_detail pd where pd.project_code = #{projectCode} and p.person_id = pd.person_id)
+    </select>
+
+    <select id="findOtherWorker" resultMap="queryAllMap">
+        select
+        <include refid="personSql"/>
+        from
+        person p
+        where
+        p.work_role = 20
+        and
+        not exists
+        (select pd.person_id from project_detail pd where p.person_id = pd.person_id)
+    </select>
+
+
+
+    <select id="getPersonAndWorkerGroupInfo" resultMap="queryAllMap">
+        select
+        <include refid="personSql"/>,
+        <include refid="workerGroupSql"/>
+        from
+        project_detail pd, worker_group wg, person p
+        where
+        pd.person_id = p.person_id
+        and
+        pd.team_sys_no = wg.team_sys_no
+        and
+        pd.project_code = #{projectCode}
+    </select>
+
+    <select id="getProjectIdsByPersonId" resultType="string">
+        select
+        project_code
+        from
+        project_detail
+        where
+        person_id = #{personId,jdbcType=INTEGER}
+    </select>
+
+</mapper>

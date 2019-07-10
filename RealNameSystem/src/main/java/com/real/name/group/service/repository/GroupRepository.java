@@ -19,6 +19,9 @@ public interface GroupRepository extends JpaRepository<WorkerGroup, Integer> {
 
       List<WorkerGroup> findByProjectCode(String projectCode);
 
+      Optional<WorkerGroup> findByIsAdminGroup(Integer status);
+
+      Optional<WorkerGroup> findByIsAdminGroupAndProjectCode(Integer status, String projectCode);
 
       @Modifying
       @Transactional

@@ -7,6 +7,7 @@ import com.real.name.person.entity.Person3;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Date;
 import java.util.List;
@@ -80,12 +81,17 @@ public interface PersonService {
     //更新员工信息
     Person updateByPersonId(Person person);
 
-    //查询下发设备需要的人员的字段信息
-    Person findIssuePersonInfo(Integer personId);
-
-    Person findIssueImageInfo(Integer personId);
-
     Person findIssuePersonImageInfo(Integer personId);
 
+    //查询用户名
+    Optional<Person> findPersonNameByPersonId(@Param("personId") Integer personId);
+
+    //查询所有人员id
+    List<Integer> findAllPersonId();
+
+    /**
+     * 查询所有人员id和workRole
+     */
+    List<Person> findAllPersonRole();
 
 }

@@ -1,28 +1,23 @@
 package com.real.name.device.entity;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import java.util.Date;
-
-@Entity
-@Data
+@Setter
+@Getter
 public class Record {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer recordId;
 
-    private String ip;
+    private String deviceId;
 
-    private String deviceKey;
+    private Integer deviceType;
 
     private Integer personId;
 
-    private Date time;
+    private String personName;
+
+    private Long time;
 
     private String type;
 
@@ -30,23 +25,49 @@ public class Record {
 
     private Integer direction;
 
-    public Record(String ip, String deviceKey, Integer personId, Date time, String type, String path) {
-        this.ip = ip;
-        this.deviceKey = deviceKey;
+    private Integer channel;
+
+    public Record() {
+    }
+
+    public Record(Integer recordId, String deviceId, Integer deviceType, Integer personId, String personName, Long time, String type, String path, Integer direction, Integer channel) {
+        this.recordId = recordId;
+        this.deviceId = deviceId;
+        this.deviceType = deviceType;
         this.personId = personId;
+        this.personName = personName;
         this.time = time;
         this.type = type;
         this.path = path;
-    }
-    public Record(String ip, String deviceKey, Integer personId, Date time, String type, int direction) {
-        this.ip = ip;
-        this.deviceKey = deviceKey;
-        this.personId = personId;
-        this.time = time;
-        this.type = type;
         this.direction = direction;
+        this.channel = channel;
     }
 
-    public Record() {
+    public Record(String deviceId, Integer deviceType, Integer personId, String personName, Long time, String type, String path, Integer direction, Integer channel) {
+        this.deviceId = deviceId;
+        this.deviceType = deviceType;
+        this.personId = personId;
+        this.personName = personName;
+        this.time = time;
+        this.type = type;
+        this.path = path;
+        this.direction = direction;
+        this.channel = channel;
+    }
+
+    @Override
+    public String toString() {
+        return "Record{" +
+                "recordId=" + recordId +
+                ", deviceId='" + deviceId + '\'' +
+                ", deviceType='" + deviceType + '\'' +
+                ", personId=" + personId +
+                ", personName='" + personName + '\'' +
+                ", time=" + time +
+                ", type='" + type + '\'' +
+                ", path='" + path + '\'' +
+                ", direction=" + direction +
+                ", channel=" + channel +
+                '}';
     }
 }

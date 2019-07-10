@@ -53,7 +53,7 @@ public class HTTPTool {
         for (Device device : projectDevices) {
             if (StringUtils.hasText(device.getIp()) && device.getOutPort() != null && device.getOutPort() > 0 && device.getOutPort() < 65536) {
                 deviceIds.add(device.getDeviceId());
-                String response = (method == DeviceConstant.postMethod ? postToDevice(device, url, param) : getToDevce(device, url, param));
+                String response = (method == DeviceConstant.postMethod ? postToDevice(device, url, param) : getToDevice(device, url, param));
                 logger.info("设备返回的信息返回的信息:{}", response);
                 modelMap.put(device.getDeviceId(), response);
             } else {
@@ -76,7 +76,7 @@ public class HTTPTool {
     public static Map<String, Object> sendDataToFaceDeviceByDeviceId(String url, Map<String, Object> param, Integer method, Device device)  throws AttendanceException{
         Map<String, Object> modelMap = new HashMap<>();
         if (StringUtils.hasText(device.getIp()) && device.getOutPort() != null && device.getOutPort() > 0 && device.getOutPort() < 65536) {
-            String response = ((method == DeviceConstant.postMethod) ? postToDevice(device, url, param) : getToDevce(device, url, param));
+            String response = ((method == DeviceConstant.postMethod) ? postToDevice(device, url, param) : getToDevice(device, url, param));
             logger.info("设备返回的信息返回的信息:{}", response);
             modelMap.put(device.getDeviceId(), response);
         }else{
@@ -100,7 +100,7 @@ public class HTTPTool {
         for (Device device : allDevices) {
             if (StringUtils.hasText(device.getIp()) && device.getOutPort() != null && device.getOutPort() > 0 && device.getOutPort() < 65536) {
                 deviceIds.add(device.getDeviceId());
-                String response = ((method == DeviceConstant.postMethod) ? postToDevice(device, url, param) : getToDevce(device, url, param));
+                String response = ((method == DeviceConstant.postMethod) ? postToDevice(device, url, param) : getToDevice(device, url, param));
                 logger.info("设备返回的信息返回的信息:{}", response);
                 modelMap.put(device.getDeviceId(), response);
             } else {
@@ -119,7 +119,7 @@ public class HTTPTool {
         return postUrlForParam(DeviceUtils.getWholeUrl(url, device), param);
     }
 
-    private static String getToDevce(Device device, String url, Map<String, Object> param) {
+    private static String getToDevice(Device device, String url, Map<String, Object> param) {
         if (param == null) param = new HashMap<>();
         param.put("pass", device.getPass());
         return getUrlForParam(DeviceUtils.getWholeUrl(url, device), param);

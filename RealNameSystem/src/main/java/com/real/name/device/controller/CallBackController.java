@@ -1,20 +1,16 @@
 package com.real.name.device.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.utils.HTTPTool;
 import com.real.name.common.utils.JedisService;
-import com.real.name.device.DeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.entity.Record;
 import com.real.name.device.service.DeviceService;
-import com.real.name.device.service.repository.RecordRepository;
+import com.real.name.device.service.RecordService;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
 import com.real.name.person.service.WebSocket;
-import com.real.name.issue.entity.IssueDetail;
-import com.real.name.issue.service.IssueDetailService;
+import com.real.name.person.service.repository.PersonRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,13 +28,8 @@ public class CallBackController {
     private Logger logger = LoggerFactory.getLogger(CallBackController.class);
 
     @Autowired
-    private RecordRepository faceRepository;
-
-    @Autowired
     private DeviceService deviceService;
 
-    @Autowired
-    private IssueDetailService issueDetailService;
 
     @Autowired
     private PersonService personService;
@@ -49,6 +40,9 @@ public class CallBackController {
     @Autowired
     private JedisService.JedisStrings jedisStrings;
 
+    @Autowired
+    private RecordService recordService;
+
 
     @Autowired
     private WebSocket webSocket;
@@ -57,53 +51,49 @@ public class CallBackController {
     public Map<String, Object> attendance(@RequestParam("ip") String ip, @RequestParam("deviceKey") String deviceKey,
                                           @RequestParam("personId") String personId, @RequestParam("time") long time,
                                           @RequestParam("type") String type, @RequestParam("path") String path, HttpServletRequest request) {
+        //获取设备路由器的ip地址
+        String routerIP = HTTPTool.getIpAddr(request);
+        String result = "ip: " + ip + ", deviceKey: " + deviceKey + ", personId: " + personId +", time: " + time + ", type: " + type + ", path: " + path + ", IP: " + routerIP + "\n";
+        logger.info("设备识别回调信息:{}", result);
+        List<String> excludeType = new ArrayList<>();
+        excludeType.add("face_1");
+        excludeType.add("face_2");
+        excludeType.add("card_1");
+        excludeType.add("faceAndcard_1");
+        excludeType.add("faceAndcard_2");
+        excludeType.add("idcard_2");
+        //排除识别失败的记录
+        if (type != null && !excludeType.contains(type)) {
+            Record record = new Record();
+            //获取用户信息
+            Optional<Person> optionalPerson = personService.findPersonNameByPersonId(Integer.valueOf(personId));
+            //设置用户名
+            optionalPerson.ifPresent(person -> record.setPersonName(person.getPersonName()));
+            //获取设备信息
+            Optional<Device> deviceOptional = deviceService.findByDeviceId(deviceKey);
+            if (deviceOptional.isPresent()) {
+                Device device = deviceOptional.get();
+                record.setDeviceId(device.getDeviceId());
+                record.setDeviceType(device.getDeviceType());
+                record.setChannel(device.getChannel());
+                record.setDirection(device.getDirection());
+            }
+            record.setType(type);
+            record.setPath(path);
+            record.setTime(time);
+            //保存考勤记录
+            recordService.saveRecord(record);
+        }
+        /**
+         * TODO
+         * 将考勤信息推送到远程
+         */
 
-        String IP = HTTPTool.getIpAddr(request);
-
-      /*  String result = "ip: " + ip + ", deviceKey: " + deviceKey + ", personId: " + personId +
-                ", time: " + time + ", type: " + type + ", path: " + path + ", IP: " + IP + "\n";
-        logger.info("设备识别回调信息:{}", result);*/
-
-        // 保存刷脸记录
-        Record faceRecord = new Record(ip, deviceKey, Integer.valueOf(personId), new Date(time), type, path);
-        faceRepository.save(faceRecord);
-
+        //返回标记给设备
         Map<String, Object> map = new HashMap<>();
-
-        Optional<Device> device = deviceService.findByDeviceId(deviceKey);
-        if (device.isPresent()) {
-            map.put("device", device.get());
-            faceRecord.setDirection(device.get().getDirection());
-        }
-
-        // 获取刷脸人员信息
-        Optional<Person> person = personService.findById(Integer.valueOf(personId));
-        if (person.isPresent()) {
-            person.get().setHeadImage(null);
-            map.put("person", person.get());
-        }
-
-        String s = JSON.toJSONString(map);
-        webSocket.sendMessage(s);
-//        System.out.println(s);
-        //Optional<Project> project = projectDetailService.getProjectFromPersonId(Integer.valueOf(personId));
-
-//        if (person.isPresent()) {
-//            person.get().setHeadImage(null);
-//            String personStr = JSON.toJSONString(person);
-//            webSocket.sendMessage(personStr);
-//        }
-
-        // 开门
-//        Map<String, Object> m = new HashMap<>();
-//        m.put("pass", "12345678");
-//        ResultVo resultVo = HTTPTool.postUrlForParam(HTTPTool.baseURL + "device/openDoorControl", m);
-//        System.out.println(resultVo);
-
-        Map<String, Object> map1 = new HashMap<>();
-        map1.put("result", 1);
-        map1.put("success", true);
-        return map1;
+        map.put("result", 1);
+        map.put("success", true);
+        return map;
     }
 
 
@@ -170,82 +160,6 @@ public class CallBackController {
             return null;
         }
         return null;
-    }
-
-    /**
-     * 重发
-     * @param issueDetails 需要重发的信息
-     */
-    private void resend(List<IssueDetail> issueDetails) {
-        for (IssueDetail issueDetail : issueDetails) {
-            Integer personStatus = issueDetail.getIssuePersonStatus();
-            Integer imageStatus = issueDetail.getIssueImageStatus();
-            Integer personId = issueDetail.getPersonId();
-            Device device = issueDetail.getDevice();
-            //判断是下发人员信息还是照片或者都下发
-            if (personStatus == 0 && imageStatus == 0) {    //下发人员信息和照片
-                //查询下发的人员信息
-                Person issuePersonImageInfo = personService.findIssuePersonImageInfo(personId);
-                Boolean isSuccess = DeviceUtils.issuePersonByDeviceId(device, issuePersonImageInfo);
-                if (isSuccess) {
-                    //设置人员信息下发成功标识
-                    issueDetail.setIssuePersonStatus(DeviceConstant.issuePersonSuccess);
-                    //下发照片信息
-                    isSuccess = DeviceUtils.issueImageByDeviceId(device, issuePersonImageInfo);
-                    if (isSuccess) {
-                        //设置照片信息下发成功标识
-                        issueDetail.setIssueImageStatus(DeviceConstant.issueImageSuccess);
-                    } else {
-                        //设置照片信息下发失败标识
-                        issueDetail.setIssueImageStatus(DeviceConstant.issueImageFailure);
-                    }
-                } else {
-                    //设置下发失败标识
-                    issueDetail.setIssueImageStatus(DeviceConstant.issueImageFailure);
-                    issueDetail.setIssueImageStatus(DeviceConstant.issueImageSuccess);
-                }
-                if (issueDetail.getIssuePersonStatus() != 0 || issueDetail.getIssueImageStatus() != 0) {
-                    //修改数据库信息
-                    int effectNum = issueDetailService.updateIssueStatus(issueDetail.getIssuePersonStatus(), issueDetail.getIssueImageStatus(), issueDetail.getIssueId());
-                    if (effectNum > 0) {
-                        //删除存在redis中下发失败的信息
-                        //jedisKeys.del(device.getDeviceId() + device.getProjectCode());
-                    }
-                }
-            } else if (personStatus == 1 && imageStatus == 0) {     //只下发照片
-                Person issueImageInfo = personService.findIssueImageInfo(personId);
-                Boolean isSuccess = DeviceUtils.issueImageByDeviceId(device, issueImageInfo);
-                if (isSuccess) {
-                    //设置下发照片成功标识
-                    issueDetail.setIssueImageStatus(DeviceConstant.issueImageSuccess);
-                } else {
-                    //设置下发照片失败标识
-                    issueDetail.setIssueImageStatus(DeviceConstant.issueImageFailure);
-                }
-                if (issueDetail.getIssueImageStatus() == 1) {
-                    int effectNum = issueDetailService.updateIssueStatus(1, 1, issueDetail.getIssueId());
-                    if (effectNum > 0) {
-                        //jedisKeys.del(device.getDeviceId() + device.getProjectCode());
-                    }
-                }
-            } else if (personStatus == 0 && imageStatus == 1) {     //只下发人员信息
-                Person issuePersonInfo = personService.findIssuePersonInfo(personId);
-                Boolean isSuccess = DeviceUtils.issuePersonByDeviceId(device, issuePersonInfo);
-                if (isSuccess) {
-                    //设置下发人员成功标识
-                    issueDetail.setIssuePersonStatus(DeviceConstant.issuePersonSuccess);
-                } else {
-                    //设置下发人员失败标识
-                    issueDetail.setIssuePersonStatus(DeviceConstant.issuePersonSuccess);
-                }
-                if (issueDetail.getIssuePersonStatus() == 1) {
-                    int effectNum = issueDetailService.updateIssueStatus(1, 1, issueDetail.getIssueId());
-                    if (effectNum > 0) {
-                        //jedisKeys.del(device.getDeviceId() + device.getProjectCode());
-                    }
-                }
-            }
-        }
     }
 
 }

@@ -9,8 +9,6 @@ import com.real.name.common.utils.NationalUtils;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.group.service.GroupService;
 import com.real.name.project.entity.Project;
-import com.real.name.project.entity.ProjectDetail;
-import com.real.name.project.service.ProjectDetailService;
 import com.real.name.project.service.ProjectPersonDetailService;
 import com.real.name.project.service.ProjectService;
 import org.slf4j.Logger;
@@ -30,9 +28,6 @@ public class GroupController {
     private GroupService groupService;
 
     @Autowired
-    private ProjectDetailService projectDetailService;
-
-    @Autowired
     private ProjectPersonDetailService projectPersonDetailService;
 
     @Autowired
@@ -43,58 +38,60 @@ public class GroupController {
      */
     @PostMapping("create")
     public Object create(WorkerGroup group) {
-
         if (!StringUtils.hasText(group.getProjectCode())) {
             throw AttendanceException.emptyMessage("项目编码");
         } else if (!StringUtils.hasText(group.getTeamName())) {
             throw AttendanceException.emptyMessage("班组名称");
         } else if (groupService.findByTeamName(group.getTeamName()).isPresent()) {
             throw new AttendanceException(ResultError.GROUP_EXIST);
-        }
-
-        // 如果有手机号，判断手机号是否正确
-        if (StringUtils.hasText(group.getResponsiblePersonPhone())) {
+        } else if (StringUtils.hasText(group.getResponsiblePersonPhone())) {
+            // 如果有手机号，判断手机号是否正确
             if (!CommonUtils.isRightPhone(group.getResponsiblePersonPhone())) {
                 throw new AttendanceException(ResultError.PHONE_ERROR);
             }
         }
-
-        // 判断班组是否存在
-        Optional<Project> project = projectService.findByProjectCode(group.getProjectCode());
-        if (!project.isPresent()) {
+        // 判断项目是否存在
+        Optional<Project> projectOptional = projectService.findByProjectCode(group.getProjectCode());
+        if (!projectOptional.isPresent()) {
             throw new AttendanceException(ResultError.PROJECT_NOT_EXIST);
         }
-
-        Project project1 = project.get();
-
-        group.setCorpCode(project1.getContractorCorpCode());
-        group.setCorpName(project1.getContractorCorpName());
-
+        //判断是否选择的是管理员班组
+        if (group.getIsAdminGroup() != null && group.getIsAdminGroup() == 1) {
+            //从数据库中查询是否存在管理员班组
+            if (groupService.findByIsAdminGroupAndProjectCode(group.getIsAdminGroup(), group.getProjectCode()).isPresent()) {
+                throw new AttendanceException(ResultError.ADMIN_GROUP_ERROR);
+            }
+        }
+        Project project = projectOptional.get();
+        group.setCorpCode(project.getContractorCorpCode());
+        group.setCorpName(project.getContractorCorpName());
         // 判断是否需要上传到全国平台
-        if (project1.getIsUpload() == 1) {
+        if (project.getIsUpload() != null && project.getIsUpload() == 1) {
             JSONObject gr = NationalUtils.uploadGroup(group);
-            System.out.println(gr);
+            //判断是否上传成功
+            if(gr.getBoolean("error")){
+                return ResultVo.failure(ResultError.NATIONAL_ERROR.getCode(), ResultError.NATIONAL_ERROR.getMessage() + ":" + gr.getString("message"));
+            }
             JSONObject data = gr.getJSONObject("data");
-
             if (data.toString().contains("teamSysNo")) {
                 JSONObject result = data.getJSONObject("result");
                 Integer teamSysNo = result.getInteger("teamSysNo");
-                System.out.println(teamSysNo);
                 if (teamSysNo != null && teamSysNo > 0) {
                     group.setTeamSysNo(teamSysNo);
                     groupService.create(group);
                     return ResultVo.success(group);
+                } else {
+                    logger.error("uploadGroup error 没有班组编号信息");
+                    return ResultVo.failure(ResultError.NATIONAL_ERROR);
                 }
             } else {
-                String result = data.getString("result");
-                return ResultVo.failure(8, result);
+                return ResultVo.failure(ResultError.NATIONAL_ERROR);
             }
-        } else {
+        } else {//否则只存到本地数据库
             group.setTeamSysNo((int)(System.currentTimeMillis() / 1000));
             groupService.create(group);
             return ResultVo.success(group);
         }
-        return ResultVo.failure(ResultError.NETWORK_ERROR);
     }
 
     /**
@@ -122,6 +119,13 @@ public class GroupController {
         if (workerGroup.getTeamSysNo() == null) {
             throw AttendanceException.emptyMessage("班组编号");
         }
+        //判断是否选择的是管理员班组
+        if (workerGroup.getIsAdminGroup() != null && workerGroup.getIsAdminGroup() == 1) {
+            //从数据库中查询是否存在管理员班组
+            if (groupService.findByIsAdminGroupAndProjectCode(workerGroup.getIsAdminGroup(), workerGroup.getProjectCode()).isPresent()) {
+                throw new AttendanceException(ResultError.ADMIN_GROUP_ERROR);
+            }
+        }
         //查询该班组是否存在
         Optional<WorkerGroup> groupOptional = groupService.findById(workerGroup.getTeamSysNo());
         if (!groupOptional.isPresent()) {
@@ -133,10 +137,8 @@ public class GroupController {
         try {
             //修改全国平台班组信息
             JSONObject jsonObject = NationalUtils.updateGroup(selectWorkerGroup);
-            String code = jsonObject.getString("code");
-            //判断是否修改成功
-            if(!StringUtils.isEmpty(code) && !code.equals("0")){
-                return ResultVo.failure(ResultError.NATIONAL_ERROR.getCode(),ResultError.NATIONAL_ERROR.getMessage() + jsonObject.getString("message"));
+            if(jsonObject.getBoolean("error")){
+                return ResultVo.failure(ResultError.NATIONAL_ERROR.getCode(), ResultError.NATIONAL_ERROR.getMessage() + jsonObject.getString("message"));
             }
             //修改本地班组信息
             WorkerGroup updateGroup = groupService.updateByTeamSysNo(selectWorkerGroup);
@@ -197,6 +199,15 @@ public class GroupController {
         }
         if (StringUtils.hasText(workerGroup.getRemark())) {
             selectWorkerGroup.setRemark(workerGroup.getRemark());
+        }
+        if (StringUtils.hasText(workerGroup.getCorpName())) {
+            selectWorkerGroup.setCorpName(workerGroup.getCorpName());
+        }
+        if (StringUtils.hasText(workerGroup.getCorpCode())) {
+            selectWorkerGroup.setCorpCode(workerGroup.getCorpCode());
+        }
+        if (workerGroup.getIsAdminGroup() != null) {
+            selectWorkerGroup.setIsAdminGroup(workerGroup.getIsAdminGroup());
         }
     }
 }

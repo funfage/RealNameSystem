@@ -3,7 +3,6 @@ package com.real.name.project.service.implement;
 import com.real.name.device.DeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.repository.DeviceRepository;
-import com.real.name.issue.service.repository.IssueDetailRepository;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
 import com.real.name.project.entity.Project;
@@ -34,8 +33,6 @@ public class ProjectDetailImp implements ProjectDetailService {
     @Autowired
     private PersonService personService;
 
-    @Autowired
-    private IssueDetailRepository issueDetailRepository;
 
     @Autowired
     private DeviceRepository deviceRepository;

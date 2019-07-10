@@ -1,18 +1,15 @@
 package com.real.name.device;
 
 
-
-
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.info.DeviceConstant;
-import com.real.name.common.result.ResultError;
 import com.real.name.common.utils.HTTPTool;
 import com.real.name.device.entity.Device;
+import com.real.name.issue.entity.FaceResult;
 import com.real.name.issue.entity.IssueFace;
 import com.real.name.issue.service.IssueFaceService;
 import com.real.name.person.entity.Person;
-import com.real.name.issue.entity.FaceResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,29 +39,6 @@ public class DeviceUtils {
         deviceUtils = this;
     }
 
-    //判断设备是否在线
-    public static boolean isOnLine(String ip, Integer outPort) {
-        return false;
-    }
-
-    /**
-     * 注册心跳
-     * @param device
-     * @return
-     */
-    public static boolean registerHeartBeat(Device device) {
-        Map<String, Object> map = new HashMap<>();
-        //注册心跳的设备地址
-        String url = getWholeUrl(deviceHeartBeat, device);
-        map.put("pass", device.getPass());
-        map.put("url", "http://139.9.47.190:9901/attendance/heartbeat");
-        String response = HTTPTool.postUrlForParam(url, map);
-        if (StringUtils.hasText(response)) {
-            FaceResult faceResult = JSONObject.parseObject(response, FaceResult.class);
-            return faceResult.getSuccess();
-        }
-        return false;
-    }
 
     /**
      * 得到完整的URL
@@ -82,26 +57,6 @@ public class DeviceUtils {
      *重发下发失败的信息
      */
 
-
-    /**
-     * 根据workRole向人脸识别设备发送人员信息
-     */
-    public static Map<String, Object> sendPersonInfo(Person person, List<Device> projectDevice, List<Device> allDevices) {
-        Integer workRole = person.getWorkRole();
-        // 给设备发送人员信息
-        Map<String, Object> map = new HashMap<>();
-        map.put("person", person.toJSON());
-        String url = "person/create";
-        Map<String, Object> resultMap;
-        if (workRole == 20) { // 如果是建筑工人，发送给该工人所属项目的设备
-            resultMap = HTTPTool.sendDataToFaceDeviceByProjectCode(url, map, DeviceConstant.postMethod, projectDevice);
-        } else if (workRole == 10){ // 如果是管理工人，发送给全部设备
-            resultMap = HTTPTool.sendDataToFaceDevice(url, map, DeviceConstant.postMethod, allDevices);
-        } else {
-            throw new AttendanceException(ResultError.PERSON_EMPTY);
-        }
-        return resultMap;
-    }
 
     /**
      * 下发人员信息到多个设备
@@ -332,6 +287,31 @@ public class DeviceUtils {
     }
 
     /**
+     * 获取用户在某个识别的识别记录
+     */
+    public static FaceResult getPersonRecords(Device device, Integer personId, Integer length, Integer index, Date startTime, Date endTime, Integer model) {
+        try {
+            Map<String, Object> queryMap = sendQueryPersonRecords(device, personId, length, index, startTime, endTime, model);
+            String queryResponse = (String) queryMap.get(device.getDeviceId());
+            if (!StringUtils.hasText(queryResponse) || queryResponse.equals(DeviceConstant.connectTimeOut)) {
+                logger.warn("sendQueryPersonRecords响应信息失败, queryResponse:{}", queryResponse);
+                return null;
+            } else {
+                FaceResult faceResult = JSONObject.parseObject(queryResponse, FaceResult.class);
+                Boolean isSuccess = faceResult.getSuccess();
+                if (isSuccess) {
+                    return faceResult;
+                } else {
+                    return null;
+                }
+            }
+        } catch (Exception e) {
+            logger.error("getPersonRecords error");
+            return null;
+        }
+    }
+
+    /**
      * ==========================================================================================
      */
 
@@ -418,6 +398,41 @@ public class DeviceUtils {
         String url = "/device/reset";
         Map<String, Object> map = new HashMap<>();
         map.put("delete", true);
+        return HTTPTool.sendDataToFaceDeviceByDeviceId(url, map, DeviceConstant.postMethod, device);
+    }
+
+    /**
+     * 获取人脸设备的序列号
+     * @param device
+     * @return
+     */
+    public static FaceResult getDeviceKey(Device device) {
+        String url = "http://" + device.getIp() + ":" + device.getOutPort() + "/getDeviceKey";
+        try {
+            String result = HTTPTool.postUrlForParam(url, null);
+            if (result != null) {
+                return JSONObject.parseObject(result, FaceResult.class);
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            logger.error("getDeviceKey error e:{}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 查询人脸设备设备记录
+     */
+    public static Map<String, Object> sendQueryPersonRecords(Device device, Integer personId, Integer length, Integer index, Date startTime, Date endTime, Integer model) {
+        Map<String, Object> map = new HashMap<>();
+        String url = "/newFindRecords";
+        map.put("personId", personId.toString());
+        map.put("length", length);
+        map.put("index", index);
+        map.put("startTime", startTime);
+        map.put("endTime", endTime);
+        map.put("model", model);
         return HTTPTool.sendDataToFaceDeviceByDeviceId(url, map, DeviceConstant.postMethod, device);
     }
 

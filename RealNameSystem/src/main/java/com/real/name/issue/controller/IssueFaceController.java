@@ -137,10 +137,11 @@ public class IssueFaceController {
         for (IssuePersonStatus issuePersonStatus : issuePersonStatusList) {
             Person person = personService.findIssuePersonImageInfo(issuePersonStatus.getPersonId());
             if (person != null) {
-                //表示下发人员失败
                 if (issuePersonStatus.getIssuePersonStatus() == 0) {
+                    //表示下发人员失败
                     DeviceUtils.issuePersonToOneDevice(device, person, 1);
-                } else if (issuePersonStatus.getIssuePersonStatus() == 1 && issuePersonStatus.getIssueImageStatus() == 0) { //表示下发照片失败
+                } else if (issuePersonStatus.getIssuePersonStatus() == 1 && issuePersonStatus.getIssueImageStatus() == 0) {
+                    //表示下发照片失败
                     DeviceUtils.issueImageToOneDevice(device, person, 1);
                 }
             }

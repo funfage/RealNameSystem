@@ -114,10 +114,18 @@ public class DeviceController {
         Device selectDevice = deviceOptional.get();
         //校验参数并设置
         verifyParam(factory, deviceType, ip, direction, channel, installTime, outPort, phone, remark, projectCode, pass, selectDevice);
-        //更新数据
-        Device device = deviceService.save(selectDevice);
-        if (device == null) {
-            throw new AttendanceException(ResultError.UPDATE_ERROR);
+        //更新人脸设备
+        if (selectDevice.getDeviceType() == 3) {
+            deviceService.updateFaceDevice(selectDevice);
+        } else {
+            /**
+             * TODO 更新其他设备信息
+             * 后续处理
+             */
+            Device device = deviceService.save(selectDevice);
+            if (device == null) {
+                throw new AttendanceException(ResultError.UPDATE_ERROR);
+            }
         }
         return ResultVo.success();
     }
@@ -158,21 +166,23 @@ public class DeviceController {
         if (deviceOptional.isPresent()) {
             throw new AttendanceException(ResultError.DEVICE_EXIST);
         }
-        //从redis中判断是否收到设备的心跳
-        if (!jedisKeys.hasKey(deviceId)) {
-            throw new AttendanceException(ResultError.NO_HEARTBEAT);
-        }
-        //发送重置报文
-        Boolean isSuccess = DeviceUtils.issueResetDevice(new Device(deviceId, outPort, ip, pass));
-        if (!isSuccess) {
-            throw new AttendanceException(ResultError.RESET_DEVICE_ERROR);
+        //查询设备的IP和端口是否重复
+        if (deviceService.findByIpAndOutPort(ip, outPort).isPresent()) {
+            throw new AttendanceException(ResultError.IP_PORT_REPEAT);
         }
         Device device = new Device();
         device.setDeviceId(deviceId);
+        //校验输入的参数是否正确
         verifyParam(factory, deviceType, ip, direction, channel, installTime, outPort, phone, remark, projectCode, pass, device);
-        Device newDevice = deviceService.save(device);
-        if (newDevice == null) {
-            throw new AttendanceException(ResultError.INSERT_ERROR);
+        if (device.getDeviceType() == 3) {
+            //添加人脸设备
+            deviceService.addFaceDevice(device);
+        } else {
+            /**
+             * TODO 添加其他设备信息
+             * 后续处理
+             */
+            deviceService.save(device);
         }
         return ResultVo.success();
     }

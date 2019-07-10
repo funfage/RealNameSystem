@@ -75,8 +75,8 @@ public class PersonImp implements PersonService {
     }
 
     @Override
-    public Optional<Person> findByIdCardIndex(String idcardIndex) {
-        return personRepository.findByIdCardIndex(idcardIndex);
+    public Optional<Person> findByIdCardIndex(String idCardIndex) {
+        return personRepository.findByIdCardIndex(idCardIndex);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class PersonImp implements PersonService {
         return personRepository.save(person);
     }
 
-    @Override
+    /*@Override
     public Person findIssuePersonInfo(Integer personId) {
         return personRepository.findIssuePersonInfo(personId);
     }
@@ -107,11 +107,26 @@ public class PersonImp implements PersonService {
     @Override
     public Person findIssueImageInfo(Integer personId) {
         return personRepository.findIssueImageInfo(personId);
-    }
+    }*/
 
     @Override
     public Person findIssuePersonImageInfo(Integer personId) {
         return personRepository.findIssuePersonImageInfo(personId);
+    }
+
+    @Override
+    public Optional<Person> findPersonNameByPersonId(Integer personId) {
+        return personRepository.findPersonNameByPersonId(personId);
+    }
+
+    @Override
+    public List<Integer> findAllPersonId() {
+        return personRepository.findAllPersonId();
+    }
+
+    @Override
+    public List<Person> findAllPersonRole() {
+        return personRepository.findAllPersonRole();
     }
 
 

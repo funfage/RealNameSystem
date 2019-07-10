@@ -29,7 +29,7 @@ import java.util.UUID;
  * @Date 2019/5/12 20:53
  **/
 public class NationalUtils {
-    private Logger logger = LoggerFactory.getLogger(NationalUtils.class);
+    private static Logger logger = LoggerFactory.getLogger(NationalUtils.class);
     /**
      * @param method
      * @param data   这个是对象序列化之后的字符串
@@ -42,11 +42,10 @@ public class NationalUtils {
         return request.postData(BaseInfo.URL, null, dataMap);
     }
 
-    static Map<String, String> getMap(String data, String method) {
+    private static Map<String, String> getMap(String data, String method) {
         String guid = UUID.randomUUID().toString().replace("-", "");
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         String timestamp = sdf.format(new Date());
-
         String sortString = "appid=" + BaseInfo.APPID;
         sortString += "&data=" + data;
         sortString += "&format=" + BaseInfo.FORMART;
@@ -56,7 +55,6 @@ public class NationalUtils {
         sortString += "&version=" + BaseInfo.VERSION;
         sortString += "&appsecret=" + BaseInfo.APPSCRECT;
         String sign = EncriptionHelper.getSHA256StrJava(sortString.toLowerCase());
-
         Map<String, String> dataMap = new HashMap<>();
         dataMap.put("appid", BaseInfo.APPID);
         dataMap.put("data", data);
@@ -125,7 +123,14 @@ public class NationalUtils {
         ng.setTeamName(workerGroup.getTeamName());
         ng.setResponsiblePersonName(workerGroup.getResponsiblePersonName());
         ng.setResponsiblePersonPhone(workerGroup.getResponsiblePersonPhone());
-        ng.setResponsiblePersonIDCardType(workerGroup.getResponsiblePersonIdCardType().toString());
+        if (workerGroup.getResponsiblePersonIdCardType() != null) {
+            if (workerGroup.getResponsiblePersonIdCardType() < 10) {
+                //若小于10，则要在前面补零
+                ng.setResponsiblePersonIDCardType("0" + workerGroup.getResponsiblePersonIdCardType());
+            } else {
+                ng.setResponsiblePersonIDCardType(workerGroup.getResponsiblePersonIdCardType().toString());
+            }
+        }
         ng.setResponsiblePersonIDNumber(AesUtils.encrypt(workerGroup.getResponsiblePersonIdNumber(), appsecret));
         ng.setRemark(workerGroup.getRemark());
         ng.setEntryTime(CommonUtils.DateToString(workerGroup.getEntryTime()));
@@ -155,7 +160,13 @@ public class NationalUtils {
         wp.setTeamSysNo(workerGroup.getTeamSysNo());
         wp.setWorkerName(person.getPersonName());
         wp.setIsTeamLeader(person.getIsTeamLeader());
-        wp.setIdCardType(person.getIdCardType().toString());
+        if (person.getIdCardType() != null) {
+            if (person.getIdCardType() < 10) {
+                wp.setIdCardType("0" + person.getIdCardType());
+            } else {
+                wp.setIdCardType(person.getIdCardType().toString());
+            }
+        }
         wp.setIdCardNumber(AesUtils.encrypt(person.getIdCardNumber(),appsecret));
         wp.setWorkType(person.getWorkType());
         wp.setWorkRole(person.getWorkRole());
@@ -164,8 +175,16 @@ public class NationalUtils {
         wp.setHeadImage(person.getHeadImage());
         wp.setCellPhone(person.getCellPhone());
         wp.setGrantOrg(person.getGrantOrg());
-        wp.setPoliticsType(person.getPoliticsType().toString());
-        wp.setCultureLevelType(person.getCultureLevelType().toString());
+        if (person.getPoliticsType() != null) {
+            if (person.getPoliticsType() < 10) {
+                wp.setPoliticsType("0" + person.getPoliticsType());
+            } else {
+                wp.setPoliticsType(person.getPoliticsType().toString());
+            }
+        }
+        if (person.getCultureLevelType() != null) {
+            wp.setCultureLevelType(person.getCultureLevelType().toString());
+        }
         String str = JSON.toJSONString(wp);
         System.out.println(str);
         Map<String,String> dataMap = getMap(str,method);
@@ -178,13 +197,13 @@ public class NationalUtils {
     /**
      * 异步调用接口查询
      */
-    static JSONObject AsyncHandleResultQuery(String str,String method) {
+    private static JSONObject AsyncHandleResultQuery(String str,String method) {
         try {
             NationalGroup ng = new NationalGroup();
             ng.setRequestSerialCode(str);
             Map<String,String> dataMap = getMap(JSON.toJSONString(ng),method);
             BaseRequest request = new BaseRequest(){};
-            String result = request.postData(BaseInfo.URL,null,dataMap);
+            String result = request.postData(BaseInfo.URL,null, dataMap);
             return JSONObject.parseObject(result);
         } catch (Exception e) {
             e.printStackTrace();
@@ -201,38 +220,65 @@ public class NationalUtils {
      *        否则成功获取数据并返回
      */
     private static JSONObject HandleResultReturn(String result) {
-        JSONObject resultObj = null;
+        JSONObject resultObj = new JSONObject();
+        JSONObject parseObject;
         try {
-            resultObj = JSONObject.parseObject(result);
+            parseObject = JSONObject.parseObject(result);
         } catch (Exception e) {
             e.printStackTrace();
-            resultObj = new JSONObject();
             resultObj.put("error", true);
-            resultObj.put("message", "全国平台异步通知结果解析失败");
+            resultObj.put("message", "结果解析失败");
+            logger.error("HandleResultReturn error, e:{}", e.getMessage());
             return resultObj;
         }
         //判断是否返回错误信息
-        String code = resultObj.getString("code");
+        String code = parseObject.getString("code");
         //code不为空且不为零则说明返回了错误代码
         if(StringUtils.isEmpty(code)){
-            resultObj.put("message", "全国平台异步通知结果code解析为空");
+            resultObj.put("message", "code解析为空");
             resultObj.put("error", true);
+            return resultObj;
         } else if (!code.equals("0")) {
             resultObj.put("error", true);
+            resultObj.put("message", parseObject.getString("message"));
+            return resultObj;
         } else {
             //获取正确结果
-            JSONObject data = resultObj.getJSONObject("data");
+            JSONObject data = parseObject.getJSONObject("data");
             if (data != null) {
                 String requestSerialCode = data.getString("requestSerialCode");
+                //requestSerialCode不为空则需要异步查询
                 if (StringUtils.hasText(requestSerialCode)) {
+                    //异步查询结果
                     data = AsyncHandleResultQuery(requestSerialCode, "AsyncHandleResult.Query");
+                    if (data == null) {
+                        resultObj.put("error", true);
+                        resultObj.put("message", "获取异步通知结果失败");
+                        return resultObj;
+                    } else {
+                        //判断是否调用成功
+                        JSONObject queryData =  data.getJSONObject("data");
+                        String status =  queryData.getString("status");
+                        if (!StringUtils.hasText(status) || !status.equals("20")) { //处理失败
+                            resultObj.put("error", true);
+                            resultObj.put("message", queryData.getString("result"));
+                            return resultObj;
+                        } else {   //处理成功
+                            resultObj.put("error", false);
+                            resultObj.put("data", queryData);
+                            return resultObj;
+                        }
+                    }
                 }
+                resultObj.put("error", false);
                 resultObj.put("data", data);
+                return resultObj;
             } else {
+                //获取返回结果失败
                 resultObj.put("data", null);
+                resultObj.put("error", true);
+                return resultObj;
             }
-            resultObj.put("error", false);
         }
-        return resultObj;
     }
 }

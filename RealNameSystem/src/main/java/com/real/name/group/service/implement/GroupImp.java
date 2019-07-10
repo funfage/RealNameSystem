@@ -9,6 +9,7 @@ import com.real.name.project.entity.Project;
 import com.real.name.project.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +23,7 @@ public class GroupImp implements GroupService {
     @Autowired
     private ProjectService projectService;
 
+    @Transactional
     @Override
     public WorkerGroup create(WorkerGroup group) {
 
@@ -61,4 +63,10 @@ public class GroupImp implements GroupService {
     public int deleteByTeamSysNo(Integer teamSysNo) {
         return groupRepository.deleteByTeamSysNo(teamSysNo);
     }
+
+    @Override
+    public Optional<WorkerGroup> findByIsAdminGroupAndProjectCode(Integer status, String projectCode) {
+        return groupRepository.findByIsAdminGroupAndProjectCode(status, projectCode);
+    }
+
 }
