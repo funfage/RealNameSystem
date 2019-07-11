@@ -24,7 +24,7 @@ public class PathUtil {
 	public static String getImgBasePath() {
 		String os = System.getProperty("os.name");
 		String basePath = "";
-		if (os.toLowerCase().startsWith("win")) {
+		if (os.toLowerCase().contains("win")) {
 			basePath = winPath;
 		} else {
 			basePath = linuxPath;

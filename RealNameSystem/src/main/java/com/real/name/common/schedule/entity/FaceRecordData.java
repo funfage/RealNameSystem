@@ -9,23 +9,23 @@ import java.util.List;
 @Getter
 public class FaceRecordData {
 
-    private pageInfo pageinfo;
+    private PageInfo pageinfo;
 
-    private List<records> recordsList;
+    private List<Records> records;
 
     public FaceRecordData() {
     }
 
-    public FaceRecordData(pageInfo pageinfo, List<records> recordsList) {
+    public FaceRecordData(PageInfo pageinfo, List<Records> records) {
         this.pageinfo = pageinfo;
-        this.recordsList = recordsList;
+        this.records = records;
     }
 
     @Override
     public String toString() {
         return "FaceRecordData{" +
                 "pageinfo=" + pageinfo +
-                ", recordsList=" + recordsList +
+                ", recordsList=" + records +
                 '}';
     }
 }

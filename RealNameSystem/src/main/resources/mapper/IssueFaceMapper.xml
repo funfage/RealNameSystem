@@ -162,9 +162,9 @@
        and
        f.device_id = d.device_id
        and
-        (f.issue_person_status = 0
+        (f.issue_person_status != 1
         or
-        f.issue_image_status =0)
+        f.issue_image_status != 1)
     </select>
 
     <select id="findIssueFailPersonInfoByProjectCode" resultMap="findIssueFailPersonInfo">
@@ -183,9 +183,9 @@
         or
         d.project_code = #{projectCode})
         and
-        (f.issue_person_status = 0
+        (f.issue_person_status != 1
         or
-        f.issue_image_status =0)
+        f.issue_image_status != 1)
     </select>
 
     <select id="findIssueFailPersonInfoByDeviceId" resultMap="findIssueFailPersonInfo">
@@ -200,9 +200,9 @@
         and
         d.device_id = #{deviceId}
         and
-        (f.issue_person_status = 0
+        (f.issue_person_status != 1
         or
-        f.issue_image_status =0)
+        f.issue_image_status != 1)
     </select>
 
 </mapper>

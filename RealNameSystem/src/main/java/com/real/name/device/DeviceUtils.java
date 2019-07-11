@@ -1,9 +1,10 @@
 package com.real.name.device;
 
 
-import com.alibaba.fastjson.JSON;
+import com.alibaba.druid.support.json.JSONUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.real.name.common.info.DeviceConstant;
+import com.real.name.common.schedule.entity.FaceRecordData;
 import com.real.name.common.utils.HTTPTool;
 import com.real.name.device.entity.Device;
 import com.real.name.issue.entity.FaceResult;
@@ -68,6 +69,21 @@ public class DeviceUtils {
         }
     }
 
+    public static void updatePersonToDevices(List<Device> deviceList, Person person, int times) {
+        for (Device device : deviceList) {
+            updatePersonToOneDevice(device, person, times);
+        }
+    }
+
+    /**
+     * 下发照片信息到多个设备
+     */
+    public static void updateImageToDevices(List<Device> deviceList, Person person, int times) {
+        for (Device device : deviceList) {
+            updateImageToOneDevice(device, person, times);
+        }
+    }
+
     /**
      * 下发人员和照片信息到某个设备
      */
@@ -101,11 +117,18 @@ public class DeviceUtils {
                 }
                 issuePerson++;
             }
+
         } else {
             logger.warn("issuePersonToOneDevice error 用户id或设备id为空");
         }
     }
 
+    /**
+     * 下发照片信息到某个设备
+     * @param device
+     * @param person
+     * @param times
+     */
     public static void issueImageToOneDevice(Device device, Person person, int times) {
         if (StringUtils.hasText(device.getDeviceId()) && person.getPersonId() != null) {
             int issueImage = 0;
@@ -124,6 +147,82 @@ public class DeviceUtils {
                     break;
                 }
                 issueImage++;
+            }
+            //表明没有下发成功过
+            if (issueImage >= times) {
+                IssueFace issueFace = new IssueFace();
+                issueFace.setDevice(device);
+                issueFace.setPerson(person);
+                //设置下发失败标识
+                issueFace.setIssueImageStatus(0);
+                deviceUtils.issueFaceService.updateByPersonIdAndDeviceId(issueFace);
+            }
+        } else {
+            logger.warn("issueImageToOneDevice error 用户id或设备id为空");
+        }
+    }
+
+    private static void updatePersonToOneDevice(Device device, Person person, int times) {
+        if (StringUtils.hasText(device.getDeviceId()) && person.getPersonId() != null) {
+            int updatePerson = 0;
+            while (updatePerson < times) {
+                Boolean isSuccess = issueUpdatePersonInfo(device, person);
+                if (isSuccess) {
+                    IssueFace issueFace = new IssueFace();
+                    issueFace.setDevice(device);
+                    issueFace.setPerson(person);
+                    //设置下发照片信息成功标识
+                    issueFace.setIssuePersonStatus(1);
+                    //更新设备信息
+                    deviceUtils.issueFaceService.updateByPersonIdAndDeviceId(issueFace);
+                    break;
+                }
+                updatePerson++;
+            }
+            //表明没有下发成功过
+            if (updatePerson >= times) {
+                IssueFace issueFace = new IssueFace();
+                issueFace.setDevice(device);
+                issueFace.setPerson(person);
+                //设置失败标识, -1表示更新失败
+                issueFace.setIssuePersonStatus(-1);
+                deviceUtils.issueFaceService.updateByPersonIdAndDeviceId(issueFace);
+            }
+        }
+    }
+
+    /**
+     * 更新某个设备的照片信息
+     * @param device
+     * @param person
+     * @param times
+     */
+    private static void updateImageToOneDevice(Device device, Person person, int times) {
+        if (StringUtils.hasText(device.getDeviceId()) && person.getPersonId() != null) {
+            int updateImage = 0;
+            //下发三次照片信息
+            while (updateImage < times) {
+                Boolean isImageIssue = issueUpdateImage(device, person);
+                if (isImageIssue) {
+                    IssueFace issueFace = new IssueFace();
+                    issueFace.setDevice(device);
+                    issueFace.setPerson(person);
+                    //设置下发照片信息成功标识
+                    issueFace.setIssueImageStatus(1);
+                    //更新设备信息
+                    deviceUtils.issueFaceService.updateByPersonIdAndDeviceId(issueFace);
+                    break;
+                }
+                updateImage++;
+            }
+            //表明没有下发成功过
+            if (updateImage >= times) {
+                IssueFace issueFace = new IssueFace();
+                issueFace.setDevice(device);
+                issueFace.setPerson(person);
+                //设置失败标识, -1表示更新失败
+                issueFace.setIssueImageStatus(-1);
+                deviceUtils.issueFaceService.updateByPersonIdAndDeviceId(issueFace);
             }
         } else {
             logger.warn("issueImageToOneDevice error 用户id或设备id为空");
@@ -163,7 +262,7 @@ public class DeviceUtils {
      * @param person
      * @return
      */
-    public static Boolean issuePersonByDeviceId(Device device, Person person) {
+    private static Boolean issuePersonByDeviceId(Device device, Person person) {
         try {
             Map<String, Object> sendMap = sendPersonByDeviceId(device, person);
             String sendResponse = (String) sendMap.get(device.getDeviceId());
@@ -217,7 +316,7 @@ public class DeviceUtils {
      * @param person
      * @return
      */
-    public static Boolean issueImageByDeviceId(Device device, Person person) {
+    private static Boolean issueImageByDeviceId(Device device, Person person) {
         try {
             Map<String, Object> sendMap = sendHeadImgByDevice(device, person);
             String sendResponse = (String) sendMap.get(device.getDeviceId());
@@ -232,6 +331,46 @@ public class DeviceUtils {
             }
         } catch (Exception e) {
             logger.error("sendImageByDeviceId error e:{}", e.getMessage());
+            return false;
+        }
+    }
+
+    public static Boolean issueUpdatePersonInfo(Device device, Person person) {
+        try {
+            Map<String, Object> updateMap = sendUpdatePersonInfoByDevice(device, person);
+            String updateResponse = (String) updateMap.get(device.getDeviceId());
+            if (!StringUtils.hasText(updateResponse) || updateResponse.equals(DeviceConstant.connectTimeOut)) {
+                logger.warn("sendUpdatePersonInfoByDevice获取设备响应信息失败, e:{}", updateResponse);
+                return false;
+            } else {
+                FaceResult sendResult = JSONObject.parseObject(updateResponse, FaceResult.class);
+                Boolean isSuccess = sendResult.getSuccess();
+                //返回是否查询成功
+                return isSuccess != null && isSuccess;
+            }
+        } catch (Exception e) {
+            logger.error("issueUpdatePersonInfo error e:{}", e.getMessage());
+            return false;
+        }
+    }
+    /**
+     *更新人员的照片信息
+     */
+    private static Boolean issueUpdateImage(Device device, Person person) {
+        try {
+            Map<String, Object> updateMap = sendUpdateImageByDevice(device, person);
+            String updateResponse = (String) updateMap.get(device.getDeviceId());
+            if (!StringUtils.hasText(updateResponse) || updateResponse.equals(DeviceConstant.connectTimeOut)) {
+                logger.warn("sendHeadImgByDevice获取设备响应信息失败, e:{}", updateResponse);
+                return false;
+            } else {
+                FaceResult sendResult = JSONObject.parseObject(updateResponse, FaceResult.class);
+                Boolean isSuccess = sendResult.getSuccess();
+                //返回是否查询成功
+                return isSuccess != null && isSuccess;
+            }
+        } catch (Exception e) {
+            logger.error("issueUpdateImage error, e:{}", e.getMessage());
             return false;
         }
     }
@@ -267,7 +406,7 @@ public class DeviceUtils {
      * @param person 下发的人员信息
      * @return 是否查询成功
      */
-    public static Boolean queryImageByDeviceId(Device device, Person person) {
+    private static Boolean queryImageByDeviceId(Device device, Person person) {
         try {
             //调用设备查询照片接口
             Map<String, Object> queryMap = sendQueryImage(person.getPersonId().toString(), device);
@@ -288,10 +427,17 @@ public class DeviceUtils {
 
     /**
      * 获取用户在某个识别的识别记录
+     * @param device 需要查询的设备
+     * @param personId 查询指定 id 的人员识别记录, 传入-1 可查询所有人员的识别记录，包括陌生人,
+     *                 传入 STRANGERBABY，可查询所有陌生人/识别失败记录
+     * @param length 传入-1 为不分页; 若不传-1，请务必大于 0
+     * @param index 页码，从 0 开始
+     * @param startTime 若需要按时间查询，请按照如下格式（年-月-日 时:分:秒）：
+     * @param endTime 截止时间
      */
-    public static FaceResult getPersonRecords(Device device, Integer personId, Integer length, Integer index, Date startTime, Date endTime, Integer model) {
+    public static FaceRecordData getPersonRecords(Device device, Integer personId, Integer length, Integer index, String startTime, String endTime) {
         try {
-            Map<String, Object> queryMap = sendQueryPersonRecords(device, personId, length, index, startTime, endTime, model);
+            Map<String, Object> queryMap = sendQueryPersonRecords(device, personId, length, index, startTime, endTime);
             String queryResponse = (String) queryMap.get(device.getDeviceId());
             if (!StringUtils.hasText(queryResponse) || queryResponse.equals(DeviceConstant.connectTimeOut)) {
                 logger.warn("sendQueryPersonRecords响应信息失败, queryResponse:{}", queryResponse);
@@ -300,7 +446,8 @@ public class DeviceUtils {
                 FaceResult faceResult = JSONObject.parseObject(queryResponse, FaceResult.class);
                 Boolean isSuccess = faceResult.getSuccess();
                 if (isSuccess) {
-                    return faceResult;
+                    Object data = faceResult.getData();
+                    return JSONObject.parseObject(JSONUtils.toJSONString(data), FaceRecordData.class);
                 } else {
                     return null;
                 }
@@ -320,12 +467,13 @@ public class DeviceUtils {
      * @param device 指定下发的设备
      * @param person 下发的人员
      */
-    public static Map<String, Object> sendHeadImgByDevice(Device device, Person person) {
+    private static Map<String, Object> sendHeadImgByDevice(Device device, Person person) {
         String url = "face/create";
         Map<String, Object> map = new HashMap<>();
         Integer personId = person.getPersonId();
         String imgBase64 = person.getHeadImage();
         map.put("personId", personId);
+        map.put("faceId", personId);
         map.put("imgBase64", imgBase64);
         return HTTPTool.sendDataToFaceDeviceByDeviceId(url, map, DeviceConstant.postMethod, device);
     }
@@ -336,12 +484,12 @@ public class DeviceUtils {
      * @param person
      * @return
      */
-    public static Map<String, Object> sendPersonByDeviceId(Device device, Person person) {
-        String url = "person/create";
+    private static Map<String, Object> sendPersonByDeviceId(Device device, Person person) {
+        String url = "/person/create";
         Map<String, Object> map = new HashMap<>();
         JSONObject personJSON = new JSONObject();
+        personJSON.put("id", person.getPersonId().toString());
         personJSON.put("name", person.getPersonName());
-        personJSON.put("id", person.getPersonId());
         map.put("person", personJSON.toJSONString());
         return HTTPTool.sendDataToFaceDeviceByDeviceId(url, map, DeviceConstant.postMethod, device);
     }
@@ -369,7 +517,7 @@ public class DeviceUtils {
      * @param device
      * @return
      */
-    public static Map<String, Object> sendQueryPerson(String id, Device device) {
+    private static Map<String, Object> sendQueryPerson(String id, Device device) {
         String url = "/person/find?pass={pass}&id={id}";
         Map<String, Object> map = new HashMap<>();
         map.put("id", id);
@@ -383,10 +531,35 @@ public class DeviceUtils {
      * @param personId 人员id
      * @param device 设备
      */
-    public static Map<String, Object> sendQueryImage(String personId, Device device) {
+    private static Map<String, Object> sendQueryImage(String personId, Device device) {
         String url = "/face/find";
         Map<String, Object> map = new HashMap<>();
         map.put("personId", personId);
+        return HTTPTool.sendDataToFaceDeviceByDeviceId(url, map, DeviceConstant.postMethod, device);
+    }
+
+    /**
+     * 更新某个设备的照片信息
+     * @param device
+     * @param person
+     * @return
+     */
+    public static Map<String, Object> sendUpdateImageByDevice(Device device, Person person) {
+        String url = "/face/update";
+        Map<String, Object> map = new HashMap<>();
+        map.put("personId", person.getPersonId());
+        map.put("faceId", person.getPersonId());
+        map.put("imgBase64", person.getHeadImage());
+        return HTTPTool.sendDataToFaceDeviceByDeviceId(url, map, DeviceConstant.postMethod, device);
+    }
+
+    public static Map<String, Object> sendUpdatePersonInfoByDevice(Device device, Person person) {
+        String url = "/person/update";
+        Map<String, Object> map = new HashMap<>();
+        JSONObject personJSON = new JSONObject();
+        personJSON.put("id", person.getPersonId());
+        personJSON.put("name", person.getPersonName());
+        map.put("person", personJSON.toJSONString());
         return HTTPTool.sendDataToFaceDeviceByDeviceId(url, map, DeviceConstant.postMethod, device);
     }
 
@@ -422,19 +595,17 @@ public class DeviceUtils {
     }
 
     /**
-     * 查询人脸设备设备记录
+     * 刷脸记录查询
      */
-    public static Map<String, Object> sendQueryPersonRecords(Device device, Integer personId, Integer length, Integer index, Date startTime, Date endTime, Integer model) {
+    public static Map<String, Object> sendQueryPersonRecords(Device device, Integer personId, Integer length, Integer index, String startTime, String endTime) {
         Map<String, Object> map = new HashMap<>();
-        String url = "/newFindRecords";
+        String url = "/findRecords";
         map.put("personId", personId.toString());
         map.put("length", length);
         map.put("index", index);
         map.put("startTime", startTime);
         map.put("endTime", endTime);
-        map.put("model", model);
         return HTTPTool.sendDataToFaceDeviceByDeviceId(url, map, DeviceConstant.postMethod, device);
     }
-
 
 }

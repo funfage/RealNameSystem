@@ -16,8 +16,6 @@ public class ImageTool {
 
     public static final String imageBase = "/root/headImage/";
 
-    public static final String imgSuffix = ".jpg";
-
     /**
      * 图片base64编码
      * @param imgFile 图片路径
@@ -111,18 +109,11 @@ public class ImageTool {
      * 删除头像
      * @param personId 员工Id
      */
-    public static boolean deleteImage(String personId){
-        File imageFile = new File(PathUtil.getImgBasePath() + personId + imgSuffix);
+    public static boolean deleteImage(Integer personId, String suffixName){
+        File imageFile = new File(PathUtil.getImgBasePath() + personId + suffixName);
         if(imageFile.exists()){
             imageFile.delete();
         }
-        return true;
-    }
-
-    /**
-     * 判断文件后缀名是否正确
-     */
-    public static boolean isRightSuffix(String imgSuffix) {
         return true;
     }
 

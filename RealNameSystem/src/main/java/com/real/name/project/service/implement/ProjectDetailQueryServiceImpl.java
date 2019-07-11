@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProjectDetailQueryServiceImpl implements ProjectDetailQueryService {
@@ -31,6 +32,7 @@ public class ProjectDetailQueryServiceImpl implements ProjectDetailQueryService 
 
     @Override
     public List<String> getProjectIdsByPersonId(Integer personId) {
-        return projectDetailQueryMapper.getProjectIdsByPersonId(personId);
+        List<String> projectCodes = projectDetailQueryMapper.getProjectIdsByPersonId(personId);
+        return projectCodes.stream().distinct().collect(Collectors.toList());
     }
 }

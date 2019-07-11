@@ -2,6 +2,8 @@ package com.real.name.person.service;
 
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -10,11 +12,14 @@ import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
+import java.io.IOException;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 @Component
 @ServerEndpoint("/webSocket")
 public class WebSocket  {
+
+    private Logger logger = LoggerFactory.getLogger(WebSocket.class);
 
     private static PersonService personService;
 
@@ -23,62 +28,70 @@ public class WebSocket  {
         WebSocket.personService = personService;
     }
 
+    /**
+     * 与某个客户端的连接会话，需要通过它来给客户端发送数据
+     */
     private Session session;
 
     /**
-     * 定义容器 存储session
+     * concurrent包的线程安全Set，用来存放每个客户端对应的MyWebSocket对象。
      */
     private static CopyOnWriteArraySet<WebSocket> webSocketSet = new CopyOnWriteArraySet<>();
 
+    /**
+     * 连接建立成功调用的方法
+     * @param session 会话
+     */
     @OnOpen
     public void onOpen(Session session) {
         this.session = session;
         webSocketSet.add(this);
-        System.out.println("WebSocket new connection");
+        logger.info("WebSocket new connection");
     }
 
+    /**
+     * 连接关闭调用的方法
+     */
     @OnClose
     public void onClose() {
+        //从set中移除
         webSocketSet.remove(this);
-        System.out.println("WebSocket breakdown");
+        logger.info("WebSocket breakdown");
     }
 
+    /**
+     * 收到客户端消息后调用的方法
+     * @param message 客户端发送过来的消息
+     */
     @OnMessage
     public void onMessage(String message) {
-//        System.out.println("WebSocket receive new message: " + message);
-//
-//        Person person = JSON.parseObject(message, Person.class);
-//        //System.out.println(person);
-//
-//        personService.create(person);
-//        System.out.println("插入数据库：" + message);
-
-//        // 给设备发送人员信息
-//        String url = HTTPTool.baseURL + "person/create";
-//        Map<String, Object> map = new HashMap<>();
-//        map.put("pass", Device.PASS);
-//        map.put("person", person.toJSON());
-//        ResultVo rvo = HTTPTool.postUrlForParam(url, map);
-//
-//        System.out.println("添加人员：" + rvo);
-//
-//        if (rvo.getSuccess()) {
-//            // 给设备添加人员照片
-//            url = HTTPTool.baseURL + "device/create";
-//            map.put("personId", person.getPersonId().toString());
-//            map.put("imgBase64", person.getHeadImage());
-//            ResultVo rv = HTTPTool.postUrlForParam(url, map);
-//            System.out.println("添加人员头像：" + rv);
-//        }
+        logger.info("收到前端传来是消息:" + message);
     }
 
-    public void sendMessage(String message) {
+    /**
+     * 发送消息给某个客户端
+     * @param message 消息
+     */
+    public void sendMessage(String message){
+        try {
+            logger.info("成功发送一条消息");
+            this.session.getBasicRemote().sendText(message);
+        } catch (IOException e) {
+            logger.error(" webSocket sendMessage error e:{}", e);
+        }
+    }
+
+    /**
+     * 群发消息
+     * @param message 需要发送的消息
+     */
+    public void sendMessageToAll(String message){
+        logger.info("成功群发一条信息:" + message);
         for (WebSocket webSocket : webSocketSet) {
-            System.out.println("WebSocket send message: " + message);
             try {
                 webSocket.session.getBasicRemote().sendText(message);
             } catch (Exception e) {
-                throw new  AttendanceException(ResultError.NETWORK_ERROR);
+                logger.error("webSocket sendMessageToAll error e:{}", e);
             }
         }
     }

@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class pageInfo {
+public class PageInfo {
 
     private Integer index;
 
@@ -16,10 +16,10 @@ public class pageInfo {
     private Integer total;
 
 
-    public pageInfo() {
+    public PageInfo() {
     }
 
-    public pageInfo(Integer index, Integer length, Integer size, Integer total) {
+    public PageInfo(Integer index, Integer length, Integer size, Integer total) {
         this.index = index;
         this.length = length;
         this.size = size;
@@ -28,7 +28,7 @@ public class pageInfo {
 
     @Override
     public String toString() {
-        return "pageInfo{" +
+        return "PageInfo{" +
                 "index=" + index +
                 ", length=" + length +
                 ", size=" + size +

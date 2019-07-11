@@ -54,7 +54,7 @@ public class CallBackController {
         //获取设备路由器的ip地址
         String routerIP = HTTPTool.getIpAddr(request);
         String result = "ip: " + ip + ", deviceKey: " + deviceKey + ", personId: " + personId +", time: " + time + ", type: " + type + ", path: " + path + ", IP: " + routerIP + "\n";
-        logger.info("设备识别回调信息:{}", result);
+        logger.debug("设备识别回调信息:{}", result);
         List<String> excludeType = new ArrayList<>();
         excludeType.add("face_1");
         excludeType.add("face_2");
@@ -78,17 +78,28 @@ public class CallBackController {
                 record.setChannel(device.getChannel());
                 record.setDirection(device.getDirection());
             }
-            record.setType(type);
+            //识别模式，0：刷脸，1：卡&人脸双重认证，2：人证比对，3：刷卡
+            if (type.equals("face_0")) {
+                record.setType(0);
+            } else if(type.equals("faceAndcard_0")) {
+                record.setType(1);
+            } else if (type.equals("idcard_0")) {
+                record.setType(2);
+            } else if (type.equals("card_0")) {
+                record.setType(3);
+            }
             record.setPath(path);
             record.setTime(time);
             //保存考勤记录
             recordService.saveRecord(record);
         }
+        //查询出需要推送的信息
+
         /**
          * TODO
          * 将考勤信息推送到远程
          */
-
+        webSocket.sendMessageToAll("");
         //返回标记给设备
         Map<String, Object> map = new HashMap<>();
         map.put("result", 1);
@@ -108,7 +119,7 @@ public class CallBackController {
         //获取设备所在路由器的外网ip
         String routerIP = HTTPTool.getIpAddr(request);
         String result = "ip: " + ip + ", deviceKey: " + deviceKey + ", personCount: " + personCount + ", time: " + time + ", faceCount: " + faceCount + ", version: " + version + ", routerIP: " + routerIP + "\n";
-        logger.info("设备心跳信息:{}", result);
+        logger.debug("设备心跳信息:{}", result);
         //将设备id存入redis
         jedisStrings.set(deviceKey, routerIP);
         //判断数据库中是否有设备的信息

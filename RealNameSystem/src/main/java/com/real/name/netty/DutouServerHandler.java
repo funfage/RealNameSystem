@@ -103,12 +103,12 @@ public class DutouServerHandler extends SimpleChannelInboundHandler<DatagramPack
                    map.put("device", device);
                }
                //保存记录
-               Record recordSave = new Record(equipmentID, DeviceConstant.DutouDeviceType, personId, personName, strtodate.getTime(), equipmentID, null, direction, channel);
+               Record recordSave = new Record(equipmentID, DeviceConstant.DutouDeviceType, personId, personName, strtodate.getTime(), null, null, direction, channel);
                RecordMapper recordMapper = appCtx.getBean(RecordMapper.class);
                recordMapper.saveRecord(recordSave);
                String s = JSON.toJSONString(map);
                WebSocket webSocket = appCtx.getBean(WebSocket.class);
-               webSocket.sendMessage(s);
+               webSocket.sendMessageToAll(s);
            }
             logger.info("DutouServerHandler stop....");
 

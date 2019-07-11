@@ -53,7 +53,7 @@ public class MyTest {
 
     public static void dateTest() {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date startTime = new Date(System.currentTimeMillis() - 86400000);
+        Date startTime = new Date(1562754682832L);
         String start = format.format(startTime);
         Date endTime = new Date(System.currentTimeMillis());
         String end = format.format(endTime);

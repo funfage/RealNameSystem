@@ -7,18 +7,6 @@ import java.util.List;
 public interface IssueFaceService {
 
     /**
-     * 查询人员下发失败的信息
-     * @return 下发失败人员信息
-     */
-    public List<IssueFace> findAllFaceIssuePersonFailure();
-
-    /**
-     * 查询人员照片下发失败信息
-     * @return
-     */
-    public List<IssueFace> findAllFaceIssueImageFailure();
-
-    /**
      * 根据personId修改信息
      */
     public int updateByPersonIdAndDeviceId(IssueFace issueFace);

@@ -51,7 +51,6 @@ public class ProjectDetailImp implements ProjectDetailService {
         } else {//下发人员信息
             DeviceUtils.issuePersonToDevices(projectDevice, person, 3);
         }
-
     }
 
     @Override

@@ -21,7 +21,7 @@ public class RecordTest extends BaseTest {
         record.setPersonName("bbb");
         record.setDirection(1);
         record.setChannel(3);
-        record.setTime(12215454L);
+        record.setTime(1562754688060L);
         record.setPath("http://localhost:9901/102.jpg");
         int i = mapper.saveRecord(record);
         System.out.println(i);

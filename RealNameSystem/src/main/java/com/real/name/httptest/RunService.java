@@ -1,6 +1,5 @@
 package com.real.name.httptest;
 
-import com.real.name.common.info.DeviceConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;

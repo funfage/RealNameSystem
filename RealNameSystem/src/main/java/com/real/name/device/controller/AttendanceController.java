@@ -51,7 +51,7 @@ public class AttendanceController {
              //获取该项目所有人员
              personIds = recordDao.personInproject(map);
          }
-         System.out.println("records:" +personIds.size());
+         System.out.println("Records:" +personIds.size());
          SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd"); //设置时间格式
          Calendar cal = Calendar.getInstance();
          cal.setTime(endDate);
@@ -95,7 +95,7 @@ public class AttendanceController {
         map.put("endDate",endDate);
         //得到所有时间范围内的人名
         List<Integer> personIds = recordDao.findDistinctPersons(map);
-        System.out.println("records:" +personIds.size());
+        System.out.println("Records:" +personIds.size());
         int[] groupNumber = new int[8];
         //根据人名得到人数及分组
         for (Integer personID:personIds) {
@@ -232,11 +232,11 @@ public class AttendanceController {
                             //该人出勤天数加1
                             hours[k][today] +=1;
                             //计算该人当天出勤小时，可能有多次出入，records已经按时间排序
-                            /*for (int j = 0; j < records.size(); j = j+2) {
-                                Record in = records.get(j);
+                            /*for (int j = 0; j < Records.size(); j = j+2) {
+                                Record in = Records.get(j);
                                 Date inDate = in.getTime();
-                                if (j+1<records.size()){
-                                    Record out = records.get(j+1);
+                                if (j+1<Records.size()){
+                                    Record out = Records.get(j+1);
                                     Date outDte = out.getTime();
                                     double diff =outDte.getTime() - inDate.getTime();
                                     //当天出勤小时

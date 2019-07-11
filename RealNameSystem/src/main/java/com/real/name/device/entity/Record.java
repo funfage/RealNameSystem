@@ -19,7 +19,7 @@ public class Record {
 
     private Long time;
 
-    private String type;
+    private Integer type;
 
     private String path;
 
@@ -30,7 +30,7 @@ public class Record {
     public Record() {
     }
 
-    public Record(Integer recordId, String deviceId, Integer deviceType, Integer personId, String personName, Long time, String type, String path, Integer direction, Integer channel) {
+    public Record(Integer recordId, String deviceId, Integer deviceType, Integer personId, String personName, Long time, Integer type, String path, Integer direction, Integer channel) {
         this.recordId = recordId;
         this.deviceId = deviceId;
         this.deviceType = deviceType;
@@ -43,7 +43,7 @@ public class Record {
         this.channel = channel;
     }
 
-    public Record(String deviceId, Integer deviceType, Integer personId, String personName, Long time, String type, String path, Integer direction, Integer channel) {
+    public Record(String deviceId, Integer deviceType, Integer personId, String personName, Long time, Integer type, String path, Integer direction, Integer channel) {
         this.deviceId = deviceId;
         this.deviceType = deviceType;
         this.personId = personId;

@@ -41,6 +41,8 @@ public enum ResultError {
     IP_PORT_REPEAT(33, "设备的ip和端口号重发"),
     ADMIN_GROUP_ERROR(34, "管理员班组只能有一个"),
     DEVICE_KEY_NOT_MATCH(35, "设备序列号不匹配"),
+    IMAGE_SIZE_ERROR(36, "图片大小超过50k"),
+    IMAGE_TYPE_ERROR(37, "照片只支持.jpg，.jng和.jpeg格式"),
     LOGIN_TOKEN_ERROR(98, "登录信息中没有Token"),
     NETWORK_ERROR(99, "网络超时,请重试"),
     DELETE_ERROR(100, "删除失败"),

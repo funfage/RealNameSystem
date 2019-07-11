@@ -20,16 +20,6 @@ public class IssueFaceServiceImpl implements IssueFaceService {
     private IssueFaceMapper mapper;
 
     @Override
-    public List<IssueFace> findAllFaceIssuePersonFailure() {
-        return null;
-    }
-
-    @Override
-    public List<IssueFace> findAllFaceIssueImageFailure() {
-        return null;
-    }
-
-    @Override
     public int updateByPersonIdAndDeviceId(IssueFace issueFace) {
         try {
             return mapper.updateByPersonIdAndDeviceId(issueFace);

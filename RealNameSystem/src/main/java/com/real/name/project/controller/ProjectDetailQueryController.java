@@ -54,6 +54,7 @@ public class ProjectDetailQueryController {
                 map.put("detailQueries", detailQueries);
                 map.put("pageNum", pageInfo.getPageNum());
                 map.put("pageSize", pageInfo.getPageSize());
+                map.put("total", pageInfo.getTotal());
                 return ResultVo.success(map);
             } else {//查询为被分配项目的普通工人信息
                 PageHelper.startPage(pageNum + 1, pageSize);
@@ -63,6 +64,7 @@ public class ProjectDetailQueryController {
                 map.put("detailQueries", detailQueries);
                 map.put("pageNum", pageInfo.getPageNum());
                 map.put("pageSize", pageInfo.getPageSize());
+                map.put("total", pageInfo.getTotal());
                 return ResultVo.success(map);
             }
         } catch (Exception e) {

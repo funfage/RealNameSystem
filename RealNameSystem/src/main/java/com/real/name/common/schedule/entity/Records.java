@@ -5,17 +5,12 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class records {
+public class Records {
 
     /**
      * 识别记录 id，由设备自动生成并管理。用户无须使用
      */
     private Integer id;
-
-    /**
-     * 识别模式，0：刷脸，1：卡&人脸双重认证，2：人证比对，3：刷卡
-     */
-    private Integer model;
 
     /**
      * //现场抓拍照片存储在设备内的路径。当设备内现场照存储满
@@ -43,12 +38,11 @@ public class records {
      */
     private Integer type;
 
-    public records() {
+    public Records() {
     }
 
-    public records(Integer id, Integer model, String path, String personId, Integer state, Long time, Integer type) {
+    public Records(Integer id, String path, String personId, Integer state, Long time, Integer type) {
         this.id = id;
-        this.model = model;
         this.path = path;
         this.personId = personId;
         this.state = state;
@@ -58,9 +52,8 @@ public class records {
 
     @Override
     public String toString() {
-        return "records{" +
+        return "Records{" +
                 "id=" + id +
-                ", model=" + model +
                 ", path='" + path + '\'' +
                 ", personId='" + personId + '\'' +
                 ", state=" + state +

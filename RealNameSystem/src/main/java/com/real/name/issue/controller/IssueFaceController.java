@@ -87,6 +87,7 @@ public class IssueFaceController {
             Map<String, Object> modelMap = new HashMap<>();
             modelMap.put("failList", failList);
             modelMap.put("pageNum", issueInfo.getPageNum());
+            modelMap.put("pageSize", issueInfo.getPageSize());
             modelMap.put("total", issueInfo.getTotal());
             return ResultVo.success(modelMap);
         } catch (Exception e) {

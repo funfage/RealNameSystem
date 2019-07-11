@@ -98,8 +98,8 @@ public class IssueFaceTest extends BaseTest {
     //
     @Test
     public void findIssueFailPersonInfoByDeviceId() {
-        PageHelper.startPage(1, 3);
-        List<IssueFace> failure = repository.findIssueFailPersonInfoByDeviceId("6670");
+        PageHelper.startPage(1, 10);
+        List<IssueFace> failure = repository.findIssueFailPersonInfoByDeviceId("6668");
         PageInfo<IssueFace> issueInfo = new PageInfo<>(failure);
         int pageNum = issueInfo.getPageNum();
         long total = issueInfo.getTotal();

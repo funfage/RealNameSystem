@@ -16,6 +16,16 @@ import java.util.Optional;
 public interface PersonService {
 
     /**
+     * 更新设备人员信息
+     */
+    void updateDevicesPersonInfo(Person person);
+
+    /**
+     * 将照片信息下发到人脸设备
+     */
+    void updateDevicesImage(Person person);
+
+    /**
      * 新建人员
      */
     Person createPerson(Person person);

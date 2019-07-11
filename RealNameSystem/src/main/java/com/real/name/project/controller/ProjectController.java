@@ -268,6 +268,7 @@ public class ProjectController {
             Map<String, Object> map = new HashMap<>();
             map.put("pageNum", pageInfo.getPageNum());
             map.put("pageSize", pageInfo.getPageSize());
+            map.put("total", pageInfo.getTotal());
             map.put("detailQueries", detailQueries);
             return ResultVo.success(map);
         } catch (Exception e) {
@@ -279,9 +280,6 @@ public class ProjectController {
 
     /**
      * 合并项目信息
-     * @param selectProject
-     * @param project
-     * @return
      */
     private void mergeProject(Project selectProject, Project project){
         if(StringUtils.hasText(project.getAddress())){
