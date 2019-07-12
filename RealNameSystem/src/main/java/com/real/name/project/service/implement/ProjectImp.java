@@ -45,4 +45,9 @@ public class ProjectImp implements ProjectService {
     public Optional<Project> findByName(String projectName) {
         return projectRepository.findByName(projectName);
     }
+
+    @Override
+    public String findProjectName(String projectName) {
+        return projectRepository.findProjectName(projectName);
+    }
 }

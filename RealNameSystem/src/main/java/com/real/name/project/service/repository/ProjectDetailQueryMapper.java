@@ -1,5 +1,6 @@
 package com.real.name.project.service.repository;
 
+import com.real.name.person.entity.Person;
 import com.real.name.project.entity.ProjectDetailQuery;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -24,5 +25,7 @@ public interface ProjectDetailQueryMapper {
      * 查询用户所在的项目的所有id
      */
     List<String> getProjectIdsByPersonId(Integer personId);
+
+
 
 }

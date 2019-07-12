@@ -3,7 +3,7 @@ package com.real.name.person.service.implement;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.result.ResultError;
-import com.real.name.device.DeviceUtils;
+import com.real.name.device.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import com.real.name.person.entity.Person;
@@ -21,16 +21,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class PersonImp implements PersonService {
+public class PersonServiceImpl implements PersonService {
 
-    private Logger logger = LoggerFactory.getLogger(PersonImp.class);
+    private Logger logger = LoggerFactory.getLogger(PersonServiceImpl.class);
 
     @Autowired
     private PersonRepository personRepository;
@@ -51,14 +49,14 @@ public class PersonImp implements PersonService {
         } else if (person.getWorkRole() == 10) {
             //是否有设备存在
             List<Device> allDevices = deviceService.findAllByDeviceType(DeviceConstant.faceDeviceType);
-            DeviceUtils.updatePersonToDevices(allDevices, person, 3);
+            FaceDeviceUtils.updatePersonToDevices(allDevices, person, 3);
         } else if (person.getWorkRole() == 20) {
             //查询用户所在的项目
             List<String> projectCodes = projectDetailQueryService.getProjectIdsByPersonId(person.getPersonId());
             //获取该项目所绑定所有人脸设备
             List<Device> faceDeviceList = deviceService.findByProjectCodeInAndDeviceType(projectCodes, DeviceConstant.faceDeviceType);
             //更新人员信息
-            DeviceUtils.updatePersonToDevices(faceDeviceList, person, 3);
+            FaceDeviceUtils.updatePersonToDevices(faceDeviceList, person, 3);
         }
     }
 
@@ -70,14 +68,14 @@ public class PersonImp implements PersonService {
             //判断是否有设备存在
             List<Device> allDevices = deviceService.findAllByDeviceType(DeviceConstant.faceDeviceType);
             //更新照片信息
-            DeviceUtils.updateImageToDevices(allDevices, person, 3);
+            FaceDeviceUtils.updateImageToDevices(allDevices, person, 3);
         } else if (person.getWorkRole() == 20) {//更新给人员所绑定人脸设备的照片信息
             //查询用户所在的项目
             List<String> projectCodes = projectDetailQueryService.getProjectIdsByPersonId(person.getPersonId());
             //获取该项目所绑定所有人脸设备
             List<Device> faceDeviceList = deviceService.findByProjectCodeInAndDeviceType(projectCodes, DeviceConstant.faceDeviceType);
             //更新照片信息
-            DeviceUtils.updateImageToDevices(faceDeviceList, person, 3);
+            FaceDeviceUtils.updateImageToDevices(faceDeviceList, person, 3);
         }
     }
 

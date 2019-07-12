@@ -3,10 +3,10 @@ package com.real.name.common.info;
 public class DeviceConstant {
 
     //读头设备
-    public final static Integer DutouDeviceType = 1;
+    public final static Integer AccessDeviceType = 1;
 
     //录入设备
-    public final static  Integer inputDeviceType = 2;
+    public final static  Integer InputDeviceType = 2;
 
     //人脸识别设备
     public final static Integer faceDeviceType = 3;

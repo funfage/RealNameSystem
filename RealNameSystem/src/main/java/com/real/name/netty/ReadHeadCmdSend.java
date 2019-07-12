@@ -2,7 +2,6 @@ package com.real.name.netty;
 
 import com.real.name.common.utils.ConvertCode;
 import com.real.name.common.utils.TimeUtil;
-import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,9 +11,9 @@ import java.nio.ByteOrder;
 /**
  * 下发给读头的协议进行组装
  */
-public class DutouCmdSend {
+public class ReadHeadCmdSend {
 
-    private static Logger logger = LoggerFactory.getLogger(DutouCmdSend.class);
+    private static Logger logger = LoggerFactory.getLogger(ReadHeadCmdSend.class);
 
     /**
      * 0x20远程开门命令帧
@@ -29,7 +28,7 @@ public class DutouCmdSend {
         int number = Integer.valueOf(equipmentID);
         String equipmentIDofHEX = ConvertCode.intToHexString(number,4);
         String equipmentIDrev = ConvertCode.reverseStr(equipmentIDofHEX);
-        System.out.println("DutouCmdSend:equipmentIDofHEX:" +equipmentIDofHEX);
+        System.out.println("ReadHeadCmdSend:equipmentIDofHEX:" +equipmentIDofHEX);
         /*String cmd = "17" +"400000"+equipmentIDrev +"0"+String.valueOf(gateNo)+
                 "000000000000000000000000000000000000000000" +
                 "000000000000000000000000" +
@@ -59,17 +58,18 @@ public class DutouCmdSend {
     }
 
     /**
-     *0x50权限添加帧
-     * @param equipmentID
-     * @param cardNo
-     * @return
+     * 0x50权限添加帧
+     * @param deviceId 设备id
+     * @param cardNo 身份证索引号
+     * @return 发送的字节数据
      */
-    public static byte[] addAuthority(String equipmentID, String cardNo){
+    public static byte[] addAuthority(String deviceId, String cardNo){
         ByteBuffer  frame = ByteBuffer.allocate(64) ;
-        int number = Integer.valueOf(equipmentID);
-        String equipmentIDofHEX = ConvertCode.intToHexString(number,4);
-        logger.info("equipmentID十六进制数", equipmentIDofHEX);
-        frame.put((byte)0x19);
+        int number = Integer.valueOf(deviceId);
+        //获取设备id的十六进制数
+        String deviceIdOfHEX = ConvertCode.intToHexString(number,4);
+        logger.info("equipmentID十六进制数", deviceIdOfHEX);
+        frame.put((byte)0x17);
         frame.put((byte)0x50);
         frame.put((byte)0x00);
         frame.put((byte)0x00);
@@ -77,9 +77,10 @@ public class DutouCmdSend {
         equip.order(ByteOrder.LITTLE_ENDIAN);
         //设置设备序列号
         equip.putInt(number);
-        //对字节数组进行逆序
-        String cardNoRever = ConvertCode.reverseStr(cardNo);
-        int cardNoInt = Integer.parseInt(cardNoRever,16);
+        //对身份证索引号进行逆序
+        String cardNoReverse = ConvertCode.reverseStr(cardNo);
+        //将十六进制的cardNoReverse字符串转换为十进制数
+        int cardNoInt = Integer.parseInt(cardNoReverse,16);
         equip.putInt(cardNoInt);
         byte[] bytes = equip.array();
         frame.put(bytes);
@@ -87,16 +88,12 @@ public class DutouCmdSend {
         byte[] endTime = TimeUtil.getBCDTime2();
         frame.put(startTime);
         frame.put(endTime);
-        frame.put((byte)0x01 );
-        frame.put((byte)0x01 );
-        frame.put((byte)0x01 );
-        frame.put((byte)0x01 );
-        byte [] result = frame.array();
-        return result;
+        frame.put((byte)0x01);
+        frame.put((byte)0x01);
+        frame.put((byte)0x01);
+        frame.put((byte)0x01);
+        return frame.array();
     }
 
-    public static byte[] deleteAllAuthority() {
-        return null;
-    }
 
 }

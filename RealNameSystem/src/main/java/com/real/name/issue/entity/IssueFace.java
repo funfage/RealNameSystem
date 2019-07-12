@@ -9,23 +9,14 @@ import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.*;
 
-@Entity
 @Setter
 @Getter
-@DynamicInsert
-@DynamicUpdate
 public class IssueFace {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer issueFaceId;
 
-    @ManyToOne
-    @JoinColumn(name = "personId")
     private Person person;
 
-    @ManyToOne
-    @JoinColumn(name = "deviceId")
     private Device device;
 
     private Integer issuePersonStatus;

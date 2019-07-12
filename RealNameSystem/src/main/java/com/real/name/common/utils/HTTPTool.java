@@ -2,7 +2,7 @@ package com.real.name.common.utils;
 
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.info.DeviceConstant;
-import com.real.name.device.DeviceUtils;
+import com.real.name.device.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import org.slf4j.Logger;
@@ -116,13 +116,13 @@ public class HTTPTool {
     private static String postToDevice(Device device, String url, Map<String, Object> param) {
         if (param == null) param = new HashMap<>();
         param.put("pass", device.getPass());
-        return postUrlForParam(DeviceUtils.getWholeUrl(url, device), param);
+        return postUrlForParam(FaceDeviceUtils.getWholeUrl(url, device), param);
     }
 
     private static String getToDevice(Device device, String url, Map<String, Object> param) {
         if (param == null) param = new HashMap<>();
         param.put("pass", device.getPass());
-        return getUrlForParam(DeviceUtils.getWholeUrl(url, device), param);
+        return getUrlForParam(FaceDeviceUtils.getWholeUrl(url, device), param);
     }
 
     /**

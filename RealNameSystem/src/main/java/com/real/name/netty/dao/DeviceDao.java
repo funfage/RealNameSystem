@@ -17,7 +17,7 @@ import java.util.Map;
 public interface DeviceDao {
     //获取数据库所有读头
     @Select("select * from `device` where device_type = 1 OR device_type=2")
-    List<Controller> findAll();
+    List<Controller> findDutouAll();
 
     //根据设备ID匹配device
     @Select("select * from `device` where device_id = #{deviceid}")

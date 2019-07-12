@@ -3,6 +3,8 @@ package com.real.name.device.entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Date;
+
 @Setter
 @Getter
 public class Record {
@@ -17,7 +19,9 @@ public class Record {
 
     private String personName;
 
-    private Long time;
+    private Long timeNumber;
+
+    private Date detailTime;
 
     private Integer type;
 
@@ -30,25 +34,27 @@ public class Record {
     public Record() {
     }
 
-    public Record(Integer recordId, String deviceId, Integer deviceType, Integer personId, String personName, Long time, Integer type, String path, Integer direction, Integer channel) {
+    public Record(Integer recordId, String deviceId, Integer deviceType, Integer personId, String personName, Long timeNumber, Date detailTime, Integer type, String path, Integer direction, Integer channel) {
         this.recordId = recordId;
         this.deviceId = deviceId;
         this.deviceType = deviceType;
         this.personId = personId;
         this.personName = personName;
-        this.time = time;
+        this.timeNumber = timeNumber;
+        this.detailTime = detailTime;
         this.type = type;
         this.path = path;
         this.direction = direction;
         this.channel = channel;
     }
 
-    public Record(String deviceId, Integer deviceType, Integer personId, String personName, Long time, Integer type, String path, Integer direction, Integer channel) {
+    public Record(String deviceId, Integer deviceType, Integer personId, String personName, Long timeNumber, Date detailTime, Integer type, String path, Integer direction, Integer channel) {
         this.deviceId = deviceId;
         this.deviceType = deviceType;
         this.personId = personId;
         this.personName = personName;
-        this.time = time;
+        this.timeNumber = timeNumber;
+        this.detailTime = detailTime;
         this.type = type;
         this.path = path;
         this.direction = direction;
@@ -60,11 +66,12 @@ public class Record {
         return "Record{" +
                 "recordId=" + recordId +
                 ", deviceId='" + deviceId + '\'' +
-                ", deviceType='" + deviceType + '\'' +
+                ", deviceType=" + deviceType +
                 ", personId=" + personId +
                 ", personName='" + personName + '\'' +
-                ", time=" + time +
-                ", type='" + type + '\'' +
+                ", timeNumber=" + timeNumber +
+                ", detailTime=" + detailTime +
+                ", type=" + type +
                 ", path='" + path + '\'' +
                 ", direction=" + direction +
                 ", channel=" + channel +

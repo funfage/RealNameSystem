@@ -14,11 +14,11 @@ import java.util.Map;
 
 public class ControllerContainer {
 
-    Logger logger = LoggerFactory.getLogger(ControllerContainer.class);
+    private Logger logger = LoggerFactory.getLogger(ControllerContainer.class);
 
-    public static ControllerContainer instance;
+    private static ControllerContainer instance;
+
     public   Map<String,Controller> clientMap;
-    //private Map<String,String> authSuccessMap;
 
     private  ControllerContainer(){
         clientMap = new HashMap<>();
@@ -38,26 +38,24 @@ public class ControllerContainer {
 
     /**
      * 添加在线设备
-     * @param equipmentId
-     * @param ip
-     * @param ctx
-     * @param cardNo
+     * @param deviceId 设备id
+     * @param ip 设备ip地址
+     * @param cardNo 身份证索引号
      * @return
      */
-    public Boolean addOnlineEquipment(String equipmentId, String ip, ChannelHandlerContext ctx, String cardNo) {
+    Boolean addOnlineEquipment(String deviceId, String ip, ChannelHandlerContext ctx, String cardNo) {
         //获取设备信息
-        Controller dutou = clientMap.get(equipmentId);
-        if( dutou != null) {
-            System.out.println("dutou not null");
+        Controller dutou = clientMap.get(deviceId);
+        if(dutou != null) {
             dutou.setIp(ip);
             dutou.setCtx(ctx);
             dutou.setCardNo(cardNo);
-            //deviceType为禁止读头
+            //deviceType为门禁读头
            return dutou.getDeviceType() == 1;
-        }else {
+        }else {//如果从clientMap中没有获取到设备则从数据库中查询并放入clientMap
             ApplicationContext appCtx = SpringUtil.getApplicationContext();
             DeviceDao equipmentDao = appCtx.getBean(DeviceDao.class);
-            Controller newDutou = equipmentDao.getDutouByID(equipmentId);
+            Controller newDutou = equipmentDao.getDutouByID(deviceId);
             if (newDutou != null){
                 newDutou.setIp(ip);
                 newDutou.setCtx(ctx);
@@ -70,23 +68,21 @@ public class ControllerContainer {
     }
 
     /**
-     * 从clientMap中得到设备信息
+     * 通过deviceId从clientMap中得到指定的设备信息
      */
-    public Controller getController(String equipmentID){
+    public Controller getController(String deviceId){
         logger.info("clientMap中的devices所有deviceId", clientMap);
-        return  clientMap.get(equipmentID);
+        return  clientMap.get(deviceId);
     }
 
     private void init(){
-        System.out.println("ttt:"+DeviceDao.class);
+        logger.info("将读头控制器信息放入clientMap中");
         ApplicationContext appCtx = SpringUtil.getApplicationContext();
         DeviceDao equipmentDao = appCtx.getBean(DeviceDao.class);
         //获取所有读头设备信息
-        List<Controller> devices = equipmentDao.findAll();
-        System.out.println("devices size:" + devices.size());
+        List<Controller> devices = equipmentDao.findDutouAll();
         //将设备信息放入clientMap
         for (Controller device: devices) {
-            System.out.println("getDutou:" +device.getDeviceId());
             String deviceID = device.getDeviceId();
             clientMap.put(deviceID, device);
         }

@@ -3,6 +3,7 @@ package com.real.name.issue;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.real.name.common.info.DeviceConstant;
 import com.real.name.device.entity.Device;
 import com.real.name.issue.entity.IssueFace;
 import com.real.name.issue.service.IssueFaceService;
@@ -110,6 +111,23 @@ public class IssueFaceTest extends BaseTest {
     public void findAllFailDeviceIdsByProjectCode() {
         List<String> fail = repository.findAllFailDeviceIdsByProjectCode("44010620190510008");
         System.out.println(fail);
+    }
+
+    @Test
+    public void findIssueFailPersonByPersonId() {
+        List<IssueFace> issueFaceList = repository.findIssueFailPersonByPersonId(1020);
+        for (IssueFace issueFace : issueFaceList) {
+            if (issueFace.getIssueImageStatus() == DeviceConstant.issueImageFailure) {
+                System.out.println("test");
+            }
+        }
+        System.out.println(issueFaceList);
+    }
+
+    @Test
+    public void findUpdateFailPersonByWorkRole() {
+        List<IssueFace> issueFaces = repository.findUpdateFailPersonByWorkRole(20);
+        System.out.println(issueFaces);
     }
 
 }

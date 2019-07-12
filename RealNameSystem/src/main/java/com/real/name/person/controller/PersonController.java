@@ -2,17 +2,21 @@ package com.real.name.person.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.real.name.common.exception.AttendanceException;
+import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.ImageTool;
 import com.real.name.common.utils.NationalUtils;
+import com.real.name.device.entity.Device;
+import com.real.name.device.service.DeviceService;
+import com.real.name.issue.entity.IssueFace;
+import com.real.name.issue.service.IssueFaceService;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
-import com.real.name.person.service.implement.PersonImp;
 import com.real.name.project.entity.ProjectPersonDetail;
 import com.real.name.project.service.ProjectDetailQueryService;
-import com.real.name.project.service.ProjectDetailService;
 import com.real.name.project.service.ProjectPersonDetailService;
+import com.real.name.project.service.ProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,26 +43,27 @@ public class PersonController {
     private PersonService personService;
 
     @Autowired
-    private PersonImp personImp;
-
+    private ProjectPersonDetailService projectPersonDetailService;
 
     @Autowired
-    private ProjectPersonDetailService projectPersonDetailService;
+    private IssueFaceService issueFaceService;
+
+    @Autowired
+    private ProjectService projectService;
 
     @Autowired
     private ProjectDetailQueryService projectDetailQueryService;
 
-    public void testSavePerson(Person person) {
-        personService.createPerson(person);
-        throw new AttendanceException("test");
-    }
+    @Autowired
+    private DeviceService deviceService;
 
     /**
      * 添加工人
      */
     @Transactional
     @PostMapping("/savePerson")
-    public ResultVo savePerson(@RequestParam("person") String personStr, @RequestParam("imageFile") MultipartFile imageFile) {
+    public ResultVo savePerson(@RequestParam("person") String personStr,
+                               @RequestParam("imageFile") MultipartFile imageFile) {
         Person person = null;
         try {
             person = JSONObject.parseObject(personStr, Person.class);
@@ -84,7 +89,7 @@ public class PersonController {
         if (selectPerson == null) {
             throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "人员");
         }
-        boolean isSuccess = ImageTool.generateImage(imageFile, imageFile.getOriginalFilename(), selectPerson.getPersonId().toString());
+        boolean isSuccess = ImageTool.generateImage(imageFile, selectPerson);
         if (!isSuccess) {
             throw new AttendanceException("照片生成失败");
         }
@@ -123,7 +128,8 @@ public class PersonController {
      */
     @Transactional
     @PostMapping("updatePerson")
-    public ResultVo updatePerson(@RequestParam("person") String personStr, @RequestParam("imageFile") MultipartFile imageFile){
+    public ResultVo updatePerson(@RequestParam("person") String personStr,
+                                 @RequestParam("imageFile") MultipartFile imageFile){
         Person person = null;
         try {
             person = JSONObject.parseObject(personStr, Person.class);
@@ -154,6 +160,19 @@ public class PersonController {
         if(selectPerson == null){
             return ResultVo.failure(ResultError.PERSON_NOT_EXIST);
         }
+        //查询人员是否下发, 如果已经下发判断是否下发成功
+        List<IssueFace> issueFailPerson = issueFaceService.findIssueFailPersonByPersonId(selectPerson.getPersonId());
+        if (issueFailPerson.size() > 0) {
+            for (IssueFace issueFace : issueFailPerson) {
+                //下发失败, 不允许用户修改信息
+                if (issueFace.getIssuePersonStatus() == DeviceConstant.issuePersonFailure
+                        || issueFace.getIssueImageStatus() == DeviceConstant.issueImageFailure) {
+                    //查询出对应的项目信息
+                    String projectName = projectService.findProjectName(issueFace.getDevice().getProjectCode());
+                    return ResultVo.failure(projectName);
+                }
+            }
+        }
         String oldName = selectPerson.getPersonName();
         //合并信息
         mergePersonInfo(selectPerson, person);
@@ -180,11 +199,11 @@ public class PersonController {
         }
         //判断用户名是否发生改变, 如果改变则重新下发信息到人脸设备
         if (!selectPerson.getPersonName().equals(oldName)) {
-            personImp.updateDevicesPersonInfo(selectPerson);
+            personService.updateDevicesPersonInfo(selectPerson);
         }
         //如果传入的照片信息不为空则重新下发照片信息到设备
         if (!imageFile.isEmpty()) {
-            personImp.updateDevicesImage(selectPerson);
+            personService.updateDevicesImage(selectPerson);
         }
         return ResultVo.success();
     }
@@ -229,11 +248,8 @@ public class PersonController {
             //判断输入的身份证号码是否正确
             if (person.getIdCardNumber().trim().length() != 18) {
                 throw new AttendanceException(ResultError.ID_CARD_ERROR);
-            }else if (personService.findByIdCardNumber(person.getIdCardNumber()).isPresent()) {
-                throw new AttendanceException(ResultError.ID_CARD_REPEAT);
-            }else{
-                selectPerson.setIdCardNumber(person.getIdCardNumber());
             }
+            selectPerson.setIdCardNumber(person.getIdCardNumber());
         }
         if(!StringUtils.isEmpty(person.getCellPhone())){
             //判断输入的电话号码是否正确
@@ -289,33 +305,27 @@ public class PersonController {
         try {
             imageStr = ImageTool.imageToBase64(imageFile.getInputStream());
         } catch (IOException e) {
-            logger.error("照片转换成base64编码失败");
+            logger.error("照片转换成base64编码失败, e:{}", e.getMessage());
             throw new AttendanceException("照片转换成base64编码失败");
         }
         if (!StringUtils.hasText(imageStr)) {
-            throw new AttendanceException("照片转换成base64编码失败");
-        }
-        String fileName = imageFile.getOriginalFilename();
-        if (!StringUtils.hasText(fileName)) {
-            throw new AttendanceException(ResultError.EMPTY_NAME);
-        }
-        List<String> suffixList = new ArrayList<>();
-        suffixList.add(".jpg");
-        suffixList.add(".png");
-        suffixList.add(".jpeg");
-        String suffixName = fileName.substring(fileName.lastIndexOf("."));
-        if (!suffixList.contains(suffixName)) {
-            throw new AttendanceException(ResultError.IMAGE_TYPE_ERROR);
+            logger.error("照片转换成base64编码为空");
+            throw new AttendanceException("照片转换成base64编码为空");
         }
         //将原有的图片信息删除
         if (person.getPersonId() != null) {
-            ImageTool.deleteImage(person.getPersonId(), person.getSuffixName());
+            boolean isDelete = ImageTool.deleteImage(person.getPersonId(), person.getSuffixName());
+            if (!isDelete) {
+                logger.error("删除照片失败");
+                throw new AttendanceException(ResultError.GENERATE_IMAGE_ERROR);
+            }
             //保存照片信息
-            ImageTool.generateImage(imageFile, fileName, person.getPersonId().toString());
+            boolean isGenerate = ImageTool.generateImage(imageFile, person);
+            if (!isGenerate) {
+                logger.error("生成照片失败");
+                throw new AttendanceException(ResultError.GENERATE_IMAGE_ERROR);
+            }
         }
-        person.setSuffixName(suffixName);
         person.setHeadImage(imageStr.trim());
     }
-
-
 }

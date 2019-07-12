@@ -106,7 +106,6 @@ public class PersonTest extends BaseTest {
         person.setAddress("address");
         person.setHeadImage("dfjdk");
         PersonController personController = new PersonController();
-        personController.testSavePerson(person);
     }
 
     @Test

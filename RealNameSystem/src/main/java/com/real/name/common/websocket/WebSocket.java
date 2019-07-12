@@ -1,7 +1,6 @@
-package com.real.name.person.service;
+package com.real.name.common.websocket;
 
-import com.real.name.common.exception.AttendanceException;
-import com.real.name.common.result.ResultError;
+import com.real.name.person.service.PersonService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +73,7 @@ public class WebSocket  {
      */
     public void sendMessage(String message){
         try {
-            logger.info("成功发送一条消息");
+            logger.info("sendMessage, 成功发送一条消息");
             this.session.getBasicRemote().sendText(message);
         } catch (IOException e) {
             logger.error(" webSocket sendMessage error e:{}", e);
@@ -86,7 +85,7 @@ public class WebSocket  {
      * @param message 需要发送的消息
      */
     public void sendMessageToAll(String message){
-        logger.info("成功群发一条信息:" + message);
+        logger.info("sendMessageToAll, 成功群发一条信息:" + message);
         for (WebSocket webSocket : webSocketSet) {
             try {
                 webSocket.session.getBasicRemote().sendText(message);

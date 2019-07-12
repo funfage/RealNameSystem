@@ -1,6 +1,6 @@
 package com.real.name.project.service.implement;
 
-import com.real.name.device.DeviceUtils;
+import com.real.name.device.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.repository.DeviceRepository;
 import com.real.name.person.entity.Person;
@@ -47,9 +47,9 @@ public class ProjectDetailImp implements ProjectDetailService {
     @Override
     public void addPersonToDevice(String projectCode, Person person, List<Device> projectDevice, List<Device> allDevices) {
         if (person.getWorkRole() != null && person.getWorkRole() == 10) {//下发管理员信息
-            DeviceUtils.issuePersonToDevices(allDevices, person, 3);
+            FaceDeviceUtils.issuePersonToDevices(allDevices, person, 3);
         } else {//下发人员信息
-            DeviceUtils.issuePersonToDevices(projectDevice, person, 3);
+            FaceDeviceUtils.issuePersonToDevices(projectDevice, person, 3);
         }
     }
 

@@ -39,9 +39,12 @@ public interface ProjectService {
     int deleteByProjectCode(String Project);
 
     /**
-     *
-     * @param projectName
-     * @return
+     *根据项目名查询
      */
     Optional<Project> findByName(String projectName);
+
+    /**
+     * 根据projectCode查询项目名称
+     */
+    String findProjectName(String projectName);
 }

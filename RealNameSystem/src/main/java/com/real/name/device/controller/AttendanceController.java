@@ -4,7 +4,7 @@ import com.real.name.common.result.ResultVo;
 import com.real.name.device.entity.Record;
 import com.real.name.netty.dao.RecordDao;
 import com.real.name.person.entity.Person3;
-import com.real.name.person.service.implement.PersonImp;
+import com.real.name.person.service.implement.PersonServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +25,7 @@ public class AttendanceController {
     @Autowired
     RecordDao recordDao;
     @Autowired
-    PersonImp personImp;
+    PersonServiceImpl personImp;
 
     /**
      * 每个人的出勤天数

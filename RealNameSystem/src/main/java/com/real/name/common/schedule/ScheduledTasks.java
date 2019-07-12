@@ -3,7 +3,7 @@ package com.real.name.common.schedule;
 import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.schedule.entity.FaceRecordData;
 import com.real.name.common.schedule.entity.Records;
-import com.real.name.device.DeviceUtils;
+import com.real.name.device.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.entity.Record;
 import com.real.name.device.service.DeviceService;
@@ -42,11 +42,11 @@ public class ScheduledTasks {
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     /**
-     * 每天凌晨零点和两点的时候触发：0 0 0,2 * * ?
+     * 每天凌晨零点和两点的时候触发：0 0 0,1 * * ?
      * springboot的cron表达式只值支持6个域的表达式，也就是不能设定年
      * 核对每个员工的考勤情况
      */
-    @Scheduled(cron = "0 0 0,2 * * ?")
+    @Scheduled(cron = "0 0 0,1 * * ? ")
     public void checkAttendance() {
         logger.warn("定时任务开始, 现在的时间为" + dateFormat.format(new Date()));
         System.out.println(dateFormat.format(new Date()));
@@ -81,7 +81,7 @@ public class ScheduledTasks {
         Date endTime = new Date(System.currentTimeMillis());
         for (Device device : deviceList) {
             //查询设备的人脸识别记录
-            FaceRecordData faceRecordData = DeviceUtils.getPersonRecords(device, person.getPersonId(), -1, 0, dateFormat.format(startTime), dateFormat.format(endTime));
+            FaceRecordData faceRecordData = FaceDeviceUtils.getPersonRecords(device, person.getPersonId(), -1, 0, dateFormat.format(startTime), dateFormat.format(endTime));
             if (faceRecordData != null) {
                 //获取设备返回的识别信息
                 List<Records> recordsList = faceRecordData.getRecords();
@@ -96,7 +96,7 @@ public class ScheduledTasks {
                             if (personOptional.isPresent()) {
                                 //若查询记录为空则将从设备查询的记录插入数据库
                                 recordMapper.saveRecord(new Record(device.getDeviceId(), device.getDeviceType(), personOptional.get().getPersonId(),
-                                        personOptional.get().getPersonName(), faceRecord.getTime(), faceRecord.getType(),
+                                        personOptional.get().getPersonName(), faceRecord.getTime(), new Date(faceRecord.getTime()) ,faceRecord.getType(),
                                         faceRecord.getPath(), device.getDirection(), device.getChannel()));
                             }
                         }

@@ -61,4 +61,14 @@ public class IssueFaceServiceImpl implements IssueFaceService {
     public List<IssueFace> findIssueFailPersonInfoByDeviceId(String deviceId) {
         return mapper.findIssueFailPersonInfoByDeviceId(deviceId);
     }
+
+    @Override
+    public List<IssueFace> findIssueFailPersonByPersonId(Integer personId) {
+        return mapper.findIssueFailPersonByPersonId(personId);
+    }
+
+    @Override
+    public List<IssueFace> findUpdateFailPersonByWorkRole(Integer workRole) {
+        return mapper.findUpdateFailPersonByWorkRole(workRole);
+    }
 }

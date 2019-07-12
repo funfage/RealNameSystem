@@ -162,9 +162,9 @@
        and
        f.device_id = d.device_id
        and
-        (f.issue_person_status != 1
+        (f.issue_person_status =
         or
-        f.issue_image_status != 1)
+        f.issue_image_status = 0)
     </select>
 
     <select id="findIssueFailPersonInfoByProjectCode" resultMap="findIssueFailPersonInfo">
@@ -183,9 +183,9 @@
         or
         d.project_code = #{projectCode})
         and
-        (f.issue_person_status != 1
+        (f.issue_person_status = 0
         or
-        f.issue_image_status != 1)
+        f.issue_image_status = 0)
     </select>
 
     <select id="findIssueFailPersonInfoByDeviceId" resultMap="findIssueFailPersonInfo">
@@ -200,9 +200,46 @@
         and
         d.device_id = #{deviceId}
         and
-        (f.issue_person_status != 1
+        (f.issue_person_status = 0
         or
-        f.issue_image_status != 1)
+        f.issue_image_status = 0)
+    </select>
+
+    <select id="findIssueFailPersonByPersonId" resultMap="findIssueFailPersonInfo">
+        select
+        f.issue_face_id, f.issue_person_status, f.issue_image_status,
+        d.device_id as d_device_id, d.project_code
+        from
+        issue_face f, device d
+        where
+        f.device_id = d.device_id
+        and
+        f.person_id = #{personId}
+        and
+        (f.issue_person_status = 0
+        or
+        f.issue_image_status = 0)
+    </select>
+
+    <select id="findUpdateFailPersonByWorkRole" resultMap="findIssueFailPersonInfo">
+        select
+        f.issue_face_id, f.device_id, f.issue_person_status, f.issue_image_status,
+        p.person_id as p_person_id, p.person_name, p.gender, p.address, p.age, p.id_card_number
+        from
+        issue_face f,
+        person p
+        where
+        f.person_id = p.person_id
+        and
+        p.work_role = #{workRole}
+        and
+        (
+        f.issue_person_status = -1
+        or
+        f.issue_image_status = -1
+        )
+        group by
+        p.person_id
     </select>
 
 </mapper>

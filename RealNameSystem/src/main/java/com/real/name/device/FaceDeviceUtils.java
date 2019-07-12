@@ -18,22 +18,22 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Component
-public class DeviceUtils {
+public class FaceDeviceUtils {
 
     public final static String deviceHeartBeat = "setDeviceHeartBeat";
 
-    private static Logger logger = LoggerFactory.getLogger(DeviceUtils.class);
+    private static Logger logger = LoggerFactory.getLogger(FaceDeviceUtils.class);
 
     @Autowired
     private IssueFaceService issueFaceService;
 
-    private static DeviceUtils deviceUtils;
+    private static FaceDeviceUtils deviceUtils;
 
     @PostConstruct
     public void init() {
@@ -117,7 +117,6 @@ public class DeviceUtils {
                 }
                 issuePerson++;
             }
-
         } else {
             logger.warn("issuePersonToOneDevice error 用户id或设备id为空");
         }
@@ -162,7 +161,14 @@ public class DeviceUtils {
         }
     }
 
-    private static void updatePersonToOneDevice(Device device, Person person, int times) {
+    /**
+     *
+     * @param device
+     * @param person
+     * @param times
+     * @return
+     */
+    public static boolean updatePersonToOneDevice(Device device, Person person, int times) {
         if (StringUtils.hasText(device.getDeviceId()) && person.getPersonId() != null) {
             int updatePerson = 0;
             while (updatePerson < times) {
@@ -187,8 +193,11 @@ public class DeviceUtils {
                 //设置失败标识, -1表示更新失败
                 issueFace.setIssuePersonStatus(-1);
                 deviceUtils.issueFaceService.updateByPersonIdAndDeviceId(issueFace);
+            } else {
+                return true;
             }
         }
+        return false;
     }
 
     /**
@@ -197,7 +206,7 @@ public class DeviceUtils {
      * @param person
      * @param times
      */
-    private static void updateImageToOneDevice(Device device, Person person, int times) {
+    public static boolean updateImageToOneDevice(Device device, Person person, int times) {
         if (StringUtils.hasText(device.getDeviceId()) && person.getPersonId() != null) {
             int updateImage = 0;
             //下发三次照片信息
@@ -223,10 +232,13 @@ public class DeviceUtils {
                 //设置失败标识, -1表示更新失败
                 issueFace.setIssueImageStatus(-1);
                 deviceUtils.issueFaceService.updateByPersonIdAndDeviceId(issueFace);
+            } else {
+                return true;
             }
         } else {
             logger.warn("issueImageToOneDevice error 用户id或设备id为空");
         }
+        return false;
     }
 
     /**

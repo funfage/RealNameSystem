@@ -1,5 +1,12 @@
 package com.real.name.common.utils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 public class ConvertCode {
+
+    private static Logger logger = LoggerFactory.getLogger(ConvertCode.class);
     /**
      * @param b 字节数组
      * @return 16进制字符串
@@ -172,15 +179,12 @@ public class ConvertCode {
      */
     public static String receiveHexToString(byte[] by) {
         try {
- 			/*io.netty.buffer.WrappedByteBuf buf = (WrappedByteBuf)msg;
- 			ByteBufInputStream is = new ByteBufInputStream(buf);
- 			byte[] by = input2byte(is);*/
             String str = bytes2Str(by);
             str = str.toLowerCase();
             return str;
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.out.println("接收字节数据并转为16进制字符串异常");
+            logger.error("接收字节数据并转为16进制字符串异常");
         }
         return null;
     }

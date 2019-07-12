@@ -1,5 +1,6 @@
 package com.real.name.person.service;
 
+import com.real.name.device.entity.Device;
 import com.real.name.person.entity.Person;
 //import com.real.name.person.entity.Person2;
 import com.real.name.person.entity.Person2;

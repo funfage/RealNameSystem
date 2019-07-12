@@ -9,8 +9,7 @@ import com.real.name.device.service.DeviceService;
 import com.real.name.device.service.RecordService;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
-import com.real.name.person.service.WebSocket;
-import com.real.name.person.service.repository.PersonRepository;
+import com.real.name.common.websocket.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,19 +64,6 @@ public class CallBackController {
         //排除识别失败的记录
         if (type != null && !excludeType.contains(type)) {
             Record record = new Record();
-            //获取用户信息
-            Optional<Person> optionalPerson = personService.findPersonNameByPersonId(Integer.valueOf(personId));
-            //设置用户名
-            optionalPerson.ifPresent(person -> record.setPersonName(person.getPersonName()));
-            //获取设备信息
-            Optional<Device> deviceOptional = deviceService.findByDeviceId(deviceKey);
-            if (deviceOptional.isPresent()) {
-                Device device = deviceOptional.get();
-                record.setDeviceId(device.getDeviceId());
-                record.setDeviceType(device.getDeviceType());
-                record.setChannel(device.getChannel());
-                record.setDirection(device.getDirection());
-            }
             //识别模式，0：刷脸，1：卡&人脸双重认证，2：人证比对，3：刷卡
             if (type.equals("face_0")) {
                 record.setType(0);
@@ -88,18 +74,36 @@ public class CallBackController {
             } else if (type.equals("card_0")) {
                 record.setType(3);
             }
-            record.setPath(path);
-            record.setTime(time);
-            //保存考勤记录
-            recordService.saveRecord(record);
+            //获取用户信息
+            Optional<Person> optionalPerson = personService.findPersonNameByPersonId(Integer.valueOf(personId));
+            //设置用户名
+            if (optionalPerson.isPresent()) {
+                Person person = optionalPerson.get();
+                record.setPersonName(person.getPersonName());
+                record.setPersonId(person.getPersonId());
+                //获取设备信息
+                Optional<Device> deviceOptional = deviceService.findByDeviceId(deviceKey);
+                if (deviceOptional.isPresent()) {
+                    Device device = deviceOptional.get();
+                    record.setDeviceId(device.getDeviceId());
+                    record.setDeviceType(device.getDeviceType());
+                    record.setChannel(device.getChannel());
+                    record.setDirection(device.getDirection());
+                    record.setPath(path);
+                    record.setTimeNumber(time);
+                    record.setDetailTime(new Date(time));
+                    //保存考勤记录
+                    recordService.saveRecord(record);
+                    logger.info("成功添加了一条人员考勤记录, record:{}", record.toString());
+                }
+            }
         }
         //查询出需要推送的信息
-
         /**
          * TODO
          * 将考勤信息推送到远程
          */
-        webSocket.sendMessageToAll("");
+        //webSocket.sendMessageToAll("");
         //返回标记给设备
         Map<String, Object> map = new HashMap<>();
         map.put("result", 1);

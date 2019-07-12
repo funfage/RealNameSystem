@@ -40,4 +40,14 @@ public interface IssueFaceService {
      */
     List<IssueFace> findIssueFailPersonInfoByDeviceId(String deviceId);
 
+    /**
+     * 查询某个人员是否有存在下发失败
+     */
+    List<IssueFace> findIssueFailPersonByPersonId(Integer personId);
+
+    /**
+     * 查询所有更新设备的人员信息
+     */
+    List<IssueFace> findUpdateFailPersonByWorkRole(Integer workRole);
+
 }

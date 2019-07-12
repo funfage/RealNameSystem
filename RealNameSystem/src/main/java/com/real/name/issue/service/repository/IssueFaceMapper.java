@@ -1,6 +1,7 @@
 package com.real.name.issue.service.repository;
 
 import com.real.name.issue.entity.IssueFace;
+import com.real.name.person.entity.Person;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -16,7 +17,6 @@ public interface IssueFaceMapper {
 
     /**
      * 查询人员照片下发失败信息
-     * @return
      */
     public List<IssueFace> findAllFaceIssueImageFailure();
 
@@ -27,14 +27,11 @@ public interface IssueFaceMapper {
 
     /**
      * 插入初始信息
-     * @param issueFace
-     * @return
      */
     public int insertInitIssue(IssueFace issueFace);
 
     /**
      * 查询所有下发失败设备的id值
-     * @return
      */
     List<String> findAllFailDeviceIds();
 
@@ -46,16 +43,21 @@ public interface IssueFaceMapper {
 
     /**
      * 查询某个项目下所有下发失败的信息
-     * @param projectCode
-     * @return
      */
     List<IssueFace> findIssueFailPersonInfoByProjectCode(String projectCode);
 
     /**
      * 查某个设备所有下发失败的信息
-     * @param deviceId
-     * @return
      */
     List<IssueFace> findIssueFailPersonInfoByDeviceId(String deviceId);
 
+    /**
+     * 查询某个人员是否有存在下发失败
+     */
+    List<IssueFace> findIssueFailPersonByPersonId(Integer personId);
+
+    /**
+     * 查询所有更新设备的人员信息
+     */
+    List<IssueFace> findUpdateFailPersonByWorkRole(Integer workRole);
 }

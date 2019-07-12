@@ -1,25 +1,20 @@
 package com.real.name.httptest;
 
-import com.alibaba.druid.support.json.JSONUtils;
-import com.alibaba.fastjson.JSONObject;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.schedule.entity.FaceRecordData;
 import com.real.name.common.schedule.entity.Records;
-import com.real.name.device.DeviceUtils;
+import com.real.name.device.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
-import com.real.name.issue.entity.FaceResult;
 import com.real.name.person.entity.Person;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.w3c.dom.views.DocumentView;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 public class TestController {
@@ -87,7 +82,7 @@ public class TestController {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date startTime = new Date(System.currentTimeMillis() - 86400000);
         Date endTime = new Date(System.currentTimeMillis());
-        FaceRecordData faceRecordData = DeviceUtils.getPersonRecords(device, -1, -1, 0, dateFormat.format(startTime), dateFormat.format(endTime));
+        FaceRecordData faceRecordData = FaceDeviceUtils.getPersonRecords(device, -1, -1, 0, dateFormat.format(startTime), dateFormat.format(endTime));
         List<Records> recordsList = faceRecordData.getRecords();
         for (Records rd : recordsList) {
             System.out.println(rd.getPersonId());

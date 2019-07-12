@@ -171,6 +171,7 @@ public class Project {
         this.category = projectType;
     }
 
+
     public Project() { }
 
     public Project(String projectCode) {

@@ -1,13 +1,16 @@
 package com.real.name.issue.controller;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
-import com.real.name.device.DeviceUtils;
+import com.real.name.device.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
+import com.real.name.issue.entity.FaceIssueUpdate;
 import com.real.name.issue.entity.IssueFace;
 import com.real.name.issue.entity.IssueInfo;
 import com.real.name.issue.entity.IssuePersonStatus;
@@ -121,6 +124,18 @@ public class IssueFaceController {
         }
     }
 
+    /**
+     * 获取更新到设备失败的人员信息
+     * @param workRole
+     * @return
+     */
+    @GetMapping("getUpdateFaceFail")
+    public ResultVo getUpdateFaceFail(@RequestParam("workRole") Integer workRole) {
+        List<IssueFace> issueFaceList = issueFaceService.findUpdateFailPersonByWorkRole(workRole);
+        return ResultVo.success(issueFaceList);
+    }
+
+
     @PostMapping("resend")
     public ResultVo resend(@RequestBody IssueInfo issueInfo) {
         String deviceId = issueInfo.getDeviceId();
@@ -140,13 +155,45 @@ public class IssueFaceController {
             if (person != null) {
                 if (issuePersonStatus.getIssuePersonStatus() == 0) {
                     //表示下发人员失败
-                    DeviceUtils.issuePersonToOneDevice(device, person, 1);
+                    FaceDeviceUtils.issuePersonToOneDevice(device, person, 1);
                 } else if (issuePersonStatus.getIssuePersonStatus() == 1 && issuePersonStatus.getIssueImageStatus() == 0) {
                     //表示下发照片失败
-                    DeviceUtils.issueImageToOneDevice(device, person, 1);
+                    FaceDeviceUtils.issueImageToOneDevice(device, person, 1);
                 }
             }
         }
         return ResultVo.success();
     }
+
+    /**
+     * 重发需要更新的人员信息
+     * @param faceIssueUpdateListStr
+     * @return
+     */
+    @PostMapping("resendUpdate")
+    public ResultVo resendUpdate(@RequestParam("faceIssueUpdateList") String faceIssueUpdateListStr) {
+        List<FaceIssueUpdate> faceIssueUpdateList = null;
+        try {
+            faceIssueUpdateList = JSONArray.parseArray(faceIssueUpdateListStr, FaceIssueUpdate.class);
+        } catch (Exception e) {
+            return ResultVo.failure();
+        }
+        for (FaceIssueUpdate faceIssueUpdate : faceIssueUpdateList) {
+            //获取人员信息
+            Person personInfo = personService.findIssuePersonImageInfo(faceIssueUpdate.getPersonId());
+            //获取设备信息
+            Optional<Device> deviceOptional = deviceService.findByDeviceId(faceIssueUpdate.getDeviceId());
+            if (deviceOptional.isPresent() && personInfo != null) {
+                Device device = deviceOptional.get();
+                if (faceIssueUpdate.getIssuePersonStatus() == -1) {//更新设备人员信息失败
+                    FaceDeviceUtils.updatePersonToOneDevice(device, personInfo, 3);
+                }
+                if (faceIssueUpdate.getIssueImageStatus() == -1) {//更新设备照片信息失败
+                    FaceDeviceUtils.updateImageToOneDevice(device, personInfo, 3);
+                }
+            }
+        }
+        return ResultVo.success();
+    }
+
 }

@@ -3,7 +3,7 @@ package com.real.name.device.service.implement;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.utils.JedisService;
-import com.real.name.device.DeviceUtils;
+import com.real.name.device.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import com.real.name.device.service.repository.DeviceRepository;
@@ -33,7 +33,7 @@ public class DeviceImp implements DeviceService {
     @Override
     public Device addFaceDevice(Device device) {
         //获取设备的序列号
-        FaceResult faceResult = DeviceUtils.getDeviceKey(device);
+        FaceResult faceResult = FaceDeviceUtils.getDeviceKey(device);
         if (faceResult == null || !faceResult.getSuccess() || !faceResult.getMsg().equals(device.getDeviceId())) {
             throw new AttendanceException(ResultError.DEVICE_KEY_NOT_MATCH);
         }
@@ -42,7 +42,7 @@ public class DeviceImp implements DeviceService {
             throw new AttendanceException(ResultError.NO_HEARTBEAT);
         }
         //发送重置报文
-        Boolean isSuccess = DeviceUtils.issueResetDevice(device);
+        Boolean isSuccess = FaceDeviceUtils.issueResetDevice(device);
         if (!isSuccess) {
             throw new AttendanceException(ResultError.RESET_DEVICE_ERROR);
         }

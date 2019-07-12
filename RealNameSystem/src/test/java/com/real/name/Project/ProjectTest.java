@@ -43,6 +43,12 @@ public class ProjectTest extends BaseTest {
         System.out.println(all.get());
     }
 
+    @Test
+    public void findProjectName() {
+        String projectName = projectRepository.findProjectName("067R9HQR0dmw178890C4BKubNU2d9gG7");
+        System.out.println(projectName);
+    }
+
 
 
 }

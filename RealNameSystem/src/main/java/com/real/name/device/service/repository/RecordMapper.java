@@ -12,6 +12,6 @@ public interface RecordMapper {
 
     Record findAttendancePerson(@Param("personId") Integer personId,
                                 @Param("deviceId") String deviceId,
-                                @Param("time") Long time);
+                                @Param("timeNumber") Long timeNumber);
 
 }

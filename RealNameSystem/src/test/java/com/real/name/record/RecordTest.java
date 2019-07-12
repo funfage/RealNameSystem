@@ -7,6 +7,8 @@ import com.sun.org.apache.regexp.internal.RE;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Date;
+
 public class RecordTest extends BaseTest {
 
     @Autowired
@@ -21,7 +23,8 @@ public class RecordTest extends BaseTest {
         record.setPersonName("bbb");
         record.setDirection(1);
         record.setChannel(3);
-        record.setTime(1562754688060L);
+        record.setTimeNumber(1562754688060L);
+        record.setDetailTime(new Date(1562754688060L));
         record.setPath("http://localhost:9901/102.jpg");
         int i = mapper.saveRecord(record);
         System.out.println(i);
@@ -29,7 +32,7 @@ public class RecordTest extends BaseTest {
 
     @Test
     public void findAttendancePerson() {
-        Record record = mapper.findAttendancePerson(102, "6668", 12345678L);
+        Record record = mapper.findAttendancePerson(102, "6668", 1562754688060L);
         System.out.println(record);
     }
 }
