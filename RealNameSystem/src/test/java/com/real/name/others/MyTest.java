@@ -1,12 +1,20 @@
 package com.real.name.others;
 
+import com.real.name.common.utils.ConvertCode;
+import com.real.name.common.utils.TimeUtil;
+import com.real.name.device.netty.model.AccessResponse;
+import com.real.name.device.netty.serial.BufferFactory;
+import com.real.name.device.netty.utils.ConvertUtils;
+import io.netty.buffer.ByteBuf;
+
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class MyTest {
 
     public static void main(String[] args) {
-        dateTest();
+        bytetoHexTest();
     }
 
     public static void testMap() {
@@ -61,5 +69,90 @@ public class MyTest {
         System.out.println("end:" + end);
     }
 
+    public static void testA() {
+        String data = "123";
+        AccessResponse response = new AccessResponse();
+        response.setType((byte) 0x17);
+        response.setFunctionId((byte) 0x50);
+        byte[] fillBytes = fillBytes(data.getBytes());
+        response.setData(fillBytes);
+        response.setSequenceId(0);
+        ByteBuf buffer = BufferFactory.getBuffer();
+        buffer.writeByte(response.getType());
+        buffer.writeShort(response.getReserved());
+        buffer.writeByte(response.getFunctionId());
+        buffer.writeBytes(response.getData());
+        buffer.writeInt(response.getSequenceId());
+        buffer.writeBytes(response.getExternalData());
+        int length = buffer.readableBytes();
+        byte bytes[] = new byte[length];
+        buffer.readBytes(bytes);
+        String hexStr = ConvertCode.receiveHexToString(bytes);
+        System.out.println(hexStr);
+        System.out.println(Arrays.toString(bytes));
+    }
 
+    public static void testB() {
+        ByteBuffer frame = ByteBuffer.allocate(64) ;
+        frame.put((byte)0x17);
+        frame.put((byte)0x50);
+        frame.put((byte)0x00);
+        frame.put((byte)0x00);
+        byte[] startTime = TimeUtil.getBCDTime();
+        byte[] endTime = TimeUtil.getBCDTime2();
+        frame.put(startTime);
+        frame.put(endTime);
+        frame.put((byte)0x01);
+        frame.put((byte)0x01);
+        frame.put((byte)0x01);
+        frame.put((byte)0x01);
+        byte[] array = frame.array();
+        System.out.println(Arrays.toString(array));
+    }
+
+    public static void testC() {
+        String data = "abc";
+        AccessResponse response = new AccessResponse();
+        byte[] bytes = fillBytes(response.getData());
+        System.out.println(Arrays.toString(bytes));
+    }
+
+    public static byte[] fillBytes(byte[] bytes) {
+        byte[] fill = new byte[32];
+        if (bytes.length < 32) {
+            System.arraycopy(bytes, 0, fill, 0, bytes.length);
+        }
+        return fill;
+    }
+
+    public static void reverse() {
+        int number = 223000123;
+        byte[] bytes = ConvertUtils.intToByte4(number);
+        System.out.println(Arrays.toString(bytes));
+        int toInt = ConvertUtils.byte4ToInt(bytes, 0);
+        System.out.println(Integer.toHexString(toInt));
+        ConvertUtils.reverse(bytes);
+        int toInt1 = ConvertUtils.byte4ToInt(bytes, 0);
+        System.out.println(Arrays.toString(bytes));
+        System.out.println(Integer.toHexString(toInt1));
+    }
+
+    public static void bytetoHexTest() {
+        byte[] bytes = new byte[32];
+        bytes[12] = 0x20;
+        bytes[13] = 0x19;
+        bytes[14] = 0x07;
+        bytes[15] = 0x14;
+        bytes[16] = 0x08;
+        bytes[17] = 0x04;
+        bytes[18] = 0x30;
+        String timeStr = ConvertUtils.bytesToHex(bytes, 12, 18);
+        StringBuilder timeSb = new StringBuilder(timeStr);
+        timeSb.insert(4, "-");
+        timeSb.insert(7, "-");
+        timeSb.insert(10, " ");
+        timeSb.insert(13, ":");
+        timeSb.insert(16, ":");
+        System.out.println(timeSb);
+    }
 }

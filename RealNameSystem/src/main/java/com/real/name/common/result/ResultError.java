@@ -44,6 +44,7 @@ public enum ResultError {
     IMAGE_SIZE_ERROR(36, "图片大小超过50k"),
     IMAGE_TYPE_ERROR(37, "照片只支持.jpg，.jng和.jpeg格式"),
     NO_ISSUE_UPDATE_PERSON_INFO(38, "该人员信息未下发成功无法修改"),
+    GET_CARD_INDEX_ERROR(39, "获取身份证索引号失败"),
     LOGIN_TOKEN_ERROR(98, "登录信息中没有Token"),
     NETWORK_ERROR(99, "网络超时,请重试"),
     DELETE_ERROR(100, "删除失败"),

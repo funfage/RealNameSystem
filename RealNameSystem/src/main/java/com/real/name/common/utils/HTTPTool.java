@@ -2,7 +2,7 @@ package com.real.name.common.utils;
 
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.info.DeviceConstant;
-import com.real.name.device.FaceDeviceUtils;
+import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import org.slf4j.Logger;

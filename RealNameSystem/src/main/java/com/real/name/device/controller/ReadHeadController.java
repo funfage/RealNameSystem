@@ -108,6 +108,5 @@ public class ReadHeadController {
         } else {
             throw new AttendanceException(ResultError.DEVICE_NOT_EXIST);
         }
-
     }
 }

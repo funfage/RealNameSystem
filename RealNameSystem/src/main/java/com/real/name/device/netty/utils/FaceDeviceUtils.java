@@ -1,4 +1,4 @@
-package com.real.name.device;
+package com.real.name.device.netty.utils;
 
 
 import com.alibaba.druid.support.json.JSONUtils;
@@ -18,15 +18,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Component
 public class FaceDeviceUtils {
-
-    public final static String deviceHeartBeat = "setDeviceHeartBeat";
 
     private static Logger logger = LoggerFactory.getLogger(FaceDeviceUtils.class);
 

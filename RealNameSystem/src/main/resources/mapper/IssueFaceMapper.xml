@@ -26,6 +26,16 @@
         <association property="device" column="device_id" javaType="com.real.name.device.entity.Device">
             <id property="deviceId" column="d_device_id"/>
             <result property="projectCode" column="project_code"/>
+            <result property="channel" column="channel"/>
+            <result property="direction" column="direction"/>
+            <result property="deviceType" column="device_type"/>
+            <result property="factory" column="factory"/>
+            <result property="installTime" column="install_time"/>
+            <result property="ip" column="ip"/>
+            <result property="outPort" column="out_port"/>
+            <result property="pass" column="pass"/>
+            <result property="phone" column="phone"/>
+            <result property="remark" column="remark"/>
         </association>
         <!--建立多对一关联关系-->
         <association property="person" column="person_id" javaType="com.real.name.person.entity.Person">

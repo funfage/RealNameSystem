@@ -14,7 +14,9 @@ import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.group.service.GroupService;
+import com.real.name.issue.entity.IssueAccess;
 import com.real.name.issue.entity.IssueFace;
+import com.real.name.issue.service.IssueAccessService;
 import com.real.name.issue.service.IssueFaceService;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
@@ -67,6 +69,9 @@ public class ProjectController {
 
     @Autowired
     private ProjectDetailQueryService projectDetailQueryService;
+
+    @Autowired
+    private IssueAccessService issueAccessService;
 
     /**
      * 本地创建项目
@@ -238,6 +243,10 @@ public class ProjectController {
                     if (effect <= 0) {
                         throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "添加人员到项目");
                     }
+                    effect = issueAccessService.insertIssueAccess(new IssueAccess(personImageInfo, device, 0));
+                    if (effect <= 0) {
+                        throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "添加人员到项目");
+                    }
                 }
             } else if (personImageInfo.getWorkRole() == 20) {//如果是普通工人则下发到所有设备
                 //为普通工人添加一条项目绑定设备的标识
@@ -246,9 +255,13 @@ public class ProjectController {
                     if (effectNum <= 0) {
                         throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "添加人员到项目");
                     }
+                    effectNum = issueAccessService.insertIssueAccess(new IssueAccess(personImageInfo, device, 0));
+                    if (effectNum <= 0) {
+                        throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "添加人员到项目");
+                    }
                 }
             }
-            //下发人员信息到设备
+            //下发人员信息到人脸设备
             projectDetailService.addPersonToDevice(projectCode, personImageInfo, projectDevices, allDevices);
         }
         return ResultVo.success();

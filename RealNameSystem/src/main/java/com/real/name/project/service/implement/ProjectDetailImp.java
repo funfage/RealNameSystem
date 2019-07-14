@@ -1,7 +1,9 @@
 package com.real.name.project.service.implement;
 
-import com.real.name.device.FaceDeviceUtils;
+import com.real.name.device.netty.utils.AccessDeviceUtils;
+import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
+import com.real.name.device.service.AccessService;
 import com.real.name.device.service.repository.DeviceRepository;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
@@ -37,6 +39,9 @@ public class ProjectDetailImp implements ProjectDetailService {
     @Autowired
     private DeviceRepository deviceRepository;
 
+    @Autowired
+    private AccessService accessService;
+
 
     @Override
     public ProjectDetail save(ProjectDetail projectDetail) {
@@ -48,8 +53,10 @@ public class ProjectDetailImp implements ProjectDetailService {
     public void addPersonToDevice(String projectCode, Person person, List<Device> projectDevice, List<Device> allDevices) {
         if (person.getWorkRole() != null && person.getWorkRole() == 10) {//下发管理员信息
             FaceDeviceUtils.issuePersonToDevices(allDevices, person, 3);
+            AccessDeviceUtils.issueIdCardIndexToDevices(allDevices, person.getIdCardIndex());
         } else {//下发人员信息
             FaceDeviceUtils.issuePersonToDevices(projectDevice, person, 3);
+            AccessDeviceUtils.issueIdCardIndexToDevices(projectDevice, person.getIdCardIndex());
         }
     }
 

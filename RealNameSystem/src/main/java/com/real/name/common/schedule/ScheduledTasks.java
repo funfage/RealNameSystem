@@ -3,7 +3,7 @@ package com.real.name.common.schedule;
 import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.schedule.entity.FaceRecordData;
 import com.real.name.common.schedule.entity.Records;
-import com.real.name.device.FaceDeviceUtils;
+import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.entity.Record;
 import com.real.name.device.service.DeviceService;
@@ -104,12 +104,6 @@ public class ScheduledTasks {
                 }
             }
         }
-    }
-
-    @Scheduled(cron = "0 0 17 * * ?")
-    private void cronTest() {
-        logger.warn("定时任务开始, 现在的时间为" + dateFormat.format(new Date()));
-        System.out.println(dateFormat.format(new Date()));
     }
 
 }

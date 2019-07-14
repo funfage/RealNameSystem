@@ -3,7 +3,7 @@ package com.real.name.httptest;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.schedule.entity.FaceRecordData;
 import com.real.name.common.schedule.entity.Records;
-import com.real.name.device.FaceDeviceUtils;
+import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.person.entity.Person;
 import org.springframework.web.bind.annotation.GetMapping;

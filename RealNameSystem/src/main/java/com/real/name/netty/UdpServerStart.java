@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 public class UdpServerStart implements Runnable {
 
-    private org.slf4j.Logger Logger = LoggerFactory.getLogger(UdpServerStart.class);
+    private org.slf4j.Logger logger = LoggerFactory.getLogger(UdpServerStart.class);
 
     private final Integer port = 9902;
 
@@ -27,7 +27,6 @@ public class UdpServerStart implements Runnable {
                     //指定为广播模式
                     .option(ChannelOption.SO_BROADCAST, true)
                     .handler(new ReadHeadServerHandler());
-
             //bind到指定端口，并返回一个channel，该端口就是监听UDP报文的端口
             Channel channel = b.bind(port).sync().channel();
             /*等待future完成
@@ -36,11 +35,10 @@ public class UdpServerStart implements Runnable {
              * 如果用户操作调用了sync或者await方法，会在对应的future对象上阻塞用户线程
              */
             channel.closeFuture().await();
-
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
-            Logger.info("退出UdpServer");
+            logger.info("退出UdpServer");
             group.shutdownGracefully();
         }
     }
