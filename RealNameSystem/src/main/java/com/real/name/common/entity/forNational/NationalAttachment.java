@@ -1,6 +1,6 @@
 package com.real.name.common.entity.forNational;
 
-import lombok.Data;
+        import lombok.Data;
 
 /**
  * @Desc TODO

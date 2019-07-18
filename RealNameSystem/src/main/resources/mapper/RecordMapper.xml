@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.real.name.device.service.repository.RecordMapper">
-    <resultMap id="recordMap" type="com.real.name.device.entity.Record">
+<mapper namespace="com.real.name.record.service.repository.RecordMapper">
+    <resultMap id="recordMap" type="com.real.name.record.entity.Record">
         <id property="recordId" column="record_id"/>
         <result property="deviceId" column="r_device_id"/>
         <result  property="deviceType" column="r_device_type"/>
@@ -21,7 +21,7 @@
         r.time_number, r.detail_time, r.type, r.path, r.direction as r_direction, r.channel as r_channel
     </sql>
 
-    <insert id="saveRecord" parameterType="com.real.name.device.entity.Record"
+    <insert id="saveRecord" parameterType="com.real.name.record.entity.Record"
     useGeneratedKeys="true" keyColumn="record_id" keyProperty="recordId">
         insert into
         record
@@ -32,7 +32,7 @@
         #{path}, #{direction}, #{channel});
     </insert>
 
-    <select id="findAttendancePerson" resultType="com.real.name.device.entity.Record">
+    <select id="findAttendancePerson" resultType="com.real.name.record.entity.Record">
         select
         r.record_id, r.device_id, r.person_id, r.time_number, r.detail_time
         from
@@ -44,5 +44,37 @@
         and
         r.time_number = #{timeNumber}
     </select>
+    
+    <select id="getTodayRecord" resultMap="recordMap">
+        select
+        record_id, person_id, time_number, direction as r_direction
+        from
+        record
+        where
+        time_number &gt;= #{todayTime}
+        and
+        time_number &lt;= #{tomorrowTime}
+        and
+        person_id = #{personId}
+        order by
+        time_number
+    </select>
 
 </mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

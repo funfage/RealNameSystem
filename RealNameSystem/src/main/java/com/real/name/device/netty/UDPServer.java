@@ -7,12 +7,10 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PreDestroy;
 import java.net.InetSocketAddress;
 
 @Component
@@ -23,8 +21,6 @@ public class UDPServer {
     private EventLoopGroup group;
 
     private Bootstrap bootstrap;
-
-    private Channel channel;
 
     public ChannelFuture start(InetSocketAddress address) {
         group = new NioEventLoopGroup();
@@ -48,31 +44,18 @@ public class UDPServer {
         ChannelFuture channelFuture = bootstrap.bind().syncUninterruptibly();
         if (channelFuture != null && channelFuture.isSuccess()) {
             logger.warn("udp服务启动成功, 监听的端口为:{}", address.getPort());
-            channel = channelFuture.channel();
+            Channel channel = channelFuture.channel();
+            try {
+                channel.closeFuture().sync();
+            } catch (InterruptedException e) {
+                logger.error("udp服务启动失败, e{}", e);
+            } finally{
+                group.shutdownGracefully();
+            }
         } else {
             logger.warn("udp服务启动失败");
         }
         return channelFuture;
-    }
-
-    @PreDestroy
-    public void destroy() {
-        try {
-            if (channel != null) {
-                ChannelFuture await = channel.close().await();
-                if (!await.isSuccess()) {
-                    logger.warn("udp的channel关闭失败, {}", await.cause());
-                }
-            }
-            Future<?> future1 = group.shutdownGracefully().await();
-            if (!future1.isSuccess()) {
-                logger.warn("udpServer的group关闭失败, {}", future1.cause());
-            }
-            logger.warn("udp服务关闭失败");
-        } catch (InterruptedException e) {
-            logger.warn("udp的channel关闭失败");
-            e.printStackTrace();
-        }
     }
 }
 

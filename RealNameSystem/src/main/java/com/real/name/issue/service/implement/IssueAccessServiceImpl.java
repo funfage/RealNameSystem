@@ -6,6 +6,8 @@ import com.real.name.issue.service.repository.IssueAccessMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class IssueAccessServiceImpl implements IssueAccessService {
 
@@ -15,5 +17,15 @@ public class IssueAccessServiceImpl implements IssueAccessService {
     @Override
     public int insertIssueAccess(IssueAccess issueAccess) {
         return issueAccessMapper.saveIssueAccess(issueAccess);
+    }
+
+    @Override
+    public int updateIssueAccess(IssueAccess issueAccess) {
+        return issueAccessMapper.updateIssueAccess(issueAccess);
+    }
+
+    @Override
+    public List<IssueAccess> findIssueFailAccess() {
+        return issueAccessMapper.findIssueFailAccess();
     }
 }

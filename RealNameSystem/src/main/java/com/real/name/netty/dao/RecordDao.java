@@ -1,7 +1,7 @@
 package com.real.name.netty.dao;
 
 
-import com.real.name.device.entity.Record;
+import com.real.name.record.entity.Record;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Component;

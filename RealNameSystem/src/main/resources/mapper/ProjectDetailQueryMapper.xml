@@ -6,6 +6,7 @@
         <association property="person" column="person" javaType="com.real.name.person.entity.Person">
             <id property="personId" column="p_person_id"/>
             <result property="personName" column="person_name"/>
+            <result property="subordinateCompany" column="subordinate_company"/>
             <result property="gender" column="gender"/>
             <result property="address" column="p_address"/>
             <result property="age" column="age"/>
@@ -93,10 +94,17 @@
             <result property="responsiblePersonName" column="responsible_person_name"/>
             <result property="responsiblePersonPhone" column="responsible_person_phone"/>
         </association>
+
+        <collection property="attendanceList" ofType="com.real.name.record.entity.Attendance">
+            <id property="attendanceId" column="attendance_id"/>
+            <result property="projectDetailId" column="project_detail_id"/>
+            <result property="workHours" column="work_hours"/>
+            <result property="workTime" column="work_time"/>
+        </collection>
     </resultMap>
 
     <sql id="personSql">
-        p.person_id as p_person_id, p.person_name, p.gender, p.address as p_address, p.age, p.bank_link_number, p.card_number,
+        p.person_id as p_person_id, p.person_name, p.subordinate_company, p.gender, p.address as p_address, p.age, p.bank_link_number, p.card_number,
         p.cell_phone, p.culture_level_type, p.expiry_date, p.grant_org, p.group_no, p.has_bad_medical_history,
         p.has_buy_insurance, p.hometown, p.id_card_index, p.id_card_number, p.id_card_type, p.issue_card_date,
         p.issue_card_pic, p.is_team_leader, p.joined_time, p.marital_status, p.nation, p.negative_id_card_image,
@@ -113,18 +121,21 @@
 
     <select id="findOtherAdmins" resultMap="queryAllMap">
         select
-          <include refid="personSql"/>
+        id,
+        <include refid="personSql"/>
         from
         person p
         where
         work_role = 10
         and
         not exists
-        (select pd.person_id from project_detail pd where pd.project_code = #{projectCode} and p.person_id = pd.person_id)
+        (select pd.person_id from project_detail pd where pd.project_code = #{projectCode} and p.person_id =
+        pd.person_id)
     </select>
 
     <select id="findOtherWorker" resultMap="queryAllMap">
         select
+        id,
         <include refid="personSql"/>
         from
         person p
@@ -136,9 +147,9 @@
     </select>
 
 
-
     <select id="getPersonAndWorkerGroupInfo" resultMap="queryAllMap">
         select
+        id,
         <include refid="personSql"/>,
         <include refid="workerGroupSql"/>
         from
@@ -153,12 +164,80 @@
 
     <select id="getProjectIdsByPersonId" resultType="string">
         select
-        project_code
+        id, project_code
         from
         project_detail
         where
         person_id = #{personId,jdbcType=INTEGER}
     </select>
 
+    <select id="getSendInfo" resultMap="queryAllMap">
+        select
+        id, p.person_id as p_person_id, p.person_name, p.suffix_name, wg.team_name
+        from
+        project_detail pd, person p, worker_group wg
+        where
+        pd.person_id = p.person_id
+        and
+        pd.team_sys_no = wg.team_sys_no
+        and
+        pd.person_id = #{personId}
+        and
+        pd.project_code = #{projectCode}
+    </select>
+
+    <select id="getWorkGroupPersonNum" resultType="com.real.name.project.query.GroupPersonNum">
+        select
+        wg.team_name,
+        count(pd.team_sys_no) as num
+        from
+        project_detail pd, worker_group wg
+        where
+        pd.team_sys_no = wg.team_sys_no
+        and
+        pd.project_code = #{projectCode}
+        group by
+        pd.team_sys_no
+    </select>
+
+    <select id="findPersonWorkHoursInfo" resultMap="queryAllMap">
+        select
+        id,
+        p.person_name, p.id_card_index, p.work_type, p.subordinate_company,
+        wg.team_name,
+        attendance_id, work_hours, work_time
+        from
+        project_detail pd
+        left join
+        person p
+        on
+        pd.person_id = p.person_id
+        left join
+        worker_group wg
+        on
+        pd.team_sys_no = wg.team_sys_no
+        left join
+        attendance a
+        on
+        pd.id = a.project_detail_id
+        where
+        a.work_time &gt;= #{startDate}
+        and
+        a.work_time &lt;= #{endDate}
+    </select>
+
 
 </mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+

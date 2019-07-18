@@ -2,7 +2,9 @@ package com.real.name.device.netty;
 
 import com.real.name.device.netty.codc.AccessEventDecoder;
 import com.real.name.device.netty.codc.AccessEventEncoder;
+import com.real.name.device.netty.codc.AccessEventHandler;
 import com.real.name.device.netty.model.AccessEvent;
+import com.real.name.device.netty.session.SessionManager;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -12,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.net.InetSocketAddress;
 
@@ -25,8 +26,7 @@ public class UDPClient {
 
     private Bootstrap bootstrap;
 
-    private Channel channel;
-
+//    private Channel channel;
 
     //@PostConstruct
     public UDPClient() {
@@ -35,47 +35,53 @@ public class UDPClient {
         bootstrap.group(group)
                 .channel(NioDatagramChannel.class)
                 .option(ChannelOption.SO_BROADCAST, true)
+                .option(ChannelOption.SO_REUSEADDR, true)
                 .handler(new ChannelInitializer<NioDatagramChannel>() {
                     @Override
                     protected void initChannel(NioDatagramChannel ch) throws Exception {
                         ch.pipeline().addLast(new AccessEventDecoder());
                         ch.pipeline().addLast(new AccessEventEncoder());
+                        ch.pipeline().addLast(new AccessEventHandler());
                     }
                 });
     }
 
-    private void connect(InetSocketAddress address) {
+    private Channel connect(InetSocketAddress address) {
         //连接设备
         ChannelFuture connect = bootstrap.connect(address).syncUninterruptibly();
         if (connect != null && connect.isSuccess()) {
-            logger.warn("udpClient连接成功host={}, port={}", address.getHostName(), address.getPort());
-            channel = connect.channel();
+            //logger.warn("udpClient连接成功host={}, port={}", address.getHostName(), address.getPort());
+            return connect.channel();
         } else {
             logger.error("udpClient连接失败host={}, port={}", address.getHostName(), address.getPort());
         }
+        return null;
     }
 
-    public void sendMessage(AccessEvent event) {
-        if (channel == null || !channel.isActive()) {
-            connect(event.getAddress());
+    public void sendMessage(AccessEvent event, String ip, int port) {
+        try {
+            event.setAddress(new InetSocketAddress(ip, port));
+            Channel channel = SessionManager.getSession(event.getDeviceId());
+            if (channel == null || !channel.isActive()) {
+                channel = connect(event.getAddress());
+                SessionManager.putSession(event.getDeviceId(), channel);
+            }
+            if (channel != null && channel.isActive()) {
+                channel.writeAndFlush(event);
+            }
+        } catch (Exception e) {
+            logger.error("向控制器发送信息异常, e:{}", e);
         }
-        channel.writeAndFlush(event);
     }
 
+    @PreDestroy
     public void destroy() {
         try {
-            if (channel != null) {
-                ChannelFuture await = channel.close().await();
-                if (!await.isSuccess()) {
-                    logger.warn("udp的channel关闭失败, {}", await.cause());
-                }
-                logger.warn("udp的channel关闭成功");
-            }
             Future<?> future1 = group.shutdownGracefully().await();
             if (!future1.isSuccess()) {
-                logger.warn("udpServer的group关闭失败, {}", future1.cause());
+                logger.warn("udpClient的group关闭失败, {}", future1.cause());
             }
-            logger.warn("udp服务关闭成功");
+            logger.warn("udpClient服务关闭成功");
         } catch (InterruptedException e) {
             logger.warn("udp的channel关闭失败");
             e.printStackTrace();

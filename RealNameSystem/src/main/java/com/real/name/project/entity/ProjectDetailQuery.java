@@ -2,10 +2,12 @@ package com.real.name.project.entity;
 
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.person.entity.Person;
+import com.real.name.record.entity.Attendance;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.sql.Date;
+import java.util.List;
 
 @Setter
 @Getter
@@ -21,7 +23,13 @@ public class ProjectDetailQuery {
 
     private Date crateTime;
 
+    private List<Attendance> attendanceList;
+
     public ProjectDetailQuery() {
+    }
+
+    public ProjectDetailQuery(Integer id) {
+        this.id = id;
     }
 
     public ProjectDetailQuery(Integer id, Person person, Project project, WorkerGroup workerGroup, Date crateTime) {

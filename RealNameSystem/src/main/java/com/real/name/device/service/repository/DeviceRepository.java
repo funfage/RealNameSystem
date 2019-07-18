@@ -2,7 +2,10 @@ package com.real.name.device.service.repository;
 
 import com.real.name.device.entity.Device;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,4 +37,9 @@ public interface DeviceRepository extends JpaRepository<Device, String> {
     //查询在projectCodes集合中的所有人脸设备
     List<Device> findByProjectCodeInAndDeviceType(List<String> projectCodes, Integer deviceType);
 
+
+    @Query("update com.real.name.device.entity.Device d set d.ip = :ip where d.projectCode = :projectCode")
+    @Modifying
+    @Transactional
+    void updateDeviceIPByProjectCode(@Param("ip") String ip, @Param("projectCode") String projectCode);
 }

@@ -9,6 +9,7 @@ import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.CommonUtils;
+import com.real.name.common.utils.JedisService;
 import com.real.name.common.utils.NationalUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
@@ -72,6 +73,9 @@ public class ProjectController {
 
     @Autowired
     private IssueAccessService issueAccessService;
+
+    @Autowired
+    private JedisService.JedisStrings jedisStrings;
 
     /**
      * 本地创建项目
@@ -207,17 +211,18 @@ public class ProjectController {
         if (!group.isPresent()) {
             throw new AttendanceException(ResultError.GROUP_NOT_EXIST);
         }
-        //判断是否有设备存在
-        List<Device> allDevices = deviceService.findAllByDeviceType(DeviceConstant.faceDeviceType);
-        if (allDevices == null || allDevices.size() <= 0) {
-            logger.warn("查询不到添加的人脸设备");
-            throw new AttendanceException(ResultError.FACE_EMPTY);
-        }
-        //判断该项目是否绑定设备
-        List<Device> projectDevices = deviceService.findByProjectCodeAndDeviceType(projectCode, DeviceConstant.faceDeviceType);
-        //若查询结果为空则说明该项目未绑定设备
-        if (projectDevices == null || projectDevices.size() <= 0) {
-            throw new AttendanceException(ResultError.PROJECT_NO_BIND_FACE);
+        //查询所有人脸设备
+        List<Device> allFaceDevices = deviceService.findAllByDeviceType(DeviceConstant.faceDeviceType);
+        //查询项目绑定的人脸设备
+        List<Device> projectFaceDevices = deviceService.findByProjectCodeAndDeviceType(projectCode, DeviceConstant.faceDeviceType);
+        //查询所有的控制器设备
+        List<Device> allAccessDevices = deviceService.findAllByDeviceType(DeviceConstant.AccessDeviceType);
+        //查询项目绑定的控制器设备
+        List<Device> projectAccessDevices = deviceService.findByProjectCodeAndDeviceType(projectCode, DeviceConstant.AccessDeviceType);
+        //判断该项目是否有绑定设备
+        if ((projectFaceDevices == null || projectFaceDevices.size() <= 0) &&
+                (projectAccessDevices == null || projectAccessDevices.size() <= 0)) {
+            throw new AttendanceException(ResultError.project_no_bind_device);
         }
         // 添加人员到项目中
         for (Integer personId : persons) {
@@ -238,31 +243,38 @@ public class ProjectController {
             //若果是管理工人则下发到该项目绑定的设备
             if (personImageInfo.getWorkRole() == 10) {
                 //为管理工人创建所有下发设备的标识
-                for (Device device : allDevices) {
+                for (Device device : allFaceDevices) {
                     int effect = issueFaceService.insertInitIssue(new IssueFace(personImageInfo, device, 0, 0));
                     if (effect <= 0) {
                         throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "添加人员到项目");
                     }
-                    effect = issueAccessService.insertIssueAccess(new IssueAccess(personImageInfo, device, 0));
+                }
+                for (Device device : allAccessDevices) {
+                    int effect = issueAccessService.insertIssueAccess(new IssueAccess(personImageInfo, device, 0));
                     if (effect <= 0) {
                         throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "添加人员到项目");
                     }
                 }
             } else if (personImageInfo.getWorkRole() == 20) {//如果是普通工人则下发到所有设备
                 //为普通工人添加一条项目绑定设备的标识
-                for (Device device : projectDevices) {
+                for (Device device : projectFaceDevices) {
                     int effectNum = issueFaceService.insertInitIssue(new IssueFace(personImageInfo, device, 0, 0));
                     if (effectNum <= 0) {
                         throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "添加人员到项目");
                     }
-                    effectNum = issueAccessService.insertIssueAccess(new IssueAccess(personImageInfo, device, 0));
+                }
+                for (Device device : projectAccessDevices) {
+                    int effectNum = issueAccessService.insertIssueAccess(new IssueAccess(personImageInfo, device, 0));
                     if (effectNum <= 0) {
                         throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "添加人员到项目");
                     }
                 }
             }
             //下发人员信息到人脸设备
-            projectDetailService.addPersonToDevice(projectCode, personImageInfo, projectDevices, allDevices);
+            projectDetailService.addPersonToFaceDevice(projectCode, personImageInfo, projectFaceDevices, allFaceDevices, group.get().getTeamName());
+            //下发信息到控制器
+            personImageInfo.setHeadImage(null);
+            projectDetailService.addPersonToAccessDevice(projectCode, personImageInfo, projectAccessDevices, allAccessDevices, group.get().getTeamName());
         }
         return ResultVo.success();
     }
@@ -289,7 +301,6 @@ public class ProjectController {
             return ResultVo.failure();
         }
     }
-
 
     /**
      * 合并项目信息

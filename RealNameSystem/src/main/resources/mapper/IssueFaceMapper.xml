@@ -41,6 +41,7 @@
         <association property="person" column="person_id" javaType="com.real.name.person.entity.Person">
             <id property="personId" column="p_person_id"/>
             <result property="personName" column="person_name"/>
+            <result property="subordinateCompany" column="subordinate_company"/>
             <result property="gender" column="gender"/>
             <result property="address" column="address"/>
             <result property="age" column="age"/>
@@ -83,7 +84,7 @@
     <sql id="issuePersonFailInfoWithImage">
         f.issue_face_id, f.issue_image_status, f.issue_person_status,
         d.device_id as d_device_id, d.project_code,
-        p.person_id as p_person_id, p.person_name, p.gender, p.address, p.age, p.bank_link_number, p.card_number,
+        p.person_id as p_person_id, p.person_name, p.subordinate_company, p.gender, p.address, p.age, p.bank_link_number, p.card_number,
         p.cell_phone, p.culture_level_type, p.expiry_date, p.grant_org, p.group_no, p.has_bad_medical_history,
         p.has_buy_insurance, p.hometown, p.id_card_index, p.id_card_number, p.id_card_type, p.issue_card_date,
         p.issue_card_pic, p.is_team_leader, p.joined_time, p.marital_status, p.nation, p.negative_id_card_image,
@@ -172,7 +173,7 @@
        and
        f.device_id = d.device_id
        and
-        (f.issue_person_status =
+        (f.issue_person_status = 0
         or
         f.issue_image_status = 0)
     </select>

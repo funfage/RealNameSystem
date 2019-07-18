@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.real.name.person.service.repository.PersonQueryMapper">
+
+    <resultMap id="queryMap" type="com.real.name.person.entity.PersonQuery">
+        <id property="personId" column="p_person_id"/>
+        <result property="personName" column="person_name"/>
+        <result property="subordinateCompany" column="subordinate_company"/>
+        <result property="gender" column="gender"/>
+        <result property="address" column="address"/>
+        <result property="age" column="age"/>
+        <result property="bankLinkNumber" column="bank_link_number"/>
+        <result property="cardNumber" column="card_number"/>
+        <result property="cellPhone" column="cell_phone"/>
+        <result property="cultureLevelType" column="culture_level_type"/>
+        <result property="expiryDate" column="expiry_date"/>
+        <result property="grantOrg" column="grant_org"/>
+        <result property="groupNo" column="group_no"/>
+        <result property="hasBadMedicalHistory" column="has_bad_medical_history"/>
+        <result property="hasBuyInsurance" column="has_buy_insurance"/>
+        <result property="hometown" column="hometown"/>
+        <result property="idCardIndex" column="id_card_index"/>
+        <result property="idCardNumber" column="id_card_number"/>
+        <result property="idCardType" column="id_card_type"/>
+        <result property="issueCardDate" column="issue_card_date"/>
+        <result property="issueCardPic" column="issue_card_pic"/>
+        <result property="isTeamLeader" column="is_team_leader"/>
+        <result property="joinedTime" column="joined_time"/>
+        <result property="maritalStatus" column="marital_status"/>
+        <result property="nation" column="nation"/>
+        <result property="negativeIdCardImage" column="negative_id_card_image"/>
+        <result property="payRollBankCardNumber" column="pay_roll_bank_card_number"/>
+        <result property="payRollBankName" column="pay_roll_bank_name"/>
+        <result property="payRollTopBankCode" column="pay_roll_top_bank_code"/>
+        <result property="politicsType" column="politics_type"/>
+        <result property="positiveIdCardImage" column="positive_id_card_image"/>
+        <result property="specialty" column="specialty"/>
+        <result property="startDate" column="start_date"/>
+        <result property="suffixName" column="suffix_name"/>
+        <result property="urgentLinkMan" column="urgent_link_man"/>
+        <result property="urgentLinkManPhone" column="urgent_link_man_phone"/>
+        <result property="workDate" column="work_date"/>
+        <result property="workRole" column="work_role"/>
+        <result property="workType" column="work_type"/>
+    </resultMap>
+
+
+
+</mapper>

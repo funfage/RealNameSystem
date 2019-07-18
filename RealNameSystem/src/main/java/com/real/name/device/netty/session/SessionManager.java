@@ -1,5 +1,7 @@
 package com.real.name.device.netty.session;
 
+import io.netty.channel.Channel;
+
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SessionManager {
@@ -7,25 +9,35 @@ public class SessionManager {
     /**
      * 在线会话
      */
-    private static final ConcurrentHashMap<Long, Session> onlineSessions = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Integer, Channel> onlineSessions = new ConcurrentHashMap<>();
 
     /**
      * 加入会话管理器
      */
-    public static boolean putSession(Long deviceId, Session session) {
-        if (!onlineSessions.containsKey(deviceId)) {
-            return onlineSessions.putIfAbsent(deviceId, session) == null;
+    public static void putSession(Integer deviceId, Channel channel) {
+        if (onlineSessions.containsKey(deviceId)) {
+            removeSession(deviceId);
         }
-        return false;
+        onlineSessions.put(deviceId, channel);
     }
 
     /**
      * 移除会话
      */
-    public static Session removeSession(Long deviceId) {
+    public static Channel removeSession(Integer deviceId) {
+        Channel channel = getSession(deviceId);
+        if (channel != null) {
+            channel.close();
+        }
         return onlineSessions.remove(deviceId);
     }
 
+    /**
+     * 获取会话
+     */
+    public static Channel getSession(Integer deviceId) {
+        return onlineSessions.get(deviceId);
+    }
     /**
      * 发送消息[自定义协议]
      */

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
@@ -28,6 +29,12 @@ public interface ProjectRepository extends JpaRepository<Project, String> {
      * 根据projectCode查询出项目名称
      */
     @Query(value = "select `name` from project where project_code = ?1", nativeQuery = true)
-    String findProjectName(String projectName);
+    String findProjectName(String projectCode);
+
+    /**
+     * 查询项目名和公司名
+     */
+    @Query(value = "select new com.real.name.project.entity.Project(p.name, p.contractorCorpName) from Project p where p.projectCode = ?1")
+    Project findProNameAndCorp(String projectCode);
 
 }

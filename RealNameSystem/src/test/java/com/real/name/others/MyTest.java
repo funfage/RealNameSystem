@@ -1,5 +1,6 @@
 package com.real.name.others;
 
+import com.real.name.common.utils.CommonUtils;
 import com.real.name.common.utils.ConvertCode;
 import com.real.name.common.utils.TimeUtil;
 import com.real.name.device.netty.model.AccessResponse;
@@ -13,8 +14,12 @@ import java.util.*;
 
 public class MyTest {
 
-    public static void main(String[] args) {
-        bytetoHexTest();
+    public static void main(String[] args) throws Exception {
+        Date date = CommonUtils.initDateByMonth();
+        Date end = new Date(System.currentTimeMillis());
+        System.out.println(CommonUtils.DateToString(date));
+        System.out.println(CommonUtils.DateToString(end));
+        //testD();
     }
 
     public static void testMap() {
@@ -125,6 +130,12 @@ public class MyTest {
         return fill;
     }
 
+    public static void getBCDTime() {
+        byte[] bcdTime = TimeUtil.getBCDTime2();
+        String time = ConvertUtils.bytesToHex(bcdTime);
+        System.out.println(time);
+    }
+
     public static void reverse() {
         int number = 223000123;
         byte[] bytes = ConvertUtils.intToByte4(number);
@@ -154,5 +165,12 @@ public class MyTest {
         timeSb.insert(13, ":");
         timeSb.insert(16, ":");
         System.out.println(timeSb);
+    }
+
+    public static void testD() {
+        String str = "175A00001B7E4D0D9E015E0100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+        String str2 = "175A00001B7E4D0D0DD7370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+        System.out.println(str.length());
+        System.out.println(str2.length());
     }
 }

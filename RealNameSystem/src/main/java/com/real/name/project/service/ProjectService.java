@@ -10,15 +10,11 @@ public interface ProjectService {
 
     /**
      * 创建项目
-     * @param project
-     * @return
      */
     Project createProject(Project project);
 
     /**
      * 分页查询
-     * @param pageable
-     * @return
      */
     Page<Project> findAll(Pageable pageable);
 
@@ -47,4 +43,10 @@ public interface ProjectService {
      * 根据projectCode查询项目名称
      */
     String findProjectName(String projectName);
+
+    /**
+     *  查询项目名和所属公司
+     */
+    Project findProNameAndCorp(String projectCode);
+
 }

@@ -3,6 +3,7 @@ package com.real.name.person.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -12,6 +13,7 @@ import java.util.Date;
 @Entity
 @Setter
 @Getter
+@ToString
 @DynamicUpdate
 @DynamicInsert
 public class Person {
@@ -24,6 +26,11 @@ public class Person {
      * 姓名
      */
     private String personName;
+
+    /**
+     * 所属公司
+     */
+    private String subordinateCompany;
 
     /**
      * 身份证
@@ -237,54 +244,13 @@ public class Person {
         this.idCardNumber = idCardNumber;
     }
 
-    public Person(Integer personId, String personName, String headImage, Integer workRole) {
+    public Person(Integer personId, String personName, String headImage, Integer workRole, String idCardIndex) {
         this.personId = personId;
         this.personName = personName;
         this.headImage = headImage;
         this.workRole = workRole;
+        this.idCardIndex = idCardIndex;
     }
 
-    @Override
-    public String toString() {
-        return "Person{" +
-                "personId=" + personId +
-                ", personName='" + personName + '\'' +
-                ", idCardNumber='" + idCardNumber + '\'' +
-                ", isTeamLeader=" + isTeamLeader +
-                ", idCardType=" + idCardType +
-                ", workType='" + workType + '\'' +
-                ", workRole=" + workRole +
-                ", issueCardDate=" + issueCardDate +
-                ", issueCardPic='" + issueCardPic + '\'' +
-                ", cardNumber='" + cardNumber + '\'' +
-                ", payRollBankCardNumber='" + payRollBankCardNumber + '\'' +
-                ", payRollBankName='" + payRollBankName + '\'' +
-                ", bankLinkNumber='" + bankLinkNumber + '\'' +
-                ", payRollTopBankCode=" + payRollTopBankCode +
-                ", hasBuyInsurance=" + hasBuyInsurance +
-                ", nation='" + nation + '\'' +
-                ", politicsType=" + politicsType +
-                ", joinedTime=" + joinedTime +
-                ", cellPhone='" + cellPhone + '\'' +
-                ", cultureLevelType=" + cultureLevelType +
-                ", specialty='" + specialty + '\'' +
-                ", age=" + age +
-                ", hasBadMedicalHistory=" + hasBadMedicalHistory +
-                ", urgentLinkMan='" + urgentLinkMan + '\'' +
-                ", urgentLinkManPhone='" + urgentLinkManPhone + '\'' +
-                ", workDate=" + workDate +
-                ", maritalStatus=" + maritalStatus +
-                ", grantOrg='" + grantOrg + '\'' +
-                ", positiveIdCardImage='" + positiveIdCardImage + '\'' +
-                ", negativeIdCardImage='" + negativeIdCardImage + '\'' +
-                ", startDate=" + startDate +
-                ", expiryDate=" + expiryDate +
-                ", gender=" + gender +
-                ", hometown='" + hometown + '\'' +
-                ", address='" + address + '\'' +
-                ", headImage='" + headImage + '\'' +
-                ", idCardIndex='" + idCardIndex + '\'' +
-                ", groupNo=" + groupNo +
-                '}';
-    }
+
 }

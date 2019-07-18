@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.schedule.entity.FaceRecordData;
 import com.real.name.common.utils.HTTPTool;
+import com.real.name.common.websocket.WebSocket;
 import com.real.name.device.entity.Device;
 import com.real.name.issue.entity.FaceResult;
 import com.real.name.issue.entity.IssueFace;
@@ -29,6 +30,9 @@ public class FaceDeviceUtils {
 
     @Autowired
     private IssueFaceService issueFaceService;
+
+    @Autowired
+    private WebSocket webSocket;
 
     private static FaceDeviceUtils deviceUtils;
 
@@ -60,9 +64,13 @@ public class FaceDeviceUtils {
      * 下发人员信息到多个设备
      * @param times 表示下发的次数
      */
-    public static void issuePersonToDevices(List<Device> deviceList, Person person, int times) {
+    public static void issuePersonToDevices(List<Device> deviceList, Person person, int times, String teamName) {
         for (Device device : deviceList) {
             issuePersonToOneDevice(device, person, times);
+            JSONObject map = new JSONObject();
+            map.put("teamName", teamName);
+            map.put("type", 1);
+            deviceUtils.webSocket.sendMessageToAll(map.toJSONString());
         }
     }
 

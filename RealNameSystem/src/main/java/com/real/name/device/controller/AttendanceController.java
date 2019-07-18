@@ -1,7 +1,7 @@
 package com.real.name.device.controller;
 
 import com.real.name.common.result.ResultVo;
-import com.real.name.device.entity.Record;
+import com.real.name.record.entity.Record;
 import com.real.name.netty.dao.RecordDao;
 import com.real.name.person.entity.Person3;
 import com.real.name.person.service.implement.PersonServiceImpl;

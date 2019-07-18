@@ -4,24 +4,23 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
+import com.real.name.common.utils.CommonUtils;
+import com.real.name.common.utils.HTTPTool;
+import com.real.name.common.utils.JedisService;
 import com.real.name.project.entity.Project;
 import com.real.name.project.entity.ProjectDetailQuery;
+import com.real.name.project.query.GroupPersonNum;
 import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.ProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/projectDetailQuery")
@@ -34,6 +33,12 @@ public class ProjectDetailQueryController {
 
     @Autowired
     private ProjectService projectService;
+
+    @Autowired
+    private JedisService.JedisStrings jedisStrings;
+
+    @Autowired
+    private JedisService.JedisKeys jedisKeys;
 
     @GetMapping("getPersonByWorkRole")
     public ResultVo getPersonByWorkRole(@RequestParam("projectCode") String projectCode,
@@ -72,5 +77,36 @@ public class ProjectDetailQueryController {
             return ResultVo.failure();
         }
     }
+
+    /**
+     * 获取某个项目下每个班组的人员数目
+     */
+    @GetMapping("/getPersonNumInProject")
+    public ResultVo getPersonNumInProject(String projectCode) {
+        //查询项目名和公司名
+        Project proNameAndCorp = projectService.findProNameAndCorp(projectCode);
+        List<GroupPersonNum> workGroupPersonNum = projectDetailQueryService.getWorkGroupPersonNum(projectCode);
+        //获取天气信息
+        String weather = HTTPTool.getWeather();
+        //获取在场信息
+        List<Object> presentPerson = jedisStrings.multiGet(jedisKeys.keys(projectCode + "*"));
+        Map<String, Object> map = new HashMap<>();
+        map.put("weather", weather);
+        map.put("projectName", proNameAndCorp.getName());
+        map.put("corpName", proNameAndCorp.getContractorCorpName());
+        map.put("workGroupPersonNum", workGroupPersonNum);
+        map.put("presentPerson", presentPerson);
+        map.put("outPerson", "TODO");
+        return ResultVo.success(map);
+    }
+
+    @GetMapping("/getAttendance")
+    public ResultVo getAttendance() {
+        Date start = CommonUtils.initDateByMonth();
+        Date end = new Date(System.currentTimeMillis());
+        List<ProjectDetailQuery> queryList = projectDetailQueryService.findPersonWorkHoursInfo(start, end);
+        return ResultVo.success(queryList);
+    }
+
 
 }

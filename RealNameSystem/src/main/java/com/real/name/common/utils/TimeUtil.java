@@ -3,31 +3,14 @@ package com.real.name.common.utils;
 import java.util.Calendar;
 
 public class TimeUtil {
-    public static byte[] getBCDTime(){
+    public static byte[] getBCDTime() {
         Calendar cal = Calendar.getInstance();
-        /*int year = cal.get(Calendar.YEAR);//获取年份
-        byte month=(byte) int2BCD(cal.get(Calendar.MONTH) + 1) ;//获取月份
-        //byte tt =(byte) cal.get(Calendar.MONTH) ;
-        System.out.println("month:" +(cal.get(Calendar.MONTH) + 1));
-        byte day=(byte) int2BCD(cal.get(Calendar.DATE));//获取日
-        byte hour=(byte) int2BCD(cal.get(Calendar.HOUR_OF_DAY));//小时
-        byte minute=(byte) int2BCD(cal.get(Calendar.MINUTE));//分
-        byte second=(byte) int2BCD(cal.get(Calendar.SECOND));//秒*/
         String str = String.valueOf(cal.get(Calendar.YEAR));
-        int month = cal.get(Calendar.MONTH) +1;
-        str += month>10?String.valueOf(month):"0" + String.valueOf(month);
+        int month = cal.get(Calendar.MONTH) + 1;
+        str += month > 10 ? String.valueOf(month) : "0" + String.valueOf(month);
         int day = cal.get(Calendar.DATE);
-        str += day>10?String.valueOf(day):"0" + String.valueOf(day);
-        /*int hour = cal.get(Calendar.HOUR_OF_DAY);
-        str += hour>10?String.valueOf(hour):"0" + String.valueOf(hour);
-        int minute = cal.get(Calendar.MINUTE);
-        System.out.println("minute"+minute);
-         str += minute > 10 ? String.valueOf(minute) :  "0" + String.valueOf(minute);
-         int second = cal.get(Calendar.SECOND);
-        System.out.println("second:" + second);
-         str += second>10?String.valueOf(second):"0" + String.valueOf(second);
-        System.out.println("TimeUtil str:" + str);*/
-        byte[] time2= str2Bcd(str);
+        str += day > 10 ? String.valueOf(day) : "0" + String.valueOf(day);
+        byte[] time2 = str2Bcd(str);
         //System.out.println("time2:" + time2.length);
         return time2;
     }
@@ -42,10 +25,10 @@ public class TimeUtil {
         int len = asc.length();
         int mod = len % 2;
         if (mod != 0) {
-            asc =  asc+"0";
+            asc = asc + "0";
             len = asc.length();
         }
-        System.out.println("str2Bcd len:" +asc);
+        System.out.println("str2Bcd len:" + asc);
         byte abt[] = new byte[len];
         if (len >= 2) {
             len = len / 2;
@@ -74,6 +57,7 @@ public class TimeUtil {
         }
         return bbt;
     }
+
     /**
      * @功能: BCD码转为10进制串(阿拉伯数据)
      * @参数: BCD码
@@ -88,33 +72,17 @@ public class TimeUtil {
         return temp.toString().substring(0, 1).equalsIgnoreCase("0") ? temp
                 .toString().substring(1) : temp.toString();
     }
+
     //当前时间加10年
-    public static byte[] getBCDTime2(){
+    public static byte[] getBCDTime2() {
         Calendar cal = Calendar.getInstance();
-        /*int year = cal.get(Calendar.YEAR);//获取年份
-        byte month=(byte) int2BCD(cal.get(Calendar.MONTH) + 1) ;//获取月份
-        //byte tt =(byte) cal.get(Calendar.MONTH) ;
-        System.out.println("month:" +(cal.get(Calendar.MONTH) + 1));
-        byte day=(byte) int2BCD(cal.get(Calendar.DATE));//获取日
-        byte hour=(byte) int2BCD(cal.get(Calendar.HOUR_OF_DAY));//小时
-        byte minute=(byte) int2BCD(cal.get(Calendar.MINUTE));//分
-        byte second=(byte) int2BCD(cal.get(Calendar.SECOND));//秒*/
         //add 10 years
-        String str = String.valueOf(cal.get(Calendar.YEAR) +10);
-        int month = cal.get(Calendar.MONTH) +1;
-        str += month>10?String.valueOf(month):"0" + String.valueOf(month);
+        String str = String.valueOf(cal.get(Calendar.YEAR) + 10);
+        int month = cal.get(Calendar.MONTH) + 1;
+        str += month > 10 ? String.valueOf(month) : "0" + String.valueOf(month);
         int day = cal.get(Calendar.DATE);
-        str += day>10?String.valueOf(day):"0" + String.valueOf(day);
-        /*int hour = cal.get(Calendar.HOUR_OF_DAY);
-        str += hour>10?String.valueOf(hour):"0" + String.valueOf(hour);
-        int minute = cal.get(Calendar.MINUTE);
-        System.out.println("minute"+minute);
-        str += minute > 10 ? String.valueOf(minute) :  "0" + String.valueOf(minute);
-        int second = cal.get(Calendar.SECOND);
-        System.out.println("second:" + second);
-        str += second>10?String.valueOf(second):"0" + String.valueOf(second);
-        System.out.println("TimeUtil str:" + str);*/
-        byte[] time2= str2Bcd(str);
+        str += day > 10 ? String.valueOf(day) : "0" + String.valueOf(day);
+        byte[] time2 = str2Bcd(str);
         //System.out.println("time2:" + time2.length);
         return time2;
     }

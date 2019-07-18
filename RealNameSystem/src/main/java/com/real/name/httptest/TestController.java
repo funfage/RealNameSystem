@@ -1,11 +1,16 @@
 package com.real.name.httptest;
 
+import com.alibaba.fastjson.JSONObject;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.schedule.entity.FaceRecordData;
 import com.real.name.common.schedule.entity.Records;
+import com.real.name.common.websocket.WebSocket;
 import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.person.entity.Person;
+import com.real.name.project.entity.ProjectDetailQuery;
+import com.real.name.project.service.repository.ProjectDetailQueryMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +24,11 @@ import java.util.List;
 @RestController
 public class TestController {
 
+    @Autowired
+    private ProjectDetailQueryMapper mapper;
+
+    @Autowired
+    private WebSocket webSocket;
 
     /**
      * get方法测试
@@ -76,6 +86,20 @@ public class TestController {
         System.out.println(map.get(device.getDeviceId()));*/
         testFindRecords(device, person);
         return ResultVo.success();
+    }
+
+    @GetMapping("webSocketTest")
+    public void webSocketTest() {
+        ProjectDetailQuery sendInfo = mapper.getSendInfo(1131, "067R9HQR0dmw178890C4BKubNU2d9gG7");
+        JSONObject map = new JSONObject();
+        Person person = sendInfo.getPerson();
+        map.put("personId", person.getPersonId());
+        map.put("personName", person.getPersonName());
+        map.put("suffixName", person.getSuffixName());
+        map.put("teamName", sendInfo.getWorkerGroup().getTeamName());
+        map.put("direction", 2);
+        map.put("time", 123456);
+        webSocket.sendMessageToAll(map.toJSONString());
     }
 
     public void testFindRecords(Device device, Person person) throws ParseException {

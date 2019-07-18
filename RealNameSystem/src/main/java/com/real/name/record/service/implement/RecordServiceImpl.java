@@ -1,8 +1,8 @@
-package com.real.name.device.service.implement;
+package com.real.name.record.service.implement;
 
-import com.real.name.device.entity.Record;
-import com.real.name.device.service.RecordService;
-import com.real.name.device.service.repository.RecordMapper;
+import com.real.name.record.entity.Record;
+import com.real.name.record.service.RecordService;
+import com.real.name.record.service.repository.RecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,5 +16,7 @@ public class RecordServiceImpl implements RecordService {
     public int saveRecord(Record record) {
         return recordMapper.saveRecord(record);
     }
+
+
 
 }

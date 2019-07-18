@@ -19,6 +19,9 @@ public class AccessController {
     @Autowired
     private JedisService.JedisStrings jedisStrings;
 
+    /**
+     * 获取身份证索引号
+     */
     @GetMapping("/getCardIndex")
     public ResultVo getCardIndex(@RequestParam("deviceId") String deviceId) {
         String cardIndex = (String) jedisStrings.get(deviceId);

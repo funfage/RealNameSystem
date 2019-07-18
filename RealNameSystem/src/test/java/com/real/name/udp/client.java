@@ -1,21 +1,25 @@
 package com.real.name.udp;
 
 import com.real.name.device.netty.UDPClient;
+import com.real.name.device.netty.model.AccessConstant;
 import com.real.name.device.netty.model.AccessEvent;
+import com.real.name.device.netty.model.AccessFunction;
+import com.real.name.device.netty.utils.ConvertUtils;
 
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 
 public class client {
 
     public static void main(String[] args) {
         UDPClient udpClient = new UDPClient();
         sendData(udpClient);
-        udpClient.destroy();
+        //udpClient.destroy();
     }
 
     private static void sendData(UDPClient udpClient) {
         AccessEvent event = new AccessEvent();
-        event.setAddress(new InetSocketAddress("127.0.0.1", 9902));
+        event.setAddress(new InetSocketAddress("127.0.0.1", 61005));
         event.setFunctionId((byte)0x50);
         event.setDeviceId(223000123);
         byte data[] = new byte[32];
@@ -33,7 +37,22 @@ public class client {
         data[25] = 0x14;
         data[26] = 0x30;
         event.setData(data);
-        udpClient.sendMessage(event);
+        udpClient.sendMessage(event, "127.0.0.1", 61005);
+    }
+
+    private static void testQueryAuthority() {
+        UDPClient udpClient = new UDPClient();
+        AccessEvent event = new AccessEvent();
+        ByteBuffer dataBuffer = ByteBuffer.allocate(AccessConstant.DATA_LENGTH);
+        event.setFunctionId((byte)0x5A);
+        event.setDeviceId(223182363);
+        dataBuffer.put(AccessFunction.QUERY_AUTHORITY);
+        byte[] cardIndexBytes = ConvertUtils.intToByte4(Integer.parseInt("22938014"));
+        cardIndexBytes = ConvertUtils.reverse(cardIndexBytes);
+        dataBuffer.put(cardIndexBytes);
+        event.setData(dataBuffer.array());
+        udpClient.sendMessage(event, "169.254.39.58", 60000);
+        udpClient.destroy();
     }
 
 }

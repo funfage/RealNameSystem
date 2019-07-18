@@ -113,6 +113,17 @@ public class HTTPTool {
         return modelMap;
     }
 
+    /**
+     * 获取天气信息
+     * @return
+     */
+    public static String getWeather() {
+        String url = "https://www.tianqiapi.com/api/?version={version}";
+        Map<String, Object> map = new HashMap<>();
+        map.put("version", "v6");
+        return getUrlForParam(url, map);
+    }
+
     private static String postToDevice(Device device, String url, Map<String, Object> param) {
         if (param == null) param = new HashMap<>();
         param.put("pass", device.getPass());
@@ -165,7 +176,7 @@ public class HTTPTool {
         headers.setContentType(type);
         try {
             ResponseEntity<String> exchange = httpTool.restTemplate.exchange(baseUrl, HttpMethod.GET, entity, String.class, params);
-            logger.info("GetRequest Body:{}", exchange.getBody());
+            //logger.info("GetRequest Body:{}", exchange.getBody());
             return exchange.getBody();
         } catch (RestClientException e) {
             logger.error("postUrlForParam error e:{}", e.getMessage());

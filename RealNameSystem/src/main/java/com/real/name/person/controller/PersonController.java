@@ -1,5 +1,4 @@
 package com.real.name.person.controller;
-
 import com.alibaba.fastjson.JSONObject;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.info.DeviceConstant;
@@ -7,7 +6,6 @@ import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.ImageTool;
 import com.real.name.common.utils.NationalUtils;
-import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import com.real.name.issue.entity.IssueFace;
 import com.real.name.issue.service.IssueFaceService;
@@ -17,6 +15,7 @@ import com.real.name.project.entity.ProjectPersonDetail;
 import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.ProjectPersonDetailService;
 import com.real.name.project.service.ProjectService;
+import com.real.name.record.entity.Attendance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +26,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/person")
@@ -244,6 +245,9 @@ public class PersonController {
         if(!StringUtils.isEmpty(person.getPersonName())){
             selectPerson.setPersonName(person.getPersonName());
         }
+        if (!StringUtils.isEmpty(person.getSubordinateCompany())) {
+            selectPerson.setSubordinateCompany(person.getSubordinateCompany());
+        }
         if(!StringUtils.isEmpty(person.getIdCardNumber())){
             //判断输入的身份证号码是否正确
             if (person.getIdCardNumber().trim().length() != 18) {
@@ -278,6 +282,8 @@ public class PersonController {
             throw new AttendanceException(ResultError.ID_CARD_ERROR);
         } else if (!StringUtils.hasText(person.getPersonName())) {
             throw new AttendanceException(ResultError.PERSON_NAME_ERROR);
+        } else if (!StringUtils.hasText(person.getSubordinateCompany())) {
+            throw new AttendanceException(ResultError.COMPANY_EMPTY);
         } else if (!StringUtils.hasText(person.getNation())) {
             throw AttendanceException.emptyMessage("名族");
         } else if (person.getGender() == null || person.getGender() > 3) {

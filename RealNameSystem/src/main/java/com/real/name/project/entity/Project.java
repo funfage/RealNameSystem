@@ -178,6 +178,11 @@ public class Project {
         this.projectCode = projectCode;
     }
 
+    public Project(String contractorCorpName, String name) {
+        this.contractorCorpName = contractorCorpName;
+        this.name = name;
+    }
+
     @Override
     public String toString() {
 //        return JSON.toJSONString(this);

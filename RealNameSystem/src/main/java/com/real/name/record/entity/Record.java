@@ -1,4 +1,4 @@
-package com.real.name.device.entity;
+package com.real.name.record.entity;
 
 import lombok.Getter;
 import lombok.Setter;

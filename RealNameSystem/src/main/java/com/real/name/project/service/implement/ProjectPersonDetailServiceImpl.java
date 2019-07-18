@@ -41,4 +41,5 @@ public class ProjectPersonDetailServiceImpl implements ProjectPersonDetailServic
     public int deleteByWorkerGroup(WorkerGroup workerGroup) {
         return repository.deleteByWorkerGroup(workerGroup);
     }
+
 }

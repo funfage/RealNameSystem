@@ -45,6 +45,7 @@ public class HandlerScanner implements BeanPostProcessor {
                         final byte type = socketType.type();
                         //获取功能号
                         final byte functionId = socketFunction.function();
+                        logger.info("将类型为:{} 功能号为:{}的执行器加入", type, functionId);
                         if (InvokerHolder.getInvoker(type, functionId) == null) {
                             InvokerHolder.addInvoker(type, functionId, Invoker.valueOf(method, bean));
                         } else {

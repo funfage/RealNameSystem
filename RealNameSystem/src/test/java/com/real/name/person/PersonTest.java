@@ -39,7 +39,6 @@ public class PersonTest extends BaseTest {
         PageRequest pageRequest = PageRequest.of(0, 10);
         Page<Person> personPage = personRepository.findAll(pageRequest);
         System.out.println(personPage.getContent());
-
     }
 
     @Test
@@ -77,14 +76,6 @@ public class PersonTest extends BaseTest {
         String str2 = "";
         System.out.println(StringUtils.hasText(str1));
         System.out.println(StringUtils.hasText(str2));
-    }
-
-    @Test
-    public void findPeopleByCondition(){
-        PersonQuery query = new PersonQuery();
-        query.setNameOrIDCard("b");
-        List<Person> peopleByCondition = personRepository.findPeopleByCondition(query);
-        System.out.println(peopleByCondition.size());
     }
 
     @Test

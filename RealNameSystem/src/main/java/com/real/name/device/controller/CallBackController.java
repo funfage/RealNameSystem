@@ -1,15 +1,18 @@
 package com.real.name.device.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.real.name.common.utils.CommonUtils;
 import com.real.name.common.utils.HTTPTool;
 import com.real.name.common.utils.JedisService;
 import com.real.name.device.entity.Device;
-import com.real.name.device.entity.Record;
+import com.real.name.record.entity.Record;
 import com.real.name.device.service.DeviceService;
-import com.real.name.device.service.RecordService;
+import com.real.name.record.service.RecordService;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
 import com.real.name.common.websocket.WebSocket;
+import com.real.name.project.entity.ProjectDetailQuery;
+import com.real.name.project.service.repository.ProjectDetailQueryMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 @RestController
@@ -42,6 +46,8 @@ public class CallBackController {
     @Autowired
     private RecordService recordService;
 
+    @Autowired
+    private ProjectDetailQueryMapper projectDetailQueryMapper;
 
     @Autowired
     private WebSocket webSocket;
@@ -94,16 +100,24 @@ public class CallBackController {
                     record.setDetailTime(new Date(time));
                     //保存考勤记录
                     recordService.saveRecord(record);
-                    logger.info("成功添加了一条人员考勤记录, record:{}", record.toString());
+                    if (device.getDirection() == 1 && !jedisKeys.hasKey(device.getProjectCode() + person.getPersonId())) {
+                        ProjectDetailQuery sendInfo = projectDetailQueryMapper.getSendInfo(person.getPersonId(), device.getProjectCode());
+                        //将信息推送到远程
+                        String presentInfo = sendToClient(sendInfo, device, time);
+                        //设置有效时间为第二天凌晨12点
+                        jedisStrings.set(device.getProjectCode() + person.getPersonId(), presentInfo, CommonUtils.getTomorrowBegin(), TimeUnit.SECONDS);
+                        logger.warn("在场的key:{}, value:{}, time:{}", device.getProjectCode() + person.getPersonId(), presentInfo, CommonUtils.getTomorrowBegin());
+                    } else if (device.getDirection() == 2 && jedisKeys.hasKey(device.getProjectCode() + person.getPersonId())) {
+                        //删除键
+                        ProjectDetailQuery sendInfo = projectDetailQueryMapper.getSendInfo(person.getPersonId(), device.getProjectCode());
+                        //将信息推送到远程
+                        sendToClient(sendInfo, device, time);
+                        jedisKeys.del(device.getProjectCode() + person.getPersonId());
+                    }
+                    logger.debug("成功添加了一条人员考勤记录, record:{}", record.toString());
                 }
             }
         }
-        //查询出需要推送的信息
-        /**
-         * TODO
-         * 将考勤信息推送到远程
-         */
-        //webSocket.sendMessageToAll("");
         //返回标记给设备
         Map<String, Object> map = new HashMap<>();
         map.put("result", 1);
@@ -133,8 +147,9 @@ public class CallBackController {
             //如过存在该设备信息则判断设备的ip是否发生改变
             if (device.getIp() == null || !device.getIp().equals(routerIP)) {
                 //如果ip发生改变则修改数据库中的ip值
-                device.setIp(routerIP);
-                deviceService.save(device);
+                /*device.setIp(routerIP);
+                deviceService.save(device);*/
+                deviceService.updateDeviceIPByProjectCode(routerIP, device.getProjectCode());
             }
         }
         //返回成功信息给设备
@@ -145,36 +160,21 @@ public class CallBackController {
     }
 
     /**
-     * 更新设备ip
-     * @param deviceKey 设备id
-     * @param routerIP 设备对应路由器的ip
-     * @return 更新后的设备信息
+     * 将需要推送的信息封装并推送
      */
-    private Device updateDeviceIp(String deviceKey, String routerIP) {
-        try {
-            Optional<Device> deviceOptional = deviceService.findByDeviceId(deviceKey);
-            if (deviceOptional.isPresent()) {
-                Device selectDevice = deviceOptional.get();
-                //判断ip地址是否相同
-                if (deviceKey != null && !routerIP.equals(selectDevice.getIp())) {
-                    //更新数据库中的ip地址
-                    selectDevice.setIp(routerIP);
-                    deviceService.save(selectDevice);
-                }
-                JSONObject deviceJSON = new JSONObject();
-                deviceJSON.put("deviceId", selectDevice.getDeviceId());
-                deviceJSON.put("outPort", selectDevice.getOutPort());
-                deviceJSON.put("ip", selectDevice.getIp());
-                deviceJSON.put("projectCode", selectDevice.getProjectCode());
-                jedisStrings.set(deviceKey, deviceJSON.toJSONString());
-                logger.info("更新后的设备信息:{}", deviceJSON.toJSONString());
-                return selectDevice;
-            }
-        } catch (Exception e) {
-            logger.error("updateDeviceIp error e:{}", e.getMessage());
-            return null;
-        }
-        return null;
+    private String sendToClient(ProjectDetailQuery sendInfo, Device device, long time) {
+        JSONObject map = new JSONObject();
+        Person person = sendInfo.getPerson();
+        map.put("personId", person.getPersonId());
+        map.put("personName", person.getPersonName());
+        map.put("projectCode", device.getProjectCode());
+        map.put("suffixName", person.getSuffixName());
+        map.put("teamName", sendInfo.getWorkerGroup().getTeamName());
+        map.put("direction", device.getDirection());
+        map.put("time", time);
+        map.put("type", 3);
+        webSocket.sendMessageToAll(map.toJSONString());
+        return map.toJSONString();
     }
 
 }

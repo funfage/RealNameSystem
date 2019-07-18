@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -86,6 +87,13 @@ public class JedisService {
          */
         public boolean renameIfAbsent(String oldKey, String newKey){
             return redisTemplate.renameIfAbsent(oldKey, newKey);
+        }
+
+        /**
+         * 模糊查询
+         */
+        public Set<String> keys(String pattern) {
+            return redisTemplate.keys(pattern);
         }
 
     }
@@ -174,6 +182,10 @@ public class JedisService {
                 logger.error(e.getMessage());
             }
             return null;
+        }
+
+        public List<Object> multiGet(Set<String> keys) {
+            return redisTemplate.opsForValue().multiGet(keys);
         }
 
     }

@@ -2,7 +2,6 @@ package com.real.name.person.controller;
 
 import com.real.name.common.result.ResultVo;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,11 +13,6 @@ import java.io.IOException;
 
 @RestController
 public class FileController {
-
-//    @GetMapping(value = "/file")
-//    public String file() {
-//        return "file";
-//    }
 
     @PostMapping(value = "/fileUpload")
     public ResultVo fileUpload(@RequestParam(value = "file") MultipartFile file, Model model, HttpServletRequest request) {

@@ -1,6 +1,8 @@
 package com.real.name.device.service;
 
 import com.real.name.device.entity.Device;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,12 +11,15 @@ public interface DeviceService {
 
     /**
      * 添加人脸设备
-     * @param device
-     * @return
      */
-    Device addFaceDevice(Device device);
+    void addFaceDevice(Device device);
 
-    Device updateFaceDevice(Device device);
+    /**
+     * 添加控制器设备
+     */
+    void addAccessDevice(Device device);
+
+    void updateFaceDevice(Device device);
 
 
     /**
@@ -84,6 +89,12 @@ public interface DeviceService {
      * 查询在某个项目集合中的所有人脸设备
      */
     List<Device> findByProjectCodeInAndDeviceType(List<String> projectCodes, Integer deviceType);
+
+    /**
+     * 根据projectCode修改设备的ip
+     */
+    void updateDeviceIPByProjectCode(@org.springframework.data.repository.query.Param("ip") String ip, @Param("projectCode") String projectCode);
+
 
 
 }

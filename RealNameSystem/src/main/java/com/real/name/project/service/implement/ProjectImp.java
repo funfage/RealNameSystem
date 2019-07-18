@@ -50,4 +50,9 @@ public class ProjectImp implements ProjectService {
     public String findProjectName(String projectName) {
         return projectRepository.findProjectName(projectName);
     }
+
+    @Override
+    public Project findProNameAndCorp(String projectCode) {
+        return projectRepository.findProNameAndCorp(projectCode);
+    }
 }

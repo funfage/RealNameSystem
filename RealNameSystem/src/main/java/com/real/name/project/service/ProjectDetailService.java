@@ -21,7 +21,9 @@ public interface ProjectDetailService {
      * 往项目中添加人员
      * @param projectCode 项目id
      */
-    void addPersonToDevice(String projectCode, Person person, List<Device> projectDevice, List<Device> allDevices);
+    void addPersonToFaceDevice(String projectCode, Person person, List<Device> projectFaceDevices, List<Device> allFaceDevices, String teamName);
+
+    void addPersonToAccessDevice(String projectCode, Person person, List<Device> projectAccessDevices, List<Device> allAccessDevices, String teamName);
 
     /**
      * 获取项目中的人员
@@ -41,5 +43,8 @@ public interface ProjectDetailService {
     Optional<ProjectDetail> findByProjectCodeAndPersonId(String projectId, Integer personId);
 
     Optional<ProjectDetail> findByProjectCodeAndPersonIdAndTeamSysNo(String projectId, Integer personId, Integer teamSysNo);
+
+    List<ProjectDetail> findAll();
+
 
 }

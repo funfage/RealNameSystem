@@ -2,9 +2,9 @@ package com.real.name.device.netty.codc;
 
 import com.real.name.device.netty.model.AccessConstant;
 import com.real.name.device.netty.model.AccessEvent;
-import com.real.name.device.netty.serial.BufferFactory;
 import com.real.name.device.netty.utils.ConvertUtils;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.handler.codec.MessageToMessageDecoder;
@@ -21,14 +21,16 @@ public class AccessEventDecoder extends MessageToMessageDecoder<DatagramPacket> 
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, DatagramPacket datagramPacket, List<Object> list) throws Exception {
         ByteBuf buffer = datagramPacket.content();
+        System.out.println(ByteBufUtil.hexDump(buffer));
         //读取类型
         byte type = buffer.readByte();
+        //默认使用0x17类型
+        type = 0x17;
         //读取功能号
         byte functionId = buffer.readByte();
         //保留
         short reserved = buffer.readShort();
         //读取设备号
-        ByteBuf buf = BufferFactory.getBuffer(new byte[4]);
         byte[] bytes = new byte[4];
         buffer.readBytes(bytes);
         bytes = ConvertUtils.reverse(bytes);

@@ -7,6 +7,8 @@ import com.real.name.device.entity.Device;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class RedisTest extends BaseTest {
@@ -20,7 +22,13 @@ public class RedisTest extends BaseTest {
     public void jedisTest(){
         jedisStrings.set("name", "zhangsan", 10, TimeUnit.MINUTES);
         jedisStrings.set("password", "123", 1, TimeUnit.SECONDS);
+        jedisStrings.set("123", true);
         String name = (String) jedisStrings.get("name");
+        Boolean b = (Boolean) jedisStrings.get("123");
+        if (b == null) {
+            System.out.println("is null");
+        }
+
         System.out.println(name);
         jedisStrings.setIfAbsent("age", 12);
         jedisStrings.setIfAbsent("age", 18);
@@ -30,6 +38,7 @@ public class RedisTest extends BaseTest {
         jedisStrings.setIfPresent("age", 22, 100, TimeUnit.SECONDS);
         jedisStrings.set("gender", "man");
         jedisKeys.del("gender");
+       jedisStrings.set("dfkjfdkj", null);
     }
 
     @Test
@@ -46,6 +55,34 @@ public class RedisTest extends BaseTest {
         String deviceInfo = (String) jedisStrings.get(device.getDeviceId());
         Device selectDevice = JSONObject.parseObject(deviceInfo, Device.class);
         System.out.println(selectDevice);
+    }
+
+    @Test
+    public void jedisTest2() {
+        JSONObject map = new JSONObject();
+        map.put("personId", 123);
+        map.put("personName", "aaa");
+        map.put("suffixName", ".jpg");
+        map.put("teamName", "teamA");
+        map.put("direction", 1);
+        map.put("time", 123456);
+        map.put("type", 3);
+        jedisStrings.set("067R9HQR0dmw178890C4BKubNU2d9gG7", map.toJSONString(), 10, TimeUnit.MINUTES);
+
+        JSONObject map1 = new JSONObject();
+        map1.put("personId", 456);
+        map1.put("personName", "bbb");
+        map1.put("suffixName", ".jpg");
+        map1.put("teamName", "teamB");
+        map1.put("direction", 1);
+        map1.put("time", 123456);
+        map1.put("type", 3);
+        jedisStrings.set("067R9HQR0dmw178890C4BKubNU2d9gG7", map1.toJSONString(), 10, TimeUnit.MINUTES);
+
+        /*Set<String> keys = jedisKeys.keys("project*");
+        List<Object> values = jedisStrings.multiGet(keys);
+        System.out.println(values);*/
+        //jedisKeys.delByPrex("project");
     }
 
 

@@ -55,5 +55,10 @@ public class DeviceTest extends BaseTest {
         repository.findByProjectCodeInAndDeviceType(projectCodes, 3);
     }
 
+    @Test
+    public void updateDeviceIPByProjectCode() {
+        repository.updateDeviceIPByProjectCode("169.254.39.59", "067R9HQR0dmw178890C4BKubNU2d9gG7");
+    }
+
 
 }

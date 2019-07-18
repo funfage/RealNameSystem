@@ -33,7 +33,7 @@ public class AccessEvent {
     /**
      * 32字节的数据
      */
-    private byte data[] = new byte[32];
+    private byte data[] = new byte[AccessConstant.DATA_LENGTH];
 
     /**
      * 流水号
@@ -43,7 +43,7 @@ public class AccessEvent {
     /**
      * 拓展20字节
      */
-    private byte externalData[] = new byte[32];
+    private byte externalData[] = new byte[AccessConstant.EXTERNAL_DATA_LENGTH];
 
     /**
      * 设备的IP和端口套接字

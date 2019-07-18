@@ -50,13 +50,20 @@ public class ProjectDetailImp implements ProjectDetailService {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void addPersonToDevice(String projectCode, Person person, List<Device> projectDevice, List<Device> allDevices) {
+    public void addPersonToFaceDevice(String projectCode, Person person, List<Device> projectFaceDevices, List<Device> allFaceDevices, String teamName) {
         if (person.getWorkRole() != null && person.getWorkRole() == 10) {//下发管理员信息
-            FaceDeviceUtils.issuePersonToDevices(allDevices, person, 3);
-            AccessDeviceUtils.issueIdCardIndexToDevices(allDevices, person.getIdCardIndex());
+            FaceDeviceUtils.issuePersonToDevices(allFaceDevices, person, 3, teamName);
         } else {//下发人员信息
-            FaceDeviceUtils.issuePersonToDevices(projectDevice, person, 3);
-            AccessDeviceUtils.issueIdCardIndexToDevices(projectDevice, person.getIdCardIndex());
+            FaceDeviceUtils.issuePersonToDevices(projectFaceDevices, person, 3, teamName);
+        }
+    }
+
+    @Override
+    public void addPersonToAccessDevice(String projectCode, Person person, List<Device> projectAccessDevices, List<Device> allAccessDevices, String teamName) {
+        if (person.getWorkRole() != null && person.getWorkRole() == 10) {//下发管理员信息
+            AccessDeviceUtils.issueIdCardIndexToDevices(allAccessDevices, person.getIdCardIndex(), teamName);
+        } else {//下发人员信息
+            AccessDeviceUtils.issueIdCardIndexToDevices(projectAccessDevices, person.getIdCardIndex(), teamName);
         }
     }
 
@@ -97,6 +104,11 @@ public class ProjectDetailImp implements ProjectDetailService {
     @Override
     public Optional<ProjectDetail> findByProjectCodeAndPersonIdAndTeamSysNo(String projectId, Integer personId, Integer teamSysNo) {
         return projectDetailRepository.findByProjectCodeAndPersonIdAndTeamSysNo(projectId, personId, teamSysNo);
+    }
+
+    @Override
+    public List<ProjectDetail> findAll() {
+        return projectDetailRepository.findAll();
     }
 
 }

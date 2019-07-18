@@ -8,6 +8,8 @@ import com.real.name.person.entity.Person;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
+
 public class IssueAccessTest extends BaseTest {
 
     @Autowired
@@ -21,4 +23,39 @@ public class IssueAccessTest extends BaseTest {
         int i = issueAccessMapper.saveIssueAccess(issueAccess);
         System.out.println(i);
     }
+
+    @Test
+    public void updateIssueAccess() {
+        IssueAccess issueAccess = new IssueAccess();
+        issueAccess.setPerson(new Person(1131));
+        issueAccess.setDevice(new Device("223000123"));
+        issueAccess.setIssueStatus(null);
+        int i = issueAccessMapper.updateIssueAccess(issueAccess);
+        System.out.println(i);
+    }
+
+    @Test
+    public void findIssueFailAccess() {
+        List<IssueAccess> issueFailAccess = issueAccessMapper.findIssueFailAccess();
+        System.out.println(issueFailAccess);
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

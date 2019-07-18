@@ -11,6 +11,7 @@ import io.netty.handler.codec.MessageToMessageEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class AccessEventEncoder extends MessageToMessageEncoder<AccessEvent> {
@@ -38,7 +39,9 @@ public class AccessEventEncoder extends MessageToMessageEncoder<AccessEvent> {
         //扩展数据
         byte[] externalData = ConvertUtils.fillExternalData(event.getExternalData());
         buffer.writeBytes(externalData);
+        logger.warn("编码后的event为:{}", event);
         logger.warn("向门禁控制器发送的16进制数据为: " + ByteBufUtil.hexDump(buffer).toUpperCase());
+        logger.warn("向门禁控制器发送的字节数组为:"+ Arrays.toString(ByteBufUtil.getBytes(buffer)));
         list.add(new DatagramPacket(buffer, event.getAddress()));
     }
 }

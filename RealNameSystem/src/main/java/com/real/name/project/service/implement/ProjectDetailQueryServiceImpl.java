@@ -1,11 +1,13 @@
 package com.real.name.project.service.implement;
 
 import com.real.name.project.entity.ProjectDetailQuery;
+import com.real.name.project.query.GroupPersonNum;
 import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.repository.ProjectDetailQueryMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,5 +36,15 @@ public class ProjectDetailQueryServiceImpl implements ProjectDetailQueryService 
     public List<String> getProjectIdsByPersonId(Integer personId) {
         List<String> projectCodes = projectDetailQueryMapper.getProjectIdsByPersonId(personId);
         return projectCodes.stream().distinct().collect(Collectors.toList());
+    }
+
+    @Override
+    public List<GroupPersonNum> getWorkGroupPersonNum(String projectCode) {
+        return projectDetailQueryMapper.getWorkGroupPersonNum(projectCode);
+    }
+
+    @Override
+    public List<ProjectDetailQuery> findPersonWorkHoursInfo(Date startDate, Date endDate) {
+        return projectDetailQueryMapper.findPersonWorkHoursInfo(startDate, endDate);
     }
 }

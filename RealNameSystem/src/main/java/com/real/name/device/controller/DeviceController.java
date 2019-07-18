@@ -176,11 +176,11 @@ public class DeviceController {
         if (device.getDeviceType() == 3) {
             //添加人脸设备
             deviceService.addFaceDevice(device);
-        } else {
-            /**
-             * TODO 添加其他设备信息
-             * 后续处理
-             */
+        } else if (device.getDeviceType() == 1) {
+            //添加控制器
+            deviceService.addAccessDevice(device);
+        } else if (device.getDeviceType() == 2){
+            //添加录用读头
             deviceService.save(device);
         }
         return ResultVo.success();

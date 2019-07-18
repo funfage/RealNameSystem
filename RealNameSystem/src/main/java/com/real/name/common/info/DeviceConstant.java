@@ -1,5 +1,7 @@
 package com.real.name.common.info;
 
+import org.springframework.util.StringUtils;
+
 public class DeviceConstant {
 
     //读头设备
@@ -32,4 +34,22 @@ public class DeviceConstant {
     //连接超时
     public final static String connectTimeOut = "connectTimeOut";
 
+    public final static String SEARCH_ACCESS = "searchAccess";
+
+    public final static String CLEAR_AUTHORITY = "clearAuthority";
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

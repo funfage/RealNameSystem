@@ -7,6 +7,7 @@
         <association property="person" column="person_id" javaType="com.real.name.person.entity.Person">
             <id property="personId" column="p_person_id"/>
             <result property="personName" column="person_name"/>
+            <result property="subordinateCompany" column="subordinate_company"/>
             <result property="gender" column="gender"/>
             <result property="address" column="p_address"/>
             <result property="age" column="age"/>
@@ -78,5 +79,34 @@
         </if>
         )
     </insert>
+
+    <update id="updateIssueAccess" parameterType="com.real.name.issue.entity.IssueAccess"
+            keyProperty="issueAccessId" keyColumn="issue_access_id" useGeneratedKeys="true">
+        update
+        issue_access
+        set
+        <if test="issueStatus != null">
+            issue_status = #{issueStatus}
+        </if>
+        where
+        person_id = #{person.personId}
+        and
+        device_id = #{device.deviceId}
+    </update>
+
+    <select id="findIssueFailAccess" resultMap="queryMap">
+        select
+        a.issue_access_id, a.issue_status,
+        p.person_id as p_person_id, p.id_card_index,
+        d.device_id as d_device_id, d.project_code, d.device_type, d.pass, d.ip, d.out_port
+        from
+        issue_access a, person p, device d
+        where
+        a.issue_status = 0
+        and
+        a.person_id = p.person_id
+        and
+        a.device_id = d.device_id
+    </select>
 
 </mapper>

@@ -76,6 +76,10 @@ public class ProjectPersonDetailTest extends BaseTest {
     }
 
 
+    @Test
+    public void getWorkGroupPersonNum() {
+    }
+
 
 
 }

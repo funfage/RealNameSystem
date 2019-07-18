@@ -3,11 +3,20 @@ package com.real.name.common.schedule;
 import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.schedule.entity.FaceRecordData;
 import com.real.name.common.schedule.entity.Records;
+import com.real.name.common.utils.CommonUtils;
 import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
-import com.real.name.device.entity.Record;
+import com.real.name.project.entity.ProjectDetail;
+import com.real.name.project.entity.ProjectDetailQuery;
+import com.real.name.project.service.ProjectDetailService;
+import com.real.name.record.entity.Attendance;
+import com.real.name.record.entity.Record;
+import com.real.name.device.service.AccessService;
 import com.real.name.device.service.DeviceService;
-import com.real.name.device.service.repository.RecordMapper;
+import com.real.name.record.service.repository.AttendanceMapper;
+import com.real.name.record.service.repository.RecordMapper;
+import com.real.name.issue.entity.IssueAccess;
+import com.real.name.issue.service.IssueAccessService;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
 import com.real.name.project.service.ProjectDetailQueryService;
@@ -37,7 +46,20 @@ public class ScheduledTasks {
     private ProjectDetailQueryService projectDetailQueryService;
 
     @Autowired
+    private ProjectDetailService projectDetailService;
+
+    @Autowired
     private RecordMapper recordMapper;
+
+    @Autowired
+    private IssueAccessService issueAccessService;
+
+    @Autowired
+    private AccessService accessService;
+
+    @Autowired
+    private AttendanceMapper attendanceMapper;
+
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -106,4 +128,87 @@ public class ScheduledTasks {
         }
     }
 
+    /**
+     * 从第5秒开始每隔15秒查询控制器下发失败的信息
+     */
+    @Scheduled(cron = "0/30 * * * * ?")
+    public void queryFailAccess() {
+        List<IssueAccess> issueFailAccess = issueAccessService.findIssueFailAccess();
+        for (IssueAccess issueAccess : issueFailAccess) {
+            Device device = issueAccess.getDevice();
+            Person person = issueAccess.getPerson();
+            //发送查询报文给控制器
+            accessService.queryAuthority(device.getDeviceId(), person.getIdCardIndex(), device.getIp(), device.getOutPort());
+        }
+    }
+
+    /**
+     * 从第30秒开始每隔30秒重发控制器下发失败的信息
+     */
+    @Scheduled(cron = "30/30 * * * * ?")
+    public void resendFailAccess() {
+        List<IssueAccess> issueAccessList = issueAccessService.findIssueFailAccess();
+        for (IssueAccess issueAccess : issueAccessList) {
+            Device device = issueAccess.getDevice();
+            Person person = issueAccess.getPerson();
+            accessService.addAuthority(device.getDeviceId(), person.getIdCardIndex(), device.getIp(), device.getOutPort());
+        }
+    }
+
+    /**
+     * 每天晚上11点统计工人的工时
+     */
+    @Scheduled(cron = "0 0 21 * * ?")
+    public void countWorkTime() {
+        List<ProjectDetail> projectDetailList = projectDetailService.findAll();
+        for (ProjectDetail projectDetail : projectDetailList) {
+            Integer personId = projectDetail.getPersonId();
+            long todayBegin = CommonUtils.getTodayBegin() * 1000;
+            long tomorrowBegin = CommonUtils.getTomorrowBegin() * 1000;
+            //查询该员工的当天的所有进出记录
+            List<Record> todayRecord = recordMapper.getTodayRecord(personId, todayBegin, tomorrowBegin);
+            long totalTime = 0;
+            for (int i = 0; i < todayRecord.size() - 1; i++) {
+                int direction1 = todayRecord.get(i).getDirection();
+                long time1 = todayRecord.get(i).getTimeNumber();
+                int direction2 = todayRecord.get(i + 1).getDirection();
+                if (direction1 == 1 && direction2 == 2) {
+                    while (++i < todayRecord.size() && todayRecord.get(i).getDirection() == 2) {
+
+                    }
+                    if (i == todayRecord.size()) {
+                        long time2 = todayRecord.get(i - 1).getTimeNumber();
+                        totalTime += time2 - time1;
+                    } else {
+                        long time2 = todayRecord.get(--i).getTimeNumber();
+                        totalTime += time2 - time1;
+                    }
+                }
+            }
+            //保存员工当天的工作时长
+            Attendance attendance = new Attendance();
+            attendance.setWorkHours(CommonUtils.getHours(totalTime));
+            attendance.setWorkTime(new Date());
+            attendance.setProjectDetailId(projectDetail.getProjectCode());
+            attendanceMapper.saveAttendance(attendance);
+        }
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

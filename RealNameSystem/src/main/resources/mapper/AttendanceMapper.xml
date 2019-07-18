@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.real.name.record.service.repository.AttendanceMapper">
+
+    <insert id="saveAttendance" keyColumn="attendance_id"
+            keyProperty="attendanceId" useGeneratedKeys="true">
+        insert into
+        attendance
+        (
+        project_detail_id,
+        work_hours,
+        work_time
+        )
+        values
+        (
+        #{projectDetailId},
+        #{workHours},
+        #{workTime}
+        )
+    </insert>
+
+</mapper>

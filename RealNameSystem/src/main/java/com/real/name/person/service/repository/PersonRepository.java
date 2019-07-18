@@ -2,9 +2,7 @@ package com.real.name.person.service.repository;
 
 import com.real.name.person.entity.Person;
 import com.real.name.person.entity.Person3;
-import com.real.name.person.entity.PersonQuery;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -48,12 +46,8 @@ public interface PersonRepository extends JpaRepository<Person, Integer> {
     //根据员工ID删除人员
     int deleteByPersonId(Integer personId);
 
-    //根据条件查询人员信息
-    @Query("from Person p where p.personName like %:#{#pq.nameOrIDCard}%")
-    List<Person> findPeopleByCondition(@Param("pq") PersonQuery personQuery);
-
     //查询下发人员和照片所需要的字段
-    @Query(value = "select new com.real.name.person.entity.Person(p.personId, p.personName, p.headImage, p.workRole) from Person p where  p.personId = ?1")
+    @Query(value = "select new com.real.name.person.entity.Person(p.personId, p.personName, p.headImage, p.workRole, p.idCardIndex) from Person p where  p.personId = ?1")
     Person findIssuePersonImageInfo(Integer personId);
 
 }
