@@ -6,9 +6,11 @@ import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.ImageTool;
 import com.real.name.common.utils.NationalUtils;
+import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import com.real.name.issue.entity.IssueFace;
 import com.real.name.issue.service.IssueFaceService;
+import com.real.name.issue.service.repository.DeleteInfoMapper;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
 import com.real.name.project.entity.ProjectPersonDetail;
@@ -58,6 +60,9 @@ public class PersonController {
     @Autowired
     private DeviceService deviceService;
 
+    @Autowired
+    private DeleteInfoMapper deleteInfoMapper;
+
     /**
      * 添加工人
      */
@@ -104,20 +109,39 @@ public class PersonController {
      * @param personId 员工id
      */
     @Transactional
-    @GetMapping("deletePerson")
+    @GetMapping("/deletePerson")
     public ResultVo deletePerson(@RequestParam("id") Integer personId,
+                                @RequestParam("idCardIndex")String idCardIndex,
                                 @RequestParam("suffixName") String suffixName){
         if(personId <= 0){
             throw AttendanceException.errorMessage("人员编号");
+        }
+        Person person = new Person();
+        person.setPersonId(personId);
+        person.setIdCardIndex(idCardIndex);
+        if (person.getWorkRole() == 10) {
+            //获取所有设备信息
+            List<Device> allDeviceList = deviceService.findAll();
+            //删除设备的人员信息
+            deviceService.deletePersonInDeviceList(allDeviceList, person);
+        } else if (person.getWorkRole() == 20) {
+            //查询用户所在的项目
+            List<String> projectCodes = projectDetailQueryService.getProjectIdsByPersonId(personId);
+            //获取项目绑定的设备
+            List<Device> deviceList = deviceService.findByProjectCodeIn(projectCodes);
+            deviceService.deletePersonInDeviceList(deviceList, person);
+        }
+        //删除头像
+        boolean isSuccess = ImageTool.deleteImage(personId, suffixName);
+        if (!isSuccess) {
+            throw new AttendanceException(ResultError.DELETE_IMAGE_ERROR);
         }
         //删除personDetail中的信息
         projectPersonDetailService.deleteByPerson(new Person(personId));
         int effectNum = personService.deleteByPersonId(personId);
         if (effectNum <= 0) {
             throw AttendanceException.errorMessage(ResultError.DELETE_ERROR, "工人");
-        }else{
-            //删除头像
-            ImageTool.deleteImage(personId, suffixName);
+        } else {
             return ResultVo.success("删除人员信息成功");
         }
     }

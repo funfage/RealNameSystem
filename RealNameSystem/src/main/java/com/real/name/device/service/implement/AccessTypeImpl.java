@@ -3,6 +3,7 @@ package com.real.name.device.service.implement;
 import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.utils.JedisService;
 import com.real.name.device.entity.Device;
+import com.real.name.issue.service.DeleteInfoService;
 import com.real.name.record.entity.Record;
 import com.real.name.device.netty.UDPClient;
 import com.real.name.device.netty.utils.ConvertUtils;
@@ -60,6 +61,9 @@ public class AccessTypeImpl implements AccessType {
     @Autowired
     private AccessService accessService;
 
+    @Autowired
+    private DeleteInfoService deleteInfoService;
+
     /**
      * 查询设备状态
      */
@@ -115,13 +119,16 @@ public class AccessTypeImpl implements AccessType {
         byte[] cardIndexBytes = ConvertUtils.reverse(ConvertUtils.hexToByteArray(cardIndexHex));
         int cardIndex = ConvertUtils.byte4ToInt(cardIndexBytes, 0);
         logger.info("查询的身份证索引号为:{}", cardIndex);
-        if (cardIndex != 0) {//接收到卡号则说明用户有权限
-            Optional<Person> personOptional = personService.findByIdCardIndex(cardIndex + "");
-            if (personOptional.isPresent()) {
-                Person person = personOptional.get();
+        Optional<Person> personOptional = personService.findByIdCardIndex(cardIndex + "");
+        if (personOptional.isPresent()) {
+            Person person = personOptional.get();
+            if (cardIndex != 0) {//接收到卡号则说明用户有权限
                 //修改下发标识
                 IssueAccess issueAccess = new IssueAccess(person, new Device(deviceId + ""), 1);
                 issueAccessService.updateIssueAccess(issueAccess);
+            } else {
+                //否则没有权限,删除标识删除失败的记录
+                deleteInfoService.deleteByCondition(person.getPersonId(), deviceId + "");
             }
         }
     }

@@ -6,17 +6,21 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.info.DeviceConstant;
+import com.real.name.common.info.CommConstant;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.CommonUtils;
 import com.real.name.common.utils.JedisService;
 import com.real.name.common.utils.NationalUtils;
+import com.real.name.common.websocket.WebSocket;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.group.service.GroupService;
+import com.real.name.issue.entity.DeleteInfo;
 import com.real.name.issue.entity.IssueAccess;
 import com.real.name.issue.entity.IssueFace;
+import com.real.name.issue.service.DeleteInfoService;
 import com.real.name.issue.service.IssueAccessService;
 import com.real.name.issue.service.IssueFaceService;
 import com.real.name.person.entity.Person;
@@ -37,9 +41,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
-
-//import com.real.name.person.entity.Person2;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 
 @RestController
@@ -76,6 +82,15 @@ public class ProjectController {
 
     @Autowired
     private JedisService.JedisStrings jedisStrings;
+
+    @Autowired
+    private JedisService.JedisKeys jedisKeys;
+
+    @Autowired
+    private DeleteInfoService deleteInfoService;
+
+    @Autowired
+    private WebSocket webSocket;
 
     /**
      * 本地创建项目
@@ -171,24 +186,30 @@ public class ProjectController {
     /**
      * 删除项目
      */
-    @GetMapping("deleteProject")
+    @Transactional
+    @GetMapping("/deleteProject")
     public ResultVo deleteProject(@RequestParam("projectCode") String projectCode) {
         if (!StringUtils.hasText(projectCode)) {
             throw AttendanceException.emptyMessage("项目编号");
         }
-        try {
-            //删除project_detail相关的信息
-            projectPersonDetailService.deleteByProject(new Project(projectCode));
-            int effectNum = projectService.deleteByProjectCode(projectCode);
-            //判断是否删除成功
-            if (effectNum <= 0) {
-                throw AttendanceException.errorMessage(ResultError.DELETE_ERROR, "项目");
-            }else{
-                return ResultVo.success("删除项目成功");
+        //查询项目下所有的人员信息和班组信息
+        List<ProjectDetailQuery> projectDetailList = projectDetailQueryService.findProjectDetail(projectCode);
+        //获取该项目绑定的所有设备
+        List<Device> deviceList = deviceService.findByProjectCode(projectCode);
+        for (ProjectDetailQuery projectDetailQuery : projectDetailList) {
+            Person person = projectDetailQuery.getPerson();
+            if (person.getWorkRole() == 20) {//只有普通人员才删除设备的信息
+                deviceService.deletePersonInDeviceList(deviceList, person);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResultVo.failure();
+            //删除该项目下班组的信息
+            groupService.deleteByTeamSysNo(projectDetailQuery.getTeamSysNo());
+        }
+        int effectNum = projectService.deleteByProjectCode(projectCode);
+        //判断是否删除成功
+        if (effectNum <= 0) {
+            throw AttendanceException.errorMessage(ResultError.DELETE_ERROR, "项目");
+        }else{
+            return ResultVo.success("删除项目成功");
         }
     }
 
@@ -222,7 +243,7 @@ public class ProjectController {
         //判断该项目是否有绑定设备
         if ((projectFaceDevices == null || projectFaceDevices.size() <= 0) &&
                 (projectAccessDevices == null || projectAccessDevices.size() <= 0)) {
-            throw new AttendanceException(ResultError.project_no_bind_device);
+            throw new AttendanceException(ResultError.PROJECT_NO_BIND_DEVICE);
         }
         // 添加人员到项目中
         for (Integer personId : persons) {
@@ -300,6 +321,42 @@ public class ProjectController {
             logger.error("查询某个项目下的人员信息和班组信息失败, e:{}", e.getMessage());
             return ResultVo.failure();
         }
+    }
+
+    /**
+     * 从项目中移除人员
+     */
+    @GetMapping("/deletePersonInProject")
+    @Transactional
+    public ResultVo deletePersonInProject(String projectCode, Integer personId, String idCardIndex) {
+        //获取该项目绑定的设备信息
+        List<Device> deviceList = deviceService.findByProjectCode(projectCode);
+        Person person = new Person();
+        person.setPersonId(personId);
+        person.setIdCardIndex(idCardIndex);
+        deviceService.deletePersonInDeviceList(deviceList, person);
+        //查被删除人员所在的班组
+        String teamName = projectDetailQueryService.findTeamName(projectCode, personId);
+        String key = projectCode + CommConstant.ABSENT + teamName;
+        if (jedisKeys.hasKey(key)) {
+            String value = (String) jedisStrings.get(key);
+            int number = Integer.parseInt(value.substring(value.lastIndexOf(",") + 1)) + 1;
+            jedisStrings.set(key, teamName + "," + number, CommonUtils.getTomorrowBegin(), TimeUnit.SECONDS);
+        } else {
+            jedisStrings.set(key, teamName + "," + 1, CommonUtils.getTomorrowBegin(), TimeUnit.SECONDS);
+        }
+        //删除人员与项目所关联的信息
+        int i = projectDetailQueryService.deletePersonInProject(projectCode, personId);
+        if (i <= 0) {
+            throw new AttendanceException(ResultError.DELETE_ERROR);
+        }
+        //推送出场消息给前端
+        JSONObject map = new JSONObject();
+        map.put("teamName", teamName);
+        map.put("projectCode", projectCode);
+        map.put("type", CommConstant.ABSENT_TYPE);
+        webSocket.sendMessageToAll(map.toJSONString());
+        return ResultVo.success();
     }
 
     /**

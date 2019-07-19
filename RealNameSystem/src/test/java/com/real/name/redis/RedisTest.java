@@ -86,4 +86,19 @@ public class RedisTest extends BaseTest {
     }
 
 
+    @Test
+    public void test3() {
+        String key = "36bj84W235Zgc8O78yuS32510ppMkHfeabsent杂工";
+        String teamName = "杂工";
+        for (int i = 0; i < 3; i++) {
+            if (jedisKeys.hasKey(key)) {
+                String value = (String) jedisStrings.get(key);
+                int number = Integer.parseInt(value.substring(value.lastIndexOf(",") + 1)) + 1;
+                jedisStrings.set(key, teamName + "," + number);
+            } else {
+                jedisStrings.set(key, teamName + "," + 1);
+            }
+        }
+    }
+
 }

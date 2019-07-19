@@ -36,18 +36,14 @@ public class DeviceController {
 
     @Autowired
     private DeviceDao deviceDao;
+
     @Autowired
     private ProjectService projectService;
+
     @Autowired
     private DeviceService deviceService;
     /**
      * 查询设备信息
-     * @param startTime
-     * @param endTime
-     * @param deviceId
-     * @param pageNumber
-     * @param pageSize
-     * @return
      */
     @PostMapping("/finddevice")
     public ResultVo finddevice(Long startTime,
@@ -116,6 +112,8 @@ public class DeviceController {
         //更新人脸设备
         if (selectDevice.getDeviceType() == 3) {
             deviceService.updateFaceDevice(selectDevice);
+        } else if (selectDevice.getDeviceType() == 1) {
+
         } else {
             /**
              * TODO 更新其他设备信息

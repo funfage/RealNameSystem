@@ -4,12 +4,22 @@ import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.utils.JedisService;
+import com.real.name.device.netty.utils.AccessDeviceUtils;
 import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.AccessService;
 import com.real.name.device.service.DeviceService;
 import com.real.name.device.service.repository.DeviceRepository;
+import com.real.name.issue.entity.DeleteInfo;
 import com.real.name.issue.entity.FaceResult;
+import com.real.name.issue.entity.IssueAccess;
+import com.real.name.issue.entity.IssueFace;
+import com.real.name.issue.service.DeleteInfoService;
+import com.real.name.issue.service.IssueAccessService;
+import com.real.name.issue.service.IssueFaceService;
+import com.real.name.person.entity.Person;
+import com.real.name.project.entity.ProjectDetailQuery;
+import com.real.name.project.service.ProjectDetailQueryService;
 import io.netty.util.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +43,18 @@ public class DeviceServiceImp implements DeviceService {
 
     @Autowired
     private AccessService accessService;
+
+    @Autowired
+    private DeleteInfoService deleteInfoService;
+
+    @Autowired
+    private ProjectDetailQueryService projectDetailQueryService;
+
+    @Autowired
+    private IssueFaceService issueFaceService;
+
+    @Autowired
+    private IssueAccessService issueAccessService;
 
     /**
      * 添加人脸设备
@@ -65,26 +87,9 @@ public class DeviceServiceImp implements DeviceService {
      */
     @Override
     public void addAccessDevice(Device device) {
-        //搜索控制器
-        accessService.searchAccess(device.getDeviceId(), device.getIp(), device.getOutPort());
+        //校验设备是否合法
+        isValidAccess(device);
         long startTime = System.currentTimeMillis();
-        //若三秒过后还没有获取到设备ip,则跳出循环
-        while (true) {
-            if (jedisKeys.hasKey(device.getDeviceId() + DeviceConstant.SEARCH_ACCESS)) {
-                break;
-            }
-            if (System.currentTimeMillis() - startTime > 3000) {
-                break;
-            }
-        }
-        String ip = (String) jedisStrings.get(device.getDeviceId() + DeviceConstant.SEARCH_ACCESS);
-        if (!StringUtils.hasText(ip)) {
-            throw new AttendanceException(ResultError.DEVICE_SEARCH_EMPTY);
-        }
-        if (!ip.equals(device.getIp())) {
-            throw new AttendanceException(ResultError.DEVICE_IP_NO_MATCH);
-        }
-        startTime = System.currentTimeMillis();
         //重置设备
         accessService.clearAccess(device.getDeviceId(), device.getIp(), device.getOutPort());
         while (true) {
@@ -116,15 +121,95 @@ public class DeviceServiceImp implements DeviceService {
         if (!jedisKeys.hasKey(device.getDeviceId())) {
             throw new AttendanceException(ResultError.NO_HEARTBEAT);
         }
+        if (device.getProjectCode() != null) {
+            List<ProjectDetailQuery> projectIssueDetail = projectDetailQueryService.getProjectFaceIssueDetail(device.getProjectCode());
+            //将设备绑定的项目下的人员信息下发到该设备
+            for (ProjectDetailQuery projectDetailQuery : projectIssueDetail) {
+                Person person = projectDetailQuery.getPerson();
+                IssueFace issueFace = new IssueFace();
+                issueFace.setPerson(new Person(person.getPersonId()));
+                issueFace.setIssuePersonStatus(0);
+                issueFace.setIssueImageStatus(0);
+                //添加一条插入失败信息
+                issueFaceService.insertInitIssue(issueFace);
+                //下发到人脸设备
+                FaceDeviceUtils.issuePersonToOneDevice(device, person, 3);
+            }
+        }
         Device newDevice = deviceRepository.save(device);
         if (newDevice == null) {
             throw new AttendanceException(ResultError.UPDATE_ERROR);
         }
     }
 
+    /**
+     * 更新控制器
+     */
+    @Transactional
     @Override
-    public List<Device> findByProjectCode(Integer projectId) {
-        return deviceRepository.findByProjectCode(projectId);
+    public void updateAccessDevice(Device device) {
+        //校验设备是否合法
+        isValidAccess(device);
+        if (device.getProjectCode() != null) {
+            List<ProjectDetailQuery> projectDetailQueryList = projectDetailQueryService.getProjectAccessIssueDetail(device.getProjectCode());
+            for (ProjectDetailQuery projectDetailQuery : projectDetailQueryList) {
+                Person person = projectDetailQuery.getPerson();
+                IssueAccess issueAccess = new IssueAccess();
+                issueAccess.setPerson(new Person(person.getPersonId()));
+                issueAccess.setDevice(device);
+                issueAccess.setIssueStatus(0);
+                //为每一个设备人员添加一条下发失败信息
+                issueAccessService.insertIssueAccess(issueAccess);
+                //下发到控制器
+                AccessDeviceUtils.issueIdCardIndexToOneDevice(device, person.getIdCardIndex());
+            }
+        }
+        Device newDevice = deviceRepository.save(device);
+        if (newDevice == null) {
+            throw new AttendanceException(ResultError.UPDATE_ERROR);
+        }
+    }
+
+    /**
+     * 删除设备中的人员信息
+     */
+    @Override
+    public void deletePersonInDevice(Device device, Person person) {
+        DeleteInfo deleteInfo = new DeleteInfo();
+        deleteInfo.setPerson(person);
+        deleteInfo.setDevice(device);
+        deleteInfo.setStatus(0);
+        deleteInfoService.saveDeleteInfo(deleteInfo);
+        if (device.getDeviceType() == DeviceConstant.faceDeviceType) {
+            //删除人脸设备的人员信息
+            FaceDeviceUtils.deleteDevicePersonInfo(device, person.getPersonId());
+        } else if (device.getDeviceType() == DeviceConstant.AccessDeviceType) {
+            //删除控制器的人员信息
+            accessService.deleteAuthority(device.getDeviceId(), person.getIdCardIndex(), device.getIp(), device.getOutPort());
+        }
+    }
+
+    @Override
+    public void deletePersonInDeviceList(List<Device> deviceList, Person person) {
+        for (Device device : deviceList) {
+            DeleteInfo deleteInfo = new DeleteInfo();
+            deleteInfo.setPerson(person);
+            deleteInfo.setDevice(device);
+            deleteInfo.setStatus(0);
+            deleteInfoService.saveDeleteInfo(deleteInfo);
+            if (device.getDeviceType() == DeviceConstant.faceDeviceType) {
+                //删除人脸设备的人员信息
+                FaceDeviceUtils.deleteDevicePersonInfo(device, person.getPersonId());
+            } else if (device.getDeviceType() == DeviceConstant.AccessDeviceType) {
+                //删除控制器的人员信息
+                accessService.deleteAuthority(device.getDeviceId(), person.getIdCardIndex(), device.getIp(), device.getOutPort());
+            }
+        }
+    }
+
+    @Override
+    public List<Device> findByProjectCode(String projectCode) {
+        return deviceRepository.findByProjectCode(projectCode);
     }
 
     @Override
@@ -190,5 +275,27 @@ public class DeviceServiceImp implements DeviceService {
     @Override
     public void updateDeviceIPByProjectCode(String ip, String projectCode) {
         deviceRepository.updateDeviceIPByProjectCode(ip, projectCode);
+    }
+
+    private void isValidAccess(Device device) {
+        //搜索控制器
+        accessService.searchAccess(device.getDeviceId(), device.getIp(), device.getOutPort());
+        long startTime = System.currentTimeMillis();
+        //若三秒过后还没有获取到设备ip,则跳出循环
+        while (true) {
+            if (jedisKeys.hasKey(device.getDeviceId() + DeviceConstant.SEARCH_ACCESS)) {
+                break;
+            }
+            if (System.currentTimeMillis() - startTime > 3000) {
+                break;
+            }
+        }
+        String ip = (String) jedisStrings.get(device.getDeviceId() + DeviceConstant.SEARCH_ACCESS);
+        if (!StringUtils.hasText(ip)) {
+            throw new AttendanceException(ResultError.DEVICE_SEARCH_EMPTY);
+        }
+        if (!ip.equals(device.getIp())) {
+            throw new AttendanceException(ResultError.DEVICE_IP_NO_MATCH);
+        }
     }
 }

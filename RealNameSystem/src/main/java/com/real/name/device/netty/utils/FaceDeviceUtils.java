@@ -3,6 +3,7 @@ package com.real.name.device.netty.utils;
 
 import com.alibaba.druid.support.json.JSONUtils;
 import com.alibaba.fastjson.JSONObject;
+import com.real.name.common.info.CommConstant;
 import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.schedule.entity.FaceRecordData;
 import com.real.name.common.utils.HTTPTool;
@@ -67,10 +68,13 @@ public class FaceDeviceUtils {
     public static void issuePersonToDevices(List<Device> deviceList, Person person, int times, String teamName) {
         for (Device device : deviceList) {
             issuePersonToOneDevice(device, person, times);
-            JSONObject map = new JSONObject();
-            map.put("teamName", teamName);
-            map.put("type", 1);
-            deviceUtils.webSocket.sendMessageToAll(map.toJSONString());
+            if (teamName != null) {
+                JSONObject map = new JSONObject();
+                map.put("projectCode", device.getProjectCode());
+                map.put("teamName", teamName);
+                map.put("type", CommConstant.ENTER_TYPE);
+                deviceUtils.webSocket.sendMessageToAll(map.toJSONString());
+            }
         }
     }
 
@@ -129,9 +133,6 @@ public class FaceDeviceUtils {
 
     /**
      * 下发照片信息到某个设备
-     * @param device
-     * @param person
-     * @param times
      */
     public static void issueImageToOneDevice(Device device, Person person, int times) {
         if (StringUtils.hasText(device.getDeviceId()) && person.getPersonId() != null) {
@@ -497,9 +498,6 @@ public class FaceDeviceUtils {
 
     /**
      * 向指定设备发送人员信息
-     * @param device
-     * @param person
-     * @return
      */
     private static Map<String, Object> sendPersonByDeviceId(Device device, Person person) {
         String url = "/person/create";
@@ -530,14 +528,11 @@ public class FaceDeviceUtils {
 
     /**
      * 根据id查询人员信息
-     * @param id
-     * @param device
-     * @return
      */
-    private static Map<String, Object> sendQueryPerson(String id, Device device) {
+    public static Map<String, Object> sendQueryPerson(String personId, Device device) {
         String url = "/person/find?pass={pass}&id={id}";
         Map<String, Object> map = new HashMap<>();
-        map.put("id", id);
+        map.put("id", personId);
         return HTTPTool.sendDataToFaceDeviceByDeviceId(url, map, DeviceConstant.getMethod, device);
     }
 
@@ -557,9 +552,6 @@ public class FaceDeviceUtils {
 
     /**
      * 更新某个设备的照片信息
-     * @param device
-     * @param person
-     * @return
      */
     public static Map<String, Object> sendUpdateImageByDevice(Device device, Person person) {
         String url = "/face/update";
@@ -593,8 +585,6 @@ public class FaceDeviceUtils {
 
     /**
      * 获取人脸设备的序列号
-     * @param device
-     * @return
      */
     public static FaceResult getDeviceKey(Device device) {
         String url = "http://" + device.getIp() + ":" + device.getOutPort() + "/getDeviceKey";
@@ -625,4 +615,33 @@ public class FaceDeviceUtils {
         return HTTPTool.sendDataToFaceDeviceByDeviceId(url, map, DeviceConstant.postMethod, device);
     }
 
+    /**
+     * 删除人员信息
+     */
+    public static Map<String, Object> deleteDevicePersonInfo(Device device, Integer personId) {
+        Map<String, Object> map = new HashMap<>();
+        String url = "/person/delete";
+        map.put("id", personId.toString());
+        return HTTPTool.sendDataToFaceDeviceByDeviceId(url, map, DeviceConstant.postMethod, device);
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

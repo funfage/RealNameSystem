@@ -15,11 +15,11 @@ import java.util.*;
 public class MyTest {
 
     public static void main(String[] args) throws Exception {
-        Date date = CommonUtils.initDateByMonth();
-        Date end = new Date(System.currentTimeMillis());
-        System.out.println(CommonUtils.DateToString(date));
-        System.out.println(CommonUtils.DateToString(end));
-        //testD();
+        StringBuilder id = new StringBuilder();
+        id.append("123");
+        id.append(",");
+        id.deleteCharAt(id.length() - 1);
+        System.out.println(id.toString());
     }
 
     public static void testMap() {

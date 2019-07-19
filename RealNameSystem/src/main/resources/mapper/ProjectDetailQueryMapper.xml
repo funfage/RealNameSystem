@@ -3,6 +3,8 @@
 <mapper namespace="com.real.name.project.service.repository.ProjectDetailQueryMapper">
     <resultMap id="queryAllMap" type="com.real.name.project.entity.ProjectDetailQuery">
         <id property="id" column="id"/>
+        <result property="projectCode" column="project_code"/>
+        <result property="createTime" column="create_time"/>
         <association property="person" column="person" javaType="com.real.name.person.entity.Person">
             <id property="personId" column="p_person_id"/>
             <result property="personName" column="person_name"/>
@@ -40,6 +42,7 @@
             <result property="suffixName" column="suffix_name"/>
             <result property="urgentLinkMan" column="urgent_link_man"/>
             <result property="urgentLinkManPhone" column="urgent_link_man_phone"/>
+            <result property="headImage" column="head_image"/>
             <result property="workDate" column="work_date"/>
             <result property="workRole" column="work_role"/>
             <result property="workType" column="work_type"/>
@@ -226,6 +229,78 @@
         a.work_time &lt;= #{endDate}
     </select>
 
+    <delete id="deletePersonInProject">
+        delete from
+        project_detail
+        where
+        project_code = #{projectCode}
+        and
+        person_id = #{personId}
+    </delete>
+
+    <select id="findTeamName" resultType="string">
+        select
+        wg.team_name
+        from
+        project_detail pd
+        left join worker_group wg on pd.team_sys_no = wg.team_sys_no
+        where
+        pd.project_code = #{projectCode}
+        and
+        pd.person_id = #{personId}
+    </select>
+
+    <select id="findProjectCodeByTeamSysNo" resultType="string">
+        select
+        distinct (project_code)
+        from
+        project_detail
+        where
+        team_sys_no = #{teamSysNo}
+    </select>
+
+    <select id="findPersonByTeamSyNo" resultType="com.real.name.person.entity.Person">
+        select
+        p.person_id as p_person_id, p.person_name, p.id_card_index
+        from
+        project_detail pd
+        left join person p on p.person_id = pd.person_id
+        where
+        pd.team_sys_no = #{teamSysNo}
+    </select>
+
+    <select id="findProjectDetail" resultMap="queryAllMap">
+        select
+        pd.id, pd.team_sys_no,
+        p.person_id as p_person_id, p.id_card_index
+        from
+        project_detail pd
+        left join person p on p.person_id = pd.person_id
+        where
+        pd.project_code = #{projectCode}
+    </select>
+
+    <select id="getProjectFaceIssueDetail" resultMap="queryAllMap">
+        select
+        pd.id,
+        p.person_id as p_person_id, p.person_name, p.head_image
+        from
+        project_detail pd
+        left join person p on p.person_id = pd.person_id
+        where
+        pd.project_code = #{projectCode}
+    </select>
+
+    <select id="getProjectAccessIssueDetail" resultMap="queryAllMap">
+        select
+        pd.id,
+        p.person_id as p_person_id, p.id_card_index
+        from
+        project_detail pd
+        left join person p on p.person_id = pd.person_id
+        where
+        pd.project_code = #{projectCode}
+    </select>
 
 </mapper>
 

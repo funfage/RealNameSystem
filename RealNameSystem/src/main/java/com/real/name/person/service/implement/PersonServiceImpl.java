@@ -148,16 +148,6 @@ public class PersonServiceImpl implements PersonService {
         return personRepository.save(person);
     }
 
-    /*@Override
-    public Person findIssuePersonInfo(Integer personId) {
-        return personRepository.findIssuePersonInfo(personId);
-    }
-
-    @Override
-    public Person findIssueImageInfo(Integer personId) {
-        return personRepository.findIssueImageInfo(personId);
-    }*/
-
     @Override
     public Person findIssuePersonImageInfo(Integer personId) {
         return personRepository.findIssuePersonImageInfo(personId);
@@ -176,6 +166,11 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<Person> findAllPersonRole() {
         return personRepository.findAllPersonRole();
+    }
+
+    @Override
+    public String getIdCardIndexByPersonId(Integer personId) {
+        return personRepository.getIdCardIndexByPersonId(personId);
     }
 
 

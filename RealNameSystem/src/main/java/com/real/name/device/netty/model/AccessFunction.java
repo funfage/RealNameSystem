@@ -27,4 +27,9 @@ public interface AccessFunction {
      */
     byte CLEAR_AUTHORITY = 0x54;
 
+    /**
+     * 删除权限
+     */
+    byte DELETE_AUTHORITY = 0x52;
+
 }

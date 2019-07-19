@@ -100,6 +100,22 @@ public class AccessServiceImpl implements AccessService {
         udpClient.sendMessage(event, ip, port);
     }
 
+    /**
+     * 清空权限
+     */
+    @Override
+    public void deleteAuthority(String deviceId, String idCardIndex, String ip, int port) {
+        AccessEvent event = new AccessEvent();
+        event.setFunctionId(AccessFunction.DELETE_AUTHORITY);
+        event.setDeviceId(Integer.parseInt(deviceId));
+        ByteBuffer dataBuffer = ByteBuffer.allocate(AccessConstant.DATA_LENGTH);
+        //设置需要查询的卡号
+        byte[] cardIndexBytes = ConvertUtils.reverse(ConvertUtils.intToByte4(Integer.parseInt(idCardIndex)));
+        dataBuffer.put(cardIndexBytes);
+        event.setData(dataBuffer.array());
+        udpClient.sendMessage(event, ip, port);
+    }
+
 
 }
 

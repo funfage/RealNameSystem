@@ -74,6 +74,7 @@ public class UDPClient {
         }
     }
 
+    //销毁客户端
     @PreDestroy
     public void destroy() {
         try {
@@ -87,5 +88,4 @@ public class UDPClient {
             e.printStackTrace();
         }
     }
-
 }

@@ -5,6 +5,7 @@ import com.real.name.device.netty.annotion.SocketFunction;
 import com.real.name.device.netty.annotion.SocketType;
 import com.real.name.device.netty.model.AccessFunction;
 
+import javax.persistence.Access;
 import java.net.InetSocketAddress;
 
 @SocketType(type = TypeId.ACCESS)

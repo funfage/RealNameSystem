@@ -1,6 +1,7 @@
 package com.real.name.device.service;
 
 import com.real.name.device.entity.Device;
+import com.real.name.person.entity.Person;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -19,14 +20,25 @@ public interface DeviceService {
      */
     void addAccessDevice(Device device);
 
+
     void updateFaceDevice(Device device);
 
+    void updateAccessDevice(Device device);
+
+    /**
+     * 删除设备的人员信息
+     */
+    void deletePersonInDevice(Device device, Person person);
+
+    /**
+     * 删除多个设备人员信息
+     */
+    void deletePersonInDeviceList(List<Device> deviceList, Person person);
 
     /**
      * 查询项目中的设备
-     * @param projectId 项目id
      */
-    List<Device> findByProjectCode(Integer projectId);
+    List<Device> findByProjectCode(String projectCode);
 
     /**
      * 查找设备
@@ -71,7 +83,6 @@ public interface DeviceService {
 
     /**
      * 获取设备所有的id
-     * @return
      */
     List<String> getDeviceIdList();
 

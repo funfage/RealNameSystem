@@ -178,14 +178,13 @@ public class Project {
         this.projectCode = projectCode;
     }
 
-    public Project(String contractorCorpName, String name) {
-        this.contractorCorpName = contractorCorpName;
+    public Project(String name, String contractorCorpName) {
         this.name = name;
+        this.contractorCorpName = contractorCorpName;
     }
 
     @Override
     public String toString() {
-//        return JSON.toJSONString(this);
         return "Project{" +
                 "projectCode='" + projectCode + '\'' +
                 ", contractorCorpCode='" + contractorCorpCode + '\'' +

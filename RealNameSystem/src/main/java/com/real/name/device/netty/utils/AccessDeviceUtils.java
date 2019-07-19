@@ -1,6 +1,7 @@
 package com.real.name.device.netty.utils;
 
 import com.alibaba.fastjson.JSONObject;
+import com.real.name.common.info.CommConstant;
 import com.real.name.common.utils.JedisService;
 import com.real.name.common.websocket.WebSocket;
 import com.real.name.device.entity.Device;
@@ -40,11 +41,13 @@ public class AccessDeviceUtils {
     public static void issueIdCardIndexToDevices(List<Device> deviceList, String idCardIndex, String teamName) {
         for (Device device : deviceList) {
             issueIdCardIndexToOneDevice(device, idCardIndex);
-            //accessDeviceUtils.accessService.queryAuthority(device.getDeviceId(), idCardIndex, device.getIp(), device.getOutPort());
-            JSONObject map = new JSONObject();
-            map.put("teamName", teamName);
-            map.put("type", 1);
-            accessDeviceUtils.webSocket.sendMessageToAll(map.toJSONString());
+            if (teamName != null) {
+                JSONObject map = new JSONObject();
+                map.put("projectCode", device.getProjectCode());
+                map.put("teamName", teamName);
+                map.put("type", CommConstant.ENTER_TYPE);
+                accessDeviceUtils.webSocket.sendMessageToAll(map.toJSONString());
+            }
         }
     }
 
@@ -54,7 +57,6 @@ public class AccessDeviceUtils {
     public static void issueIdCardIndexToOneDevice(Device device, String idCardIndex) {
         try {
             accessDeviceUtils.accessService.addAuthority(device.getDeviceId(), idCardIndex, device.getIp(), device.getOutPort());
-            //accessDeviceUtils.accessService.queryAuthority(device.getDeviceId(), idCardIndex, device.getIp(), device.getOutPort());
         } catch (Exception e) {
             logger.error("控制器下发出现异常, e:{}", e);
         }

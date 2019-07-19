@@ -169,6 +169,10 @@ public class PersonTest extends BaseTest {
         System.out.println(allPersonRole);
     }
 
-
+    @Test
+    public void getIdCardIndexByPersonId() {
+        String idCardIndex = personRepository.getIdCardIndexByPersonId(1100);
+        System.out.println(idCardIndex);
+    }
 
 }

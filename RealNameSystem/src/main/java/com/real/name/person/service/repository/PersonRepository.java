@@ -50,4 +50,7 @@ public interface PersonRepository extends JpaRepository<Person, Integer> {
     @Query(value = "select new com.real.name.person.entity.Person(p.personId, p.personName, p.headImage, p.workRole, p.idCardIndex) from Person p where  p.personId = ?1")
     Person findIssuePersonImageInfo(Integer personId);
 
+    @Query(value = "select id_card_index from person where person_id = :personId", nativeQuery = true)
+    String getIdCardIndexByPersonId(@Param("personId") Integer personId);
+
 }

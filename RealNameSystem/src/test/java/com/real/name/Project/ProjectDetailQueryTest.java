@@ -2,6 +2,7 @@ package com.real.name.Project;
 
 import com.real.name.common.utils.CommonUtils;
 import com.real.name.others.BaseTest;
+import com.real.name.person.entity.Person;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.query.GroupPersonNum;
 import com.real.name.project.service.repository.ProjectDetailQueryMapper;
@@ -64,6 +65,48 @@ public class ProjectDetailQueryTest extends BaseTest {
         Date end = new Date(System.currentTimeMillis());
         List<ProjectDetailQuery> queryList = mapper.findPersonWorkHoursInfo(start, end);
         System.out.println(queryList);
+    }
+
+    @Test
+    public void delete() {
+        int i = mapper.deletePersonInProject("36bj84W235Zgc8O78yuS32510ppMkHfe", 104);
+        System.out.println(i);
+    }
+
+    @Test
+    public void findTeamName() {
+        String teamName = mapper.findTeamName("36bj84W235Zgc8O78yuS32510ppMkHfe", 95);
+        System.out.println(teamName);
+    }
+
+    @Test
+    public void findProjectCodeByTeamSysNo() {
+        String projectCode = mapper.findProjectCodeByTeamSysNo(1562649690);
+        System.out.println(projectCode);
+    }
+
+    @Test
+    public void findPersonByTeamSyNo() {
+        List<Person> personList = mapper.findPersonByTeamSyNo(1562649690);
+        System.out.println(personList);
+    }
+
+    @Test
+    public void findProjectDetail() {
+        List<ProjectDetailQuery> projectDetail = mapper.findProjectDetail("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        System.out.println(projectDetail);
+    }
+
+    @Test
+    public void getProjectIssueDetail() {
+        List<ProjectDetailQuery> projectIssueDetail = mapper.getProjectFaceIssueDetail("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        System.out.println(projectIssueDetail);
+    }
+
+    @Test
+    public void getProjectAccessIssueDetail() {
+        List<ProjectDetailQuery> projectAccessIssueDetail = mapper.getProjectAccessIssueDetail("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        System.out.println(projectAccessIssueDetail);
     }
 
 

@@ -88,6 +88,16 @@ public class TestController {
         return ResultVo.success();
     }
 
+    @GetMapping("testDelete")
+    public ResultVo testDelete(@RequestParam("personId") Integer personId) {
+        Device device = new Device();
+        device.setIp("113.101.245.195");
+        device.setOutPort(8090);
+        FaceDeviceUtils.deleteDevicePersonInfo(device, personId);
+        return ResultVo.success();
+    }
+
+
     @GetMapping("webSocketTest")
     public void webSocketTest() {
         ProjectDetailQuery sendInfo = mapper.getSendInfo(1131, "067R9HQR0dmw178890C4BKubNU2d9gG7");

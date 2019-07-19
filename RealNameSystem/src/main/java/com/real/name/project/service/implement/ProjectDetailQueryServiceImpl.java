@@ -1,5 +1,6 @@
 package com.real.name.project.service.implement;
 
+import com.real.name.person.entity.Person;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.query.GroupPersonNum;
 import com.real.name.project.service.ProjectDetailQueryService;
@@ -46,5 +47,40 @@ public class ProjectDetailQueryServiceImpl implements ProjectDetailQueryService 
     @Override
     public List<ProjectDetailQuery> findPersonWorkHoursInfo(Date startDate, Date endDate) {
         return projectDetailQueryMapper.findPersonWorkHoursInfo(startDate, endDate);
+    }
+
+    @Override
+    public int deletePersonInProject(String projectCode, Integer personId) {
+        return projectDetailQueryMapper.deletePersonInProject(projectCode, personId);
+    }
+
+    @Override
+    public String findTeamName(String projectCode, Integer personId) {
+        return projectDetailQueryMapper.findTeamName(projectCode, personId);
+    }
+
+    @Override
+    public String findProjectCodeByTeamSysNo(Integer teamSysNo) {
+        return projectDetailQueryMapper.findProjectCodeByTeamSysNo(teamSysNo);
+    }
+
+    @Override
+    public List<Person> findPersonByTeamSyNo(Integer teamSysNo) {
+        return projectDetailQueryMapper.findPersonByTeamSyNo(teamSysNo);
+    }
+
+    @Override
+    public List<ProjectDetailQuery> findProjectDetail(String projectCode) {
+        return projectDetailQueryMapper.findProjectDetail(projectCode);
+    }
+
+    @Override
+    public List<ProjectDetailQuery> getProjectFaceIssueDetail(String projectCode) {
+        return projectDetailQueryMapper.getProjectFaceIssueDetail(projectCode);
+    }
+
+    @Override
+    public List<ProjectDetailQuery> getProjectAccessIssueDetail(String projectCode) {
+        return projectDetailQueryMapper.getProjectAccessIssueDetail(projectCode);
     }
 }

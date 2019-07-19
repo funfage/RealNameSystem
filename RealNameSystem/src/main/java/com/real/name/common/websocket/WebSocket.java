@@ -1,9 +1,7 @@
 package com.real.name.common.websocket;
 
-import com.real.name.person.service.PersonService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.OnClose;
@@ -19,13 +17,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class WebSocket  {
 
     private Logger logger = LoggerFactory.getLogger(WebSocket.class);
-
-    private static PersonService personService;
-
-    @Autowired
-    public void setPersonService(PersonService personService) {
-        WebSocket.personService = personService;
-    }
 
     /**
      * 与某个客户端的连接会话，需要通过它来给客户端发送数据

@@ -1,8 +1,6 @@
 package com.real.name.person.service;
 
-import com.real.name.device.entity.Device;
 import com.real.name.person.entity.Person;
-//import com.real.name.person.entity.Person2;
 import com.real.name.person.entity.Person2;
 import com.real.name.person.entity.Person3;
 import org.springframework.data.domain.Page;
@@ -10,9 +8,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+
 
 public interface PersonService {
 
@@ -104,5 +102,11 @@ public interface PersonService {
      * 查询所有人员id和workRole
      */
     List<Person> findAllPersonRole();
+
+    /**
+     * 查询人员的身份证索引号
+     */
+    String getIdCardIndexByPersonId(Integer personId);
+
 
 }

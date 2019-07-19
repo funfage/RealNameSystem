@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.real.name.issue.service.repository.DeleteInfoMapper">
+    <resultMap id="queryMap" type="com.real.name.issue.entity.DeleteInfo">
+        <id property="deleteInfoId" column="delete_info_id"/>
+        <result property="status" column="status"/>
+        <association property="person" column="person_id" javaType="com.real.name.person.entity.Person">
+            <id property="personId" column="p_person_id"/>
+            <result property="personName" column="person_name"/>
+            <result property="subordinateCompany" column="subordinate_company"/>
+            <result property="gender" column="gender"/>
+            <result property="address" column="address"/>
+            <result property="age" column="age"/>
+            <result property="bankLinkNumber" column="bank_link_number"/>
+            <result property="cardNumber" column="card_number"/>
+            <result property="cellPhone" column="cell_phone"/>
+            <result property="cultureLevelType" column="culture_level_type"/>
+            <result property="expiryDate" column="expiry_date"/>
+            <result property="grantOrg" column="grant_org"/>
+            <result property="groupNo" column="group_no"/>
+            <result property="hasBadMedicalHistory" column="has_bad_medical_history"/>
+            <result property="hasBuyInsurance" column="has_buy_insurance"/>
+            <result property="hometown" column="hometown"/>
+            <result property="idCardIndex" column="id_card_index"/>
+            <result property="idCardNumber" column="id_card_number"/>
+            <result property="idCardType" column="id_card_type"/>
+            <result property="issueCardDate" column="issue_card_date"/>
+            <result property="issueCardPic" column="issue_card_pic"/>
+            <result property="isTeamLeader" column="is_team_leader"/>
+            <result property="joinedTime" column="joined_time"/>
+            <result property="maritalStatus" column="marital_status"/>
+            <result property="nation" column="nation"/>
+            <result property="negativeIdCardImage" column="negative_id_card_image"/>
+            <result property="payRollBankCardNumber" column="pay_roll_bank_card_number"/>
+            <result property="payRollBankName" column="pay_roll_bank_name"/>
+            <result property="payRollTopBankCode" column="pay_roll_top_bank_code"/>
+            <result property="politicsType" column="politics_type"/>
+            <result property="positiveIdCardImage" column="positive_id_card_image"/>
+            <result property="specialty" column="specialty"/>
+            <result property="startDate" column="start_date"/>
+            <result property="suffixName" column="suffix_name"/>
+            <result property="urgentLinkMan" column="urgent_link_man"/>
+            <result property="urgentLinkManPhone" column="urgent_link_man_phone"/>
+            <result property="workDate" column="work_date"/>
+            <result property="workRole" column="work_role"/>
+            <result property="workType" column="work_type"/>
+        </association>
+        <association property="device" column="device_id" javaType="com.real.name.device.entity.Device">
+            <id property="deviceId" column="d_device_id"/>
+            <result property="projectCode" column="project_code"/>
+            <result property="channel" column="channel"/>
+            <result property="direction" column="direction"/>
+            <result property="deviceType" column="device_type"/>
+            <result property="factory" column="factory"/>
+            <result property="installTime" column="install_time"/>
+            <result property="ip" column="ip"/>
+            <result property="outPort" column="out_port"/>
+            <result property="pass" column="pass"/>
+            <result property="phone" column="phone"/>
+            <result property="remark" column="remark"/>
+        </association>
+    </resultMap>
+
+    <insert id="saveDeleteInfo" parameterType="com.real.name.issue.entity.DeleteInfo"
+            keyProperty="deleteInfoId" keyColumn="delete_info_id" useGeneratedKeys="true">
+        insert into
+        delete_info
+        (
+        person_id,
+        id_card_index,
+        device_id
+        <if test="status != null">
+            ,status
+        </if>
+        )
+        values
+        (
+        #{person.personId},
+        #{person.idCardIndex},
+        #{device.deviceId}
+        <if test="status != null ">
+            ,#{status}
+        </if>
+        )
+    </insert>
+
+    <select id="findAll" resultMap="queryMap">
+        select
+        df.delete_info_id,
+        p.person_id as p_person_id, p.id_card_index,
+        d.device_id, d.device_type, d.out_port, d.ip
+        from
+        delete_info df
+        left join person p on df.person_id = p.person_id
+        left join device d on df.device_id = d.device_id
+    </select>
+
+    <delete id="deleteById" parameterType="long">
+        delete from
+        delete_info
+        where
+        delete_info_id = #{id}
+    </delete>
+
+    <delete id="deleteByCondition">
+        delete from
+        delete_info
+        where
+        person_id =#{personId}
+        and
+        device_id =#{deviceId}
+    </delete>
+
+    
+</mapper>

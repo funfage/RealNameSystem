@@ -1,7 +1,6 @@
 package com.real.name;
 
 import com.real.name.common.utils.SpringUtil;
-import com.real.name.device.netty.UDPClient;
 import com.real.name.device.netty.UDPServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +32,6 @@ public class NameApplication extends WebMvcConfigurerAdapter implements CommandL
         /*UdpServerStart.startUdpServer();*/
 
     }
-
     @Override
     public void addCorsMappings(CorsRegistry registry) {
 
@@ -43,9 +41,8 @@ public class NameApplication extends WebMvcConfigurerAdapter implements CommandL
                 .allowedOrigins("*")
                 .allowedMethods("*");
     }
-
     @Override
     public void run(String... args) throws Exception {
-        //udpServer.start(new InetSocketAddress(61008));
+//        udpServer.start(new InetSocketAddress(61008));
     }
 }

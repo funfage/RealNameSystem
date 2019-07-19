@@ -2,6 +2,7 @@ package com.real.name.project.controller;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.real.name.common.info.CommConstant;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.CommonUtils;
@@ -89,14 +90,16 @@ public class ProjectDetailQueryController {
         //获取天气信息
         String weather = HTTPTool.getWeather();
         //获取在场信息
-        List<Object> presentPerson = jedisStrings.multiGet(jedisKeys.keys(projectCode + "*"));
+        List<Object> presentPerson = jedisStrings.multiGet(jedisKeys.keys(projectCode + CommConstant.PRESENT + "*"));
+        //获取出场信息
+        List<Object> outPerson = jedisStrings.multiGet(jedisKeys.keys(projectCode + CommConstant.ABSENT + "*"));
         Map<String, Object> map = new HashMap<>();
         map.put("weather", weather);
         map.put("projectName", proNameAndCorp.getName());
         map.put("corpName", proNameAndCorp.getContractorCorpName());
         map.put("workGroupPersonNum", workGroupPersonNum);
         map.put("presentPerson", presentPerson);
-        map.put("outPerson", "TODO");
+        map.put("outPerson", outPerson);
         return ResultVo.success(map);
     }
 

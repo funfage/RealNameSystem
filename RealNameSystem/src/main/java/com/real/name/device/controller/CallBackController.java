@@ -1,6 +1,7 @@
 package com.real.name.device.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.real.name.common.info.CommConstant;
 import com.real.name.common.utils.CommonUtils;
 import com.real.name.common.utils.HTTPTool;
 import com.real.name.common.utils.JedisService;
@@ -100,19 +101,20 @@ public class CallBackController {
                     record.setDetailTime(new Date(time));
                     //保存考勤记录
                     recordService.saveRecord(record);
-                    if (device.getDirection() == 1 && !jedisKeys.hasKey(device.getProjectCode() + person.getPersonId())) {
+                    String key = device.getProjectCode() + CommConstant.PRESENT + person.getPersonId();
+                    if (device.getDirection() == 1 && !jedisKeys.hasKey(key)) {
                         ProjectDetailQuery sendInfo = projectDetailQueryMapper.getSendInfo(person.getPersonId(), device.getProjectCode());
                         //将信息推送到远程
                         String presentInfo = sendToClient(sendInfo, device, time);
                         //设置有效时间为第二天凌晨12点
-                        jedisStrings.set(device.getProjectCode() + person.getPersonId(), presentInfo, CommonUtils.getTomorrowBegin(), TimeUnit.SECONDS);
+                        jedisStrings.set(key, presentInfo, CommonUtils.getTomorrowBegin(), TimeUnit.SECONDS);
                         logger.warn("在场的key:{}, value:{}, time:{}", device.getProjectCode() + person.getPersonId(), presentInfo, CommonUtils.getTomorrowBegin());
-                    } else if (device.getDirection() == 2 && jedisKeys.hasKey(device.getProjectCode() + person.getPersonId())) {
+                    } else if (device.getDirection() == 2 && jedisKeys.hasKey(key)) {
                         //删除键
                         ProjectDetailQuery sendInfo = projectDetailQueryMapper.getSendInfo(person.getPersonId(), device.getProjectCode());
                         //将信息推送到远程
                         sendToClient(sendInfo, device, time);
-                        jedisKeys.del(device.getProjectCode() + person.getPersonId());
+                        jedisKeys.del(key);
                     }
                     logger.debug("成功添加了一条人员考勤记录, record:{}", record.toString());
                 }
@@ -160,7 +162,7 @@ public class CallBackController {
     }
 
     /**
-     * 将需要推送的信息封装并推送
+     * 将需要推送的在场信息封装并推送
      */
     private String sendToClient(ProjectDetailQuery sendInfo, Device device, long time) {
         JSONObject map = new JSONObject();
@@ -172,7 +174,7 @@ public class CallBackController {
         map.put("teamName", sendInfo.getWorkerGroup().getTeamName());
         map.put("direction", device.getDirection());
         map.put("time", time);
-        map.put("type", 3);
+        map.put("type", CommConstant.PRESENT);
         webSocket.sendMessageToAll(map.toJSONString());
         return map.toJSONString();
     }

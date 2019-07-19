@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface DeviceRepository extends JpaRepository<Device, String> {
 
-    List<Device> findByProjectCode(Integer projectId);
+    List<Device> findByProjectCode(String projectCode);
 
     List<Device> findByProjectCodeNotNull();
 
@@ -42,4 +42,6 @@ public interface DeviceRepository extends JpaRepository<Device, String> {
     @Modifying
     @Transactional
     void updateDeviceIPByProjectCode(@Param("ip") String ip, @Param("projectCode") String projectCode);
+
+    Optional<Device> findByDeviceId(String deviceId);
 }

@@ -45,4 +45,39 @@ public interface ProjectDetailQueryMapper {
      */
     List<ProjectDetailQuery> findPersonWorkHoursInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
+    /**
+     * 根据projectCode和personId删除
+     */
+    int deletePersonInProject(@Param("projectCode") String projectCode, @Param("personId") Integer personId);
+
+    /**
+     * 查询某个人员在某个项目下的班组名
+     */
+    String findTeamName(@Param("projectCode") String projectCode, @Param("personId") Integer personId);
+
+    /**
+     * 查询班组所在的项目id
+     */
+    String findProjectCodeByTeamSysNo(Integer teamSysNo);
+
+    /**
+     * 获取班组下的人员信息
+     */
+    List<Person> findPersonByTeamSyNo(Integer teamSysNo);
+
+    /**
+     * 获取项目下的所有人员信息和班组信息
+     */
+    List<ProjectDetailQuery> findProjectDetail(String projectCode);
+
+    /**
+     * 获取项目下需要下发到人脸的人员信息
+     */
+    List<ProjectDetailQuery> getProjectFaceIssueDetail(String projectCode);
+
+    /**
+     * 获取需要下发到控制器的人员信息
+     */
+    List<ProjectDetailQuery> getProjectAccessIssueDetail(String projectCode);
+
 }

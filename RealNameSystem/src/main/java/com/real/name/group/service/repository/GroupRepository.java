@@ -13,8 +13,6 @@ import java.util.Optional;
 
 public interface GroupRepository extends JpaRepository<WorkerGroup, Integer> {
 
-//    Optional<Group> findByTeamName(String teamName);
-
       Optional<WorkerGroup> findByTeamName(String teamName);
 
       List<WorkerGroup> findByProjectCode(String projectCode);

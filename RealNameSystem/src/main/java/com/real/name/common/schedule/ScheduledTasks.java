@@ -1,11 +1,16 @@
 package com.real.name.common.schedule;
 
+import com.alibaba.fastjson.JSONObject;
 import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.schedule.entity.FaceRecordData;
 import com.real.name.common.schedule.entity.Records;
 import com.real.name.common.utils.CommonUtils;
 import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
+import com.real.name.issue.entity.DeleteInfo;
+import com.real.name.issue.entity.FaceResult;
+import com.real.name.issue.service.DeleteInfoService;
+import com.real.name.issue.service.repository.DeleteInfoMapper;
 import com.real.name.project.entity.ProjectDetail;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.service.ProjectDetailService;
@@ -25,10 +30,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -60,18 +67,20 @@ public class ScheduledTasks {
     @Autowired
     private AttendanceMapper attendanceMapper;
 
+    @Autowired
+    private DeleteInfoMapper deleteInfoMapper;
+
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     /**
-     * 每天凌晨零点和两点的时候触发：0 0 0,1 * * ?
+     * 每天凌晨零点的时候触发每隔10分钟执行一次 共执行六次
      * springboot的cron表达式只值支持6个域的表达式，也就是不能设定年
      * 核对每个员工的考勤情况
      */
-    @Scheduled(cron = "0 0 0,1 * * ? ")
-    public void checkAttendance() {
-        logger.warn("定时任务开始, 现在的时间为" + dateFormat.format(new Date()));
-        System.out.println(dateFormat.format(new Date()));
+    @Scheduled(cron = "0 0,10,20,30,40,50 0 * * ?")
+    public void checkFaceAttendance() {
+        logger.warn("总召定时任务开始");
         //获取所有人员
         List<Person> personList = personService.findAllPersonRole();
         //获取所有的人脸设备
@@ -83,22 +92,45 @@ public class ScheduledTasks {
                 //什么都不做
                 continue;
             } else if (person.getWorkRole() == 10) {//如果是管理人员则查询所有设备的识别信息
-                queryRecord(allFaceDevice, person);
+                queryFaceRecord(allFaceDevice, person);
             } else if (person.getWorkRole() == 20) {//如果是普通人员则查询项目所绑定的设备的识别信息
                 //获取该项目所绑定所有人脸设备
                 List<Device> faceDeviceList = deviceService.findByProjectCodeInAndDeviceType(projectCodes, DeviceConstant.faceDeviceType);
-                queryRecord(faceDeviceList, person);
+                queryFaceRecord(faceDeviceList, person);
             }
         }
-        logger.warn("定时任务结束, 现在的时间为" + dateFormat.format(new Date()));
     }
+
+    /**
+     * 每天凌晨一点的时候开始触发,每隔10分钟执行一次,共执行六次
+     */
+    //@Scheduled(cron = "0 0,10,20,30,40,50 1 * * ?")
+    public void checkAccessAttendance() {
+        //获取所有人员
+        List<Person> personList = personService.findAllPersonRole();
+        //获取所有的控制器设备
+        List<Device> allAccessDevice = deviceService.findAllByDeviceType(DeviceConstant.AccessDeviceType);
+        for (Person person : personList) {
+            if (person.getWorkRole() == null) {
+                continue;
+            } else if (person.getWorkRole() == 10) {
+                
+            } else if (person.getWorkRole() == 20) {
+
+            }
+        }
+    }
+
+    /**
+     *
+     */
 
     /**
      * 查询指定设备一天内某个人员的识别记录
      * @param deviceList 设备集合
      * @param person 人员信息
      */
-    private void queryRecord(List<Device> deviceList, Person person) {
+    private void queryFaceRecord(List<Device> deviceList, Person person) {
         Date startTime = new Date(System.currentTimeMillis() - 86400000);
         Date endTime = new Date(System.currentTimeMillis());
         for (Device device : deviceList) {
@@ -126,6 +158,10 @@ public class ScheduledTasks {
                 }
             }
         }
+    }
+
+    private void queryAccessRecord(List<Device> deviceList, Person person) {
+
     }
 
     /**
@@ -160,6 +196,7 @@ public class ScheduledTasks {
      */
     @Scheduled(cron = "0 0 21 * * ?")
     public void countWorkTime() {
+        logger.warn("统计工时定时任务开始");
         List<ProjectDetail> projectDetailList = projectDetailService.findAll();
         for (ProjectDetail projectDetail : projectDetailList) {
             Integer personId = projectDetail.getPersonId();
@@ -193,6 +230,34 @@ public class ScheduledTasks {
             attendanceMapper.saveAttendance(attendance);
         }
     }
+
+    /**
+     * 每天晚上十点开始执行,每隔10分钟执行一次,共六次
+     * 查询某个人员在某个设备的权限,并删除已有的权限
+     */
+    @Scheduled(cron = "0 0,10,20,30,40,50 10 * * ? ")
+    public void confirmDelAuthority() {
+        logger.warn("查询权限定时任务开始");
+        List<DeleteInfo> deleteInfoList = deleteInfoMapper.findAll();
+        for (DeleteInfo deleteInfo : deleteInfoList) {
+            Device device = deleteInfo.getDevice();
+            Person person = deleteInfo.getPerson();
+            if (device.getDeviceType() == DeviceConstant.faceDeviceType) {
+                Boolean isSuccess = FaceDeviceUtils.queryPersonByDeviceId(device, person);
+                if (!isSuccess) {//若查询不到人员信息则说明该设备已将人员信息删除
+                    //删除记录
+                    deleteInfoMapper.deleteById(deleteInfo.getDeleteInfoId());
+                }
+            } else if (device.getDeviceType() == DeviceConstant.AccessDeviceType) {
+                //发送查询报文
+                accessService.queryAuthority(device.getDeviceId(), person.getIdCardIndex(), device.getIp(), device.getOutPort());
+            }
+        }
+    }
+
+
+
+
 }
 
 
