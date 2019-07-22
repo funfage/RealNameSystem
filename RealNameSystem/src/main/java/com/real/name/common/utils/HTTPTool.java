@@ -54,7 +54,7 @@ public class HTTPTool {
             if (StringUtils.hasText(device.getIp()) && device.getOutPort() != null && device.getOutPort() > 0 && device.getOutPort() < 65536) {
                 deviceIds.add(device.getDeviceId());
                 String response = (method == DeviceConstant.postMethod ? postToDevice(device, url, param) : getToDevice(device, url, param));
-                logger.info("设备返回的信息返回的信息:{}", response);
+                logger.debug("设备返回的信息返回的信息:{}", response);
                 modelMap.put(device.getDeviceId(), response);
             } else {
                 modelMap.put(device.getDeviceId(), null);
@@ -77,7 +77,7 @@ public class HTTPTool {
         Map<String, Object> modelMap = new HashMap<>();
         if (StringUtils.hasText(device.getIp()) && device.getOutPort() != null && device.getOutPort() > 0 && device.getOutPort() < 65536) {
             String response = ((method == DeviceConstant.postMethod) ? postToDevice(device, url, param) : getToDevice(device, url, param));
-            logger.info("设备返回的信息返回的信息:{}", response);
+            logger.debug("设备返回的信息返回的信息:{}", response);
             modelMap.put(device.getDeviceId(), response);
         }else{
             logger.warn("设备id为{}的ip地址为{}设备的ip地址或端口不合法", device.getDeviceId(), device.getIp());
@@ -101,7 +101,7 @@ public class HTTPTool {
             if (StringUtils.hasText(device.getIp()) && device.getOutPort() != null && device.getOutPort() > 0 && device.getOutPort() < 65536) {
                 deviceIds.add(device.getDeviceId());
                 String response = ((method == DeviceConstant.postMethod) ? postToDevice(device, url, param) : getToDevice(device, url, param));
-                logger.info("设备返回的信息返回的信息:{}", response);
+                logger.debug("设备返回的信息返回的信息:{}", response);
                 modelMap.put(device.getDeviceId(), response);
             } else {
                 logger.warn("设备id为{}的ip地址为{}设备的ip地址或端口不合法", device.getDeviceId(), device.getIp());

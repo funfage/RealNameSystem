@@ -97,7 +97,6 @@
             <result property="responsiblePersonName" column="responsible_person_name"/>
             <result property="responsiblePersonPhone" column="responsible_person_phone"/>
         </association>
-
         <collection property="attendanceList" ofType="com.real.name.record.entity.Attendance">
             <id property="attendanceId" column="attendance_id"/>
             <result property="projectDetailId" column="project_detail_id"/>
@@ -294,6 +293,86 @@
     <select id="getProjectAccessIssueDetail" resultMap="queryAllMap">
         select
         pd.id,
+        p.person_id as p_person_id, p.id_card_index
+        from
+        project_detail pd
+        left join person p on p.person_id = pd.person_id
+        where
+        pd.project_code = #{projectCode}
+    </select>
+
+    <select id="getWorkerGroupInProject" resultMap="queryAllMap">
+        select
+        distinct (pd.team_sys_no),
+        wg.team_sys_no as wg_team_sys_no, wg.team_name
+        from
+        project_detail pd
+        left join worker_group wg on wg.team_sys_no = pd.team_sys_no
+        where
+        pd.project_code = #{projectCode};
+    </select>
+
+    <select id="getProjectIdByGroup" resultType="integer">
+        select
+        id
+        from
+        project_detail
+        where
+        team_sys_no = #{teamSysNo}
+    </select>
+
+    <select id="getPersonNumInGroup" resultType="integer">
+        select
+        count(person_id)
+        from
+        project_detail
+        where
+        team_sys_no = #{teamSysNo}
+    </select>
+
+    <select id="findPersonWorkDayInfoInProject" resultMap="queryAllMap">
+        select
+        id,
+        p.person_name, p.id_card_number, p.work_type, p.subordinate_company,
+        wg.team_name,
+        attendance_id, work_hours, work_time
+        from
+        project_detail pd
+        left join
+        person p
+        on
+        pd.person_id = p.person_id
+        left join
+        worker_group wg
+        on
+        pd.team_sys_no = wg.team_sys_no
+        left join
+        attendance a
+        on
+        pd.id = a.project_detail_id
+        where
+        pd.project_code = #{projectCode}
+        and
+        a.work_time &gt;= #{startDate}
+        and
+        a.work_time &lt;= #{endDate}
+    </select>
+
+    <select id="findIdAndPersonInProject" resultMap="queryAllMap">
+        select
+        id,
+        p.person_name, p.id_card_number, p.work_type, p.subordinate_company,
+        wg.team_name
+        from
+        project_detail pd
+        left join person p on p.person_id = pd.person_id
+        left join worker_group wg on wg.team_sys_no = pd.team_sys_no
+        where
+        pd.project_code = #{projectCode}
+    </select>
+
+    <select id="findDelPersonInDeviceByProject" resultMap="queryAllMap">
+        select
         p.person_id as p_person_id, p.id_card_index
         from
         project_detail pd

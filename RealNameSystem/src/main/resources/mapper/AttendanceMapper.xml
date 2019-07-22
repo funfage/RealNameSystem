@@ -19,4 +19,66 @@
         )
     </insert>
 
+    <select id="countWorkerHours" resultType="double">
+        select
+        sum(work_hours)
+        from
+        attendance
+        where
+        project_detail_id in
+        <foreach collection="projectDetailIds" item="project_detail_id" open="(" close=")" separator=",">
+            #{project_detail_id}
+        </foreach>
+        and
+        work_time &gt; #{begin}
+        and
+        work_time &lt; #{end}
+    </select>
+
+    <select id="findByProjectDetailId" resultType="com.real.name.record.entity.Attendance">
+        select
+        attendance_id, project_detail_id, work_hours, work_time
+        from
+        attendance
+        where
+        project_detail_id = #{projectDetailId};
+    </select>
+
+    <select id="findPeriodAttendByProjectDetailId" resultType="com.real.name.record.entity.Attendance">
+         select
+        attendance_id, project_detail_id, work_hours, work_time
+        from
+        attendance
+        where
+        project_detail_id = #{projectDetailId}
+        and
+        work_time &gt;= #{begin}
+        and
+        work_time &lt;= #{end}
+    </select>
+
+
+
 </mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

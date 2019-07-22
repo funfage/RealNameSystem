@@ -1,12 +1,16 @@
 package com.real.name.device.controller;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.CommonUtils;
 import com.real.name.common.utils.JedisService;
 import com.real.name.device.entity.Device;
+import com.real.name.device.query.DeviceQuery;
 import com.real.name.device.service.DeviceService;
+import com.real.name.device.service.repository.DeviceQueryMapper;
 import com.real.name.netty.dao.DeviceDao;
 import com.real.name.project.entity.Project;
 import com.real.name.project.service.ProjectService;
@@ -42,8 +46,9 @@ public class DeviceController {
 
     @Autowired
     private DeviceService deviceService;
+
     /**
-     * 查询设备信息
+     * 查询某个项目下设备信息
      */
     @PostMapping("/finddevice")
     public ResultVo finddevice(Long startTime,
@@ -81,8 +86,6 @@ public class DeviceController {
             finalRes.put("rows",null);
             return ResultVo.success(finalRes);
         }
-        //System.out.println(result);
-       // return ResultVo.success(result);
     }
 
     @PostMapping("/updatedevice")
@@ -184,10 +187,29 @@ public class DeviceController {
         return ResultVo.success();
     }
 
+    /**
+     * 获取所有设备id
+     */
     @GetMapping("getDeviceIdList")
     public ResultVo getDeviceIdList() {
         List<String> deviceIdList = deviceService.getDeviceIdList();
         return ResultVo.success(deviceIdList);
+    }
+
+    /**
+     * 搜索设备
+     */
+    @PostMapping("/searchDevice")
+    public ResultVo searchDevice(DeviceQuery deviceQuery) {
+        PageHelper.startPage(deviceQuery.getPageNum() + 1, deviceQuery.getPageSize());
+        List<Device> devices = deviceService.searchDevice(deviceQuery);
+        PageInfo<Device> pageInfo = new PageInfo<>(devices);
+        Map<String, Object> map = new HashMap<>();
+        map.put("devices", devices);
+        map.put("pageNum", pageInfo.getPageSize());
+        map.put("pageSize", pageInfo.getPageSize());
+        map.put("total", pageInfo.getTotal());
+        return ResultVo.success(map);
     }
 
     private void verifyParam(String factory, Integer deviceType, String ip, Integer direction, Integer channel,

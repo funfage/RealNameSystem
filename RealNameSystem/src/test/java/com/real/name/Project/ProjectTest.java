@@ -2,7 +2,9 @@ package com.real.name.Project;
 
 import com.real.name.others.BaseTest;
 import com.real.name.project.entity.Project;
+import com.real.name.project.query.ProjectQuery;
 import com.real.name.project.service.ProjectService;
+import com.real.name.project.service.repository.ProjectQueryMapper;
 import com.real.name.project.service.repository.ProjectRepository;
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,12 +12,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
+import java.util.List;
+
 public class ProjectTest extends BaseTest {
     @Autowired
     private ProjectRepository projectRepository;
 
     @Autowired
     private ProjectService projectService;
+
+    @Autowired
+    private ProjectQueryMapper projectQueryMapper;
 
     @Test
     public void deleteByProjectCodeTestRep() {
@@ -53,6 +60,23 @@ public class ProjectTest extends BaseTest {
     public void findProNameAndCorp() {
         Project proNameAndCorp = projectRepository.findProNameAndCorp("36bj84W235Zgc8O78yuS32510ppMkHfe");
         System.out.println(proNameAndCorp);
+    }
+
+    @Test
+    public void findAllProjectCode() {
+        List<String> allProjectCode = projectRepository.findAllProjectCode();
+        System.out.println(allProjectCode);
+    }
+
+    @Test
+    public void searchProject() {
+        ProjectQuery projectQuery = new ProjectQuery();
+        projectQuery.setName("公司");
+       /* projectQuery.setPrjStatus(1);
+        projectQuery.setAddress("1");
+        projectQuery.setCategory("01");*/
+        List<Project> projects = projectQueryMapper.searchProject(projectQuery);
+        System.out.println(projects);
     }
 
 

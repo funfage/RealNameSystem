@@ -72,28 +72,4 @@ public interface DeviceDao {
             "</where>",
             "</script>"})
     Integer countDevice(Map map);
-
-    /*@Insert({"<script>", "INSERT INTO `device`",
-            "<trim>",
-            "(",
-            "deviceType,",
-            "deviceId,",
-            "factory,",
-            "<if test='phone!=null'>", " phone,", "</if>",
-            "<if test='remark!=null'>", " remark,", "</if>",
-            ")",
-            "</trim>",
-            "<trim>",
-            "VALUES(",
-            "#{deviceType}",
-            "#{deviceId}",
-            "#{factory}",
-            "<if test='phone!=null'>", "#{phone}", "</if>",
-            "<if test='remark!=null'>", "#{remark}", "</if>",
-            ")",
-            "</trim>",
-            "</script>"})
-    Integer addDevice(Map map);*/
-
-
 }

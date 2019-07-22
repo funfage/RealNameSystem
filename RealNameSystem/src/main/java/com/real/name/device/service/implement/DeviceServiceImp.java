@@ -7,8 +7,10 @@ import com.real.name.common.utils.JedisService;
 import com.real.name.device.netty.utils.AccessDeviceUtils;
 import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
+import com.real.name.device.query.DeviceQuery;
 import com.real.name.device.service.AccessService;
 import com.real.name.device.service.DeviceService;
+import com.real.name.device.service.repository.DeviceQueryMapper;
 import com.real.name.device.service.repository.DeviceRepository;
 import com.real.name.issue.entity.DeleteInfo;
 import com.real.name.issue.entity.FaceResult;
@@ -55,6 +57,9 @@ public class DeviceServiceImp implements DeviceService {
 
     @Autowired
     private IssueAccessService issueAccessService;
+
+    @Autowired
+    private DeviceQueryMapper deviceQueryMapper;
 
     /**
      * 添加人脸设备
@@ -275,6 +280,16 @@ public class DeviceServiceImp implements DeviceService {
     @Override
     public void updateDeviceIPByProjectCode(String ip, String projectCode) {
         deviceRepository.updateDeviceIPByProjectCode(ip, projectCode);
+    }
+
+    @Override
+    public List<String> findDeviceIdsByProjectCode(String projectCode) {
+        return deviceRepository.findDeviceIdsByProjectCode(projectCode);
+    }
+
+    @Override
+    public List<Device> searchDevice(DeviceQuery deviceQuery) {
+        return deviceQueryMapper.searchDevice(deviceQuery);
     }
 
     private void isValidAccess(Device device) {

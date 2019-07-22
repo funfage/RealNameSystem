@@ -1,6 +1,8 @@
 package com.real.name.group.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
@@ -9,6 +11,7 @@ import com.real.name.common.utils.NationalUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import com.real.name.group.entity.WorkerGroup;
+import com.real.name.group.query.GroupQuery;
 import com.real.name.group.service.GroupService;
 import com.real.name.person.entity.Person;
 import com.real.name.project.entity.Project;
@@ -22,7 +25,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -194,6 +199,22 @@ public class GroupController {
         } else {
             return ResultVo.success("删除班组成功");
         }
+    }
+
+    /**
+     * 搜索班组
+     */
+    @PostMapping("/searchGroup")
+    public ResultVo searchGroup(GroupQuery groupQuery) {
+        PageHelper.startPage(groupQuery.getPageNum() + 1, groupQuery.getPageSize());
+        List<WorkerGroup> workerGroups = groupService.searchGroup(groupQuery);
+        PageInfo<WorkerGroup> pageInfo = new PageInfo<>(workerGroups);
+        Map<String, Object> map = new HashMap<>();
+        map.put("workerGroups", workerGroups);
+        map.put("pageNum", pageInfo.getPageNum());
+        map.put("pageSize", pageInfo.getPageSize());
+        map.put("total", pageInfo.getTotal());
+        return ResultVo.success(map);
     }
 
     private void mergeWorkerGroup(WorkerGroup selectWorkerGroup, WorkerGroup workerGroup) {

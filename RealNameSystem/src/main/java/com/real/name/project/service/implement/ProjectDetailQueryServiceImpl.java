@@ -83,4 +83,50 @@ public class ProjectDetailQueryServiceImpl implements ProjectDetailQueryService 
     public List<ProjectDetailQuery> getProjectAccessIssueDetail(String projectCode) {
         return projectDetailQueryMapper.getProjectAccessIssueDetail(projectCode);
     }
+
+    @Override
+    public List<ProjectDetailQuery> getWorkerGroupInProject(String projectCode) {
+        return projectDetailQueryMapper.getWorkerGroupInProject(projectCode);
+    }
+
+    @Override
+    public List<Integer> getProjectIdByGroup(Integer teamSysNo) {
+        return projectDetailQueryMapper.getProjectIdByGroup(teamSysNo);
+    }
+
+    @Override
+    public Integer getPersonNumInGroup(Integer teamSysNo) {
+        return projectDetailQueryMapper.getPersonNumInGroup(teamSysNo);
+    }
+
+    @Override
+    public List<ProjectDetailQuery> findPersonWorkDayInfoInProject(String projectCode, Date startDate, Date endDate) {
+        return projectDetailQueryMapper.findPersonWorkDayInfoInProject(projectCode, startDate, endDate);
+    }
+
+    @Override
+    public List<ProjectDetailQuery> findIdAndPersonInProject(String projectCode) {
+        return projectDetailQueryMapper.findIdAndPersonInProject(projectCode);
+    }
+
+    @Override
+    public List<ProjectDetailQuery> findDelPersonInDeviceByProject(String projectCode) {
+        return projectDetailQueryMapper.findDelPersonInDeviceByProject(projectCode);
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -103,13 +103,4 @@ public class ProjectDetailQueryController {
         return ResultVo.success(map);
     }
 
-    @GetMapping("/getAttendance")
-    public ResultVo getAttendance() {
-        Date start = CommonUtils.initDateByMonth();
-        Date end = new Date(System.currentTimeMillis());
-        List<ProjectDetailQuery> queryList = projectDetailQueryService.findPersonWorkHoursInfo(start, end);
-        return ResultVo.success(queryList);
-    }
-
-
 }

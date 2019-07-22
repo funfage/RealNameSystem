@@ -1,6 +1,8 @@
 package com.real.name.group.service;
 
 import com.real.name.group.entity.WorkerGroup;
+import com.real.name.group.query.GroupQuery;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -46,9 +48,9 @@ public interface GroupService {
 
     /**
      * 查询某个项目下是否有管理员班组
-     * @param status
-     * @param projectCode
-     * @return
      */
     Optional<WorkerGroup> findByIsAdminGroupAndProjectCode(Integer status, String projectCode);
+
+    List<WorkerGroup> searchGroup(GroupQuery groupQuery);
+
 }

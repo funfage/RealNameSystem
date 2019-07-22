@@ -5,22 +5,21 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.real.name.common.exception.AttendanceException;
-import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.info.CommConstant;
+import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.CommonUtils;
 import com.real.name.common.utils.JedisService;
 import com.real.name.common.utils.NationalUtils;
+import com.real.name.common.utils.TimeUtil;
 import com.real.name.common.websocket.WebSocket;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.group.service.GroupService;
-import com.real.name.issue.entity.DeleteInfo;
 import com.real.name.issue.entity.IssueAccess;
 import com.real.name.issue.entity.IssueFace;
-import com.real.name.issue.service.DeleteInfoService;
 import com.real.name.issue.service.IssueAccessService;
 import com.real.name.issue.service.IssueFaceService;
 import com.real.name.person.entity.Person;
@@ -28,6 +27,7 @@ import com.real.name.person.service.PersonService;
 import com.real.name.project.entity.Project;
 import com.real.name.project.entity.ProjectDetail;
 import com.real.name.project.entity.ProjectDetailQuery;
+import com.real.name.project.query.ProjectQuery;
 import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.ProjectDetailService;
 import com.real.name.project.service.ProjectPersonDetailService;
@@ -41,10 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -87,10 +84,8 @@ public class ProjectController {
     private JedisService.JedisKeys jedisKeys;
 
     @Autowired
-    private DeleteInfoService deleteInfoService;
-
-    @Autowired
     private WebSocket webSocket;
+
 
     /**
      * 本地创建项目
@@ -328,7 +323,9 @@ public class ProjectController {
      */
     @GetMapping("/deletePersonInProject")
     @Transactional
-    public ResultVo deletePersonInProject(String projectCode, Integer personId, String idCardIndex) {
+    public ResultVo deletePersonInProject(@RequestParam("projectCode") String projectCode,
+                                          @RequestParam("personId") Integer personId,
+                                          @RequestParam("idCardIndex") String idCardIndex) {
         //获取该项目绑定的设备信息
         List<Device> deviceList = deviceService.findByProjectCode(projectCode);
         Person person = new Person();
@@ -341,9 +338,9 @@ public class ProjectController {
         if (jedisKeys.hasKey(key)) {
             String value = (String) jedisStrings.get(key);
             int number = Integer.parseInt(value.substring(value.lastIndexOf(",") + 1)) + 1;
-            jedisStrings.set(key, teamName + "," + number, CommonUtils.getTomorrowBegin(), TimeUnit.SECONDS);
+            jedisStrings.set(key, teamName + "," + number, TimeUtil.getTomorrowBegin(), TimeUnit.SECONDS);
         } else {
-            jedisStrings.set(key, teamName + "," + 1, CommonUtils.getTomorrowBegin(), TimeUnit.SECONDS);
+            jedisStrings.set(key, teamName + "," + 1, TimeUtil.getTomorrowBegin(), TimeUnit.SECONDS);
         }
         //删除人员与项目所关联的信息
         int i = projectDetailQueryService.deletePersonInProject(projectCode, personId);
@@ -356,6 +353,55 @@ public class ProjectController {
         map.put("projectCode", projectCode);
         map.put("type", CommConstant.ABSENT_TYPE);
         webSocket.sendMessageToAll(map.toJSONString());
+        return ResultVo.success();
+    }
+
+    /**
+     * 查询项目
+     */
+    @PostMapping("searchProject")
+    public ResultVo searchProject(ProjectQuery projectQuery) {
+        PageHelper.startPage(projectQuery.getPageNum() + 1, projectQuery.getPageSize());
+        List<Project> projectList = projectService.searchProject(projectQuery);
+        PageInfo<Project> pageInfo = new PageInfo<>(projectList);
+        int presentNum = 0;
+        //统计在场人数
+        for (Project project : projectList) {
+            //获取在场人数
+            Set<String> keys = jedisKeys.keys(project.getProjectCode() + CommConstant.PRESENT + "*");
+            presentNum += keys.size();
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("projectList", projectList);
+        map.put("pageNum", pageInfo.getPageNum());
+        map.put("pageSize", pageInfo.getPageSize());
+        map.put("total", pageInfo.getTotal());
+        map.put("presentNum", presentNum);
+        return ResultVo.success(map);
+    }
+
+    /**
+     * 从项目中移除设备
+     */
+    @GetMapping("/uninstallDevice")
+    public ResultVo uninstallDevice(String projectCode, String deviceId) {
+        Optional<Device> deviceOptional = deviceService.findByDeviceId(deviceId);
+        if (!deviceOptional.isPresent()) {
+            throw new AttendanceException(ResultError.DEVICE_NOT_EXIST);
+        }
+        Device device = deviceOptional.get();
+        //查询项目下所有人员所有信息
+        List<ProjectDetailQuery> projectDetailList = projectDetailQueryService.findDelPersonInDeviceByProject(projectCode);
+        for (ProjectDetailQuery projectDetailQuery : projectDetailList) {
+            Person person = projectDetailQuery.getPerson();
+            if (person.getWorkRole() != null && person.getWorkRole() == 20) {
+                //删除设备的非管理人员信息
+                deviceService.deletePersonInDevice(device, person);
+            }
+        }
+        //删除设备与项目的关联
+        device.setProjectCode(null);
+        deviceService.save(device);
         return ResultVo.success();
     }
 

@@ -27,4 +27,9 @@ public class CommConstant {
      */
     public final static Integer ABSENT_TYPE = 2;
 
+    /**
+     * 一天的毫秒数
+     */
+    public final static Integer DAY_MILLISECOND = 86400000;
+
 }

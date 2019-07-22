@@ -1,8 +1,8 @@
 package com.real.name.device.service;
 
 import com.real.name.device.entity.Device;
+import com.real.name.device.query.DeviceQuery;
 import com.real.name.person.entity.Person;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
@@ -104,7 +104,11 @@ public interface DeviceService {
     /**
      * 根据projectCode修改设备的ip
      */
-    void updateDeviceIPByProjectCode(@org.springframework.data.repository.query.Param("ip") String ip, @Param("projectCode") String projectCode);
+    void updateDeviceIPByProjectCode(String ip, @Param("projectCode") String projectCode);
+
+    List<String> findDeviceIdsByProjectCode(String projectCode);
+
+    List<Device> searchDevice(DeviceQuery deviceQuery);
 
 
 

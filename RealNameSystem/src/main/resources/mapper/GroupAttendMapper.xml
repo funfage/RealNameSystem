@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.real.name.record.service.repository.GroupAttendMapper">
+    <resultMap id="queryMap" type="com.real.name.record.entity.GroupAttend">
+        <id property="groupAttendId" column="group_attend_id"/>
+        <result property="workHours" column="work_hours"/>
+        <result property="workTime" column="work_time"/>
+        <association property="project" javaType="com.real.name.project.entity.Project">
+            <id property="projectCode" column="project_code"/>
+            <result property="startDate" column="start_date"/>
+            <result property="address" column="address"/>
+            <result property="name" column="name"/>
+            <result property="approvalLevelNum" column="approval_level_num"/>
+            <result property="approvalNum" column="approval_num"/>
+            <result property="areaCode" column="area_code"/>
+            <result property="buildCorpCode" column="build_corp_code"/>
+            <result property="buildCorpName" column="build_corp_name"/>
+            <result property="builderLicenses" column="builder_licenses"/>
+            <result property="buildingArea" column="building_area"/>
+            <result property="buildingLength" column="building_length"/>
+            <result property="buildPlanNum" column="build_plan_num"/>
+            <result property="category" column="category"/>
+            <result property="completeDate" column="complete_date"/>
+            <result property="contractorCorpCode" column="contractor_corp_code"/>
+            <result property="contractorCorpName" column="contractor_corp_name"/>
+            <result property="description" column="description"/>
+            <result property="functionNum" column="function_num"/>
+            <result property="invest" column="invest"/>
+            <result property="isUpload" column="is_upload"/>
+            <result property="lat" column="lat"/>
+            <result property="linkMan" column="link_man"/>
+            <result property="linkPhone" column="link_phone"/>
+            <result property="lng" column="lng"/>
+            <result property="nationNum" column="nation_num"/>
+            <result property="prjPlanNum" column="prj_plan_num"/>
+            <result property="prjSize" column="prj_size"/>
+            <result property="prjStatus" column="prj_status"/>
+            <result property="propertyNum" column="property_num"/>
+        </association>
+        <association property="workerGroup" javaType="com.real.name.group.entity.WorkerGroup">
+            <id property="teamSysNo" column="wg_team_sys_no"/>
+            <result property="projectCode" column="wg_project_code"/>
+            <result property="teamName" column="team_name"/>
+            <result property="corpCode" column="corp_code"/>
+            <result property="corpName" column="corp_name"/>
+            <result property="entryAttachments" column="entry_attachments"/>
+            <result property="entryTime" column="entry_time"/>
+            <result property="exitAttachments" column="exit_attachments"/>
+            <result property="exitTime" column="exit_time"/>
+            <result property="isAdminGroup" column="is_admin_group"/>
+            <result property="remark" column="remark"/>
+            <result property="responsiblePersonIdCardType" column="responsible_person_id_card_type"/>
+            <result property="responsiblePersonIdNumber" column="responsible_person_id_number"/>
+            <result property="responsiblePersonIdCardType" column="responsible_person_id_card_type"/>
+            <result property="responsiblePersonName" column="responsible_person_name"/>
+            <result property="responsiblePersonPhone" column="responsible_person_phone"/>
+        </association>
+    </resultMap>
+
+    <insert id="saveGroupAttend" parameterType="com.real.name.record.entity.GroupAttend"
+            keyProperty="groupAttendId" keyColumn="group_attend_id" useGeneratedKeys="true">
+        insert into
+        group_attend
+        (team_sys_no, project_code, work_hours, work_time)
+        values
+        (#{workerGroup.teamSysNo}, #{project.projectCode}, #{workHours}, #{workTime})
+    </insert>
+
+    <select id="countGroupHoursInPeriod" resultType="double">
+        select
+        sum(work_hours)
+        from
+        group_attend
+        where
+        work_time &gt; #{begin}
+        and
+        work_time &lt; #{end}
+        and
+        team_sys_no = #{teamSysNo}
+    </select>
+
+    <select id="getGroupAttendPeriodInfo" resultMap="queryMap">
+        select
+        work_hours, work_time
+        from
+        group_attend
+        where
+        work_time &gt; #{begin}
+        and
+        work_time &lt; #{end}
+        and
+        team_sys_no = #{teamSysNo}
+    </select>
+
+</mapper>

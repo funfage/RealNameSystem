@@ -25,8 +25,8 @@
     <!--文件大小，默认10MB-->
     <property name="MAX_FILE_SIZE" value="50MB" />
 
-    <!-- 配置日志的滚动时间 ，表示只保留最近 10 天的日志-->
-    <property name="MAX_HISTORY" value="10"/>
+    <!-- 配置日志的滚动时间 ，表示只保留最近 30 天的日志-->
+    <property name="MAX_HISTORY" value="30"/>
 
     <!--输出到控制台-->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
@@ -172,6 +172,7 @@
     <logger name="com.real.name" level="${LOG_ROOT_LEVEL}" additivity="true">
         <!-- FILE_ALL 日志输出添加到 logger -->
         <appender-ref ref="FILE_ALL"/>
+        <!-- FILE_DEBUG 日志输出添加到 logger -->
         <appender-ref ref="FILE_DEBUG"/>
         <!-- FILE_INFO 日志输出添加到 logger -->
         <appender-ref ref="FILE_INFO"/>

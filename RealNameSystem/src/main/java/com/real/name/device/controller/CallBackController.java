@@ -5,6 +5,7 @@ import com.real.name.common.info.CommConstant;
 import com.real.name.common.utils.CommonUtils;
 import com.real.name.common.utils.HTTPTool;
 import com.real.name.common.utils.JedisService;
+import com.real.name.common.utils.TimeUtil;
 import com.real.name.device.entity.Device;
 import com.real.name.record.entity.Record;
 import com.real.name.device.service.DeviceService;
@@ -107,8 +108,8 @@ public class CallBackController {
                         //将信息推送到远程
                         String presentInfo = sendToClient(sendInfo, device, time);
                         //设置有效时间为第二天凌晨12点
-                        jedisStrings.set(key, presentInfo, CommonUtils.getTomorrowBegin(), TimeUnit.SECONDS);
-                        logger.warn("在场的key:{}, value:{}, time:{}", device.getProjectCode() + person.getPersonId(), presentInfo, CommonUtils.getTomorrowBegin());
+                        jedisStrings.set(key, presentInfo, TimeUtil.getTomorrowBegin(), TimeUnit.SECONDS);
+                        logger.warn("在场的key:{}, value:{}, time:{}", device.getProjectCode() + person.getPersonId(), presentInfo, TimeUtil.getTomorrowBegin());
                     } else if (device.getDirection() == 2 && jedisKeys.hasKey(key)) {
                         //删除键
                         ProjectDetailQuery sendInfo = projectDetailQueryMapper.getSendInfo(person.getPersonId(), device.getProjectCode());
@@ -174,7 +175,7 @@ public class CallBackController {
         map.put("teamName", sendInfo.getWorkerGroup().getTeamName());
         map.put("direction", device.getDirection());
         map.put("time", time);
-        map.put("type", CommConstant.PRESENT);
+        map.put("type", CommConstant.PRESENT_TYPE);
         webSocket.sendMessageToAll(map.toJSONString());
         return map.toJSONString();
     }

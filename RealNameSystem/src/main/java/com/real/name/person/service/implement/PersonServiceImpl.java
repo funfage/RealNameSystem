@@ -9,8 +9,10 @@ import com.real.name.device.service.DeviceService;
 import com.real.name.person.entity.Person;
 import com.real.name.person.entity.Person2;
 import com.real.name.person.entity.Person3;
+import com.real.name.person.entity.PersonQuery;
 import com.real.name.person.service.PersonService;
 import com.real.name.person.service.repository.Person2Rep;
+import com.real.name.person.service.repository.PersonQueryMapper;
 import com.real.name.person.service.repository.PersonRepository;
 import com.real.name.project.service.ProjectDetailQueryService;
 import org.slf4j.Logger;
@@ -41,6 +43,9 @@ public class PersonServiceImpl implements PersonService {
 
     @Autowired
     private ProjectDetailQueryService projectDetailQueryService;
+
+    @Autowired
+    private PersonQueryMapper personQueryMapper;
 
     @Override
     public void updateDevicesPersonInfo(Person person) {
@@ -171,6 +176,11 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public String getIdCardIndexByPersonId(Integer personId) {
         return personRepository.getIdCardIndexByPersonId(personId);
+    }
+
+    @Override
+    public List<Person> searchPerson(PersonQuery personQuery) {
+        return personQueryMapper.searchPerson(personQuery);
     }
 
 

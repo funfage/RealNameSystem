@@ -1,5 +1,7 @@
 package com.real.name.person.controller;
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.result.ResultError;
@@ -12,6 +14,7 @@ import com.real.name.issue.entity.IssueFace;
 import com.real.name.issue.service.IssueFaceService;
 import com.real.name.issue.service.repository.DeleteInfoMapper;
 import com.real.name.person.entity.Person;
+import com.real.name.person.entity.PersonQuery;
 import com.real.name.person.service.PersonService;
 import com.real.name.project.entity.ProjectPersonDetail;
 import com.real.name.project.service.ProjectDetailQueryService;
@@ -262,6 +265,19 @@ public class PersonController {
                 return ResultVo.failure("查询信息为空");
             }
         }
+    }
+
+    @PostMapping("/searchPerson")
+    public ResultVo searchPerson(PersonQuery personQuery) {
+        PageHelper.startPage(personQuery.getPageNum() + 1, personQuery.getPageSize());
+        List<Person> personList = personService.searchPerson(personQuery);
+        PageInfo<Person> pageInfo = new PageInfo<>(personList);
+        Map<String, Object> map = new HashMap<>();
+        map.put("personList", personList);
+        map.put("pageSize", pageInfo.getPageSize());
+        map.put("pageNum", pageInfo.getPageNum());
+        map.put("total", pageInfo.getTotal());
+        return ResultVo.success(map);
     }
 
     private void mergePersonInfo(Person selectPerson, Person person) {

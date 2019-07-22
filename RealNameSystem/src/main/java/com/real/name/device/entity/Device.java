@@ -14,8 +14,6 @@ import java.util.Date;
 @Data
 public class Device {
 
-    //public static final String PASS = "12345678";
-
     @Id
     private String deviceId;
 

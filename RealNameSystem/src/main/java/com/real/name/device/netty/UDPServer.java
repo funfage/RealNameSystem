@@ -43,7 +43,7 @@ public class UDPServer {
                 .localAddress(address);
         ChannelFuture channelFuture = bootstrap.bind().syncUninterruptibly();
         if (channelFuture != null && channelFuture.isSuccess()) {
-            logger.warn("udp服务启动成功, 监听的端口为:{}", address.getPort());
+            logger.info("udp服务启动成功, 监听的端口为:{}", address.getPort());
             Channel channel = channelFuture.channel();
             try {
                 channel.closeFuture().sync();

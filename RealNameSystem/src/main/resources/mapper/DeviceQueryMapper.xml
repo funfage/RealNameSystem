@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.real.name.device.service.repository.DeviceQueryMapper">
+    <resultMap id="queryMap" type="com.real.name.device.query.DeviceQuery">
+        <id property="deviceId" column="device_id"/>
+        <result property="deviceType" column="device_type"/>
+        <result property="pass" column="pass"/>
+        <result property="ip" column="ip"/>
+        <result property="direction" column="direction"/>
+        <result property="channel" column="channel"/>
+        <result property="outPort" column="out_port"/>
+        <result property="installTime" column="install_time"/>
+        <result property="factory" column="factory"/>
+        <result property="phone" column="phone"/>
+        <result property="remark" column="remark"/>
+        <association property="project" javaType="com.real.name.project.entity.Project">
+            <id property="projectCode" column="project_code"/>
+            <result property="startDate" column="start_date"/>
+            <result property="address" column="address"/>
+            <result property="name" column="name"/>
+            <result property="approvalLevelNum" column="approval_level_num"/>
+            <result property="approvalNum" column="approval_num"/>
+            <result property="areaCode" column="area_code"/>
+            <result property="buildCorpCode" column="build_corp_code"/>
+            <result property="buildCorpName" column="build_corp_name"/>
+            <result property="builderLicenses" column="builder_licenses"/>
+            <result property="buildingArea" column="building_area"/>
+            <result property="buildingLength" column="building_length"/>
+            <result property="buildPlanNum" column="build_plan_num"/>
+            <result property="category" column="category"/>
+            <result property="completeDate" column="complete_date"/>
+            <result property="contractorCorpCode" column="contractor_corp_code"/>
+            <result property="contractorCorpName" column="contractor_corp_name"/>
+            <result property="description" column="description"/>
+            <result property="functionNum" column="function_num"/>
+            <result property="invest" column="invest"/>
+            <result property="isUpload" column="is_upload"/>
+            <result property="lat" column="lat"/>
+            <result property="linkMan" column="link_man"/>
+            <result property="linkPhone" column="link_phone"/>
+            <result property="lng" column="lng"/>
+            <result property="nationNum" column="nation_num"/>
+            <result property="prjPlanNum" column="prj_plan_num"/>
+            <result property="prjSize" column="prj_size"/>
+            <result property="prjStatus" column="prj_status"/>
+            <result property="propertyNum" column="property_num"/>
+        </association>
+    </resultMap>
+
+    <sql id="deviceSql">
+        device_id, project_code, device_type, pass, ip, direction,
+        channel, out_port, install_time, factory, phone, remark
+    </sql>
+
+    <select id="searchDevice" resultMap="queryMap">
+        select
+        <include refid="deviceSql"/>
+        from
+        device
+        <where>
+            <if test="deviceQuery.deviceId != null">
+                and device_id like '%${deviceQuery.deviceId}%'
+            </if>
+        </where>
+    </select>
+
+</mapper>

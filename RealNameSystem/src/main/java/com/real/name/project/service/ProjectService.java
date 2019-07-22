@@ -1,9 +1,12 @@
 package com.real.name.project.service;
 
 import com.real.name.project.entity.Project;
+import com.real.name.project.query.ProjectQuery;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ProjectService {
@@ -35,7 +38,7 @@ public interface ProjectService {
     int deleteByProjectCode(String Project);
 
     /**
-     *根据项目名查询
+     * 根据项目名查询
      */
     Optional<Project> findByName(String projectName);
 
@@ -48,5 +51,11 @@ public interface ProjectService {
      *  查询项目名和所属公司
      */
     Project findProNameAndCorp(String projectCode);
+
+    /**
+     * 搜索项目
+     */
+    List<Project> searchProject(ProjectQuery projectQuery);
+
 
 }

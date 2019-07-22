@@ -70,7 +70,31 @@ public interface ProjectDetailQueryService {
      */
     List<ProjectDetailQuery> getProjectAccessIssueDetail(String projectCode);
 
+    /**
+     * 查询某个项目下所有的班组信息
+     */
+    List<ProjectDetailQuery> getWorkerGroupInProject(String projectCode);
 
+    /**
+     * 获取某个班组下所有的project_detail_id
+     */
+    List<Integer> getProjectIdByGroup(Integer teamSysNo);
 
+    /**
+     * 获取某个班组下的人数
+     */
+    Integer getPersonNumInGroup(Integer teamSysNo);
+
+    List<ProjectDetailQuery> findPersonWorkDayInfoInProject(String projectCode, Date startDate, Date endDate);
+
+    /**
+     * 查询项目下所有project_detail_id和人员信息
+     */
+    List<ProjectDetailQuery> findIdAndPersonInProject(String projectCode);
+
+    /**
+     * 查询项目下的人员信息
+     */
+    List<ProjectDetailQuery> findDelPersonInDeviceByProject(String projectCode);
 
 }

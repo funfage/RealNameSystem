@@ -1,6 +1,7 @@
 package com.real.name.record;
 
 import com.real.name.common.utils.CommonUtils;
+import com.real.name.common.utils.TimeUtil;
 import com.real.name.project.entity.ProjectDetail;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.service.ProjectDetailService;
@@ -48,7 +49,7 @@ public class RecordTest extends BaseTest {
 
     @Test
     public void getTodayRecord() {
-        List<Record> todayRecord = mapper.getTodayRecord(99, CommonUtils.getTodayBegin() * 1000, CommonUtils.getTomorrowBegin() * 1000);
+        List<Record> todayRecord = mapper.getTodayRecord(99, TimeUtil.getTodayBegin() * 1000, TimeUtil.getTomorrowBegin() * 1000);
         System.out.println(todayRecord);
 
     }
@@ -58,8 +59,8 @@ public class RecordTest extends BaseTest {
         List<ProjectDetail> projectDetailList = projectDetailService.findAll();
         for (ProjectDetail projectDetail : projectDetailList) {
             Integer personId = projectDetail.getPersonId();
-            long todayBegin = CommonUtils.getTodayBegin() * 1000 - 86400000;
-            long tomorrowBegin = CommonUtils.getTomorrowBegin() * 1000 - 86400000;
+            long todayBegin = TimeUtil.getTodayBegin() * 1000 - 86400000;
+            long tomorrowBegin = TimeUtil.getTomorrowBegin() * 1000 - 86400000;
             //查询该员工的当天的所有进出记录
             List<Record> todayRecord = recordMapper.getTodayRecord(personId, todayBegin, tomorrowBegin);
             long totalTime = 0;

@@ -1,6 +1,8 @@
 package com.real.name.Group;
 
 import com.real.name.group.entity.WorkerGroup;
+import com.real.name.group.query.GroupQuery;
+import com.real.name.group.service.repository.GroupQueryMapper;
 import com.real.name.others.BaseTest;
 import com.real.name.group.service.repository.GroupRepository;
 import org.junit.Assert;
@@ -13,6 +15,9 @@ public class GroupTest extends BaseTest {
 
     @Autowired
     private GroupRepository repository;
+
+    @Autowired
+    private GroupQueryMapper groupQueryMapper;
 
     @Test
     public void deleteByTeamSysNo() {
@@ -30,6 +35,13 @@ public class GroupTest extends BaseTest {
     public void findByIsAdminGroupAndProjectCode() {
         Optional<WorkerGroup> workerGroup = repository.findByIsAdminGroupAndProjectCode(1, "44010620190510008");
         System.out.println(workerGroup.get());
+    }
+
+    @Test
+    public void searchGroup() {
+        GroupQuery groupQuery = new GroupQuery();
+        groupQuery.setTeamSysNo(1500162326);
+        groupQueryMapper.searchGroup(groupQuery);
     }
 
 }

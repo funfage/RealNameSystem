@@ -1,13 +1,16 @@
 package com.real.name.project.service.implement;
 
 import com.real.name.project.entity.Project;
+import com.real.name.project.query.ProjectQuery;
 import com.real.name.project.service.ProjectService;
+import com.real.name.project.service.repository.ProjectQueryMapper;
 import com.real.name.project.service.repository.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -15,6 +18,9 @@ public class ProjectImp implements ProjectService {
 
     @Autowired
     private ProjectRepository projectRepository;
+
+    @Autowired
+    private ProjectQueryMapper projectQueryMapper;
 
     @Override
     public Project createProject(Project project) {
@@ -54,5 +60,10 @@ public class ProjectImp implements ProjectService {
     @Override
     public Project findProNameAndCorp(String projectCode) {
         return projectRepository.findProNameAndCorp(projectCode);
+    }
+
+    @Override
+    public List<Project> searchProject(ProjectQuery projectQuery) {
+        return projectQueryMapper.searchProject(projectQuery);
     }
 }

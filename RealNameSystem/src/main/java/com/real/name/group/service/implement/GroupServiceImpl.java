@@ -3,7 +3,9 @@ package com.real.name.group.service.implement;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.group.entity.WorkerGroup;
+import com.real.name.group.query.GroupQuery;
 import com.real.name.group.service.GroupService;
+import com.real.name.group.service.repository.GroupQueryMapper;
 import com.real.name.group.service.repository.GroupRepository;
 import com.real.name.project.entity.Project;
 import com.real.name.project.service.ProjectService;
@@ -15,13 +17,16 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class GroupImp implements GroupService {
+public class GroupServiceImpl implements GroupService {
 
     @Autowired
     private GroupRepository groupRepository;
 
     @Autowired
     private ProjectService projectService;
+
+    @Autowired
+    private GroupQueryMapper groupQueryMapper;
 
     @Transactional
     @Override
@@ -67,6 +72,11 @@ public class GroupImp implements GroupService {
     @Override
     public Optional<WorkerGroup> findByIsAdminGroupAndProjectCode(Integer status, String projectCode) {
         return groupRepository.findByIsAdminGroupAndProjectCode(status, projectCode);
+    }
+
+    @Override
+    public List<WorkerGroup> searchGroup(GroupQuery groupQuery) {
+        return groupQueryMapper.searchGroup(groupQuery);
     }
 
 }

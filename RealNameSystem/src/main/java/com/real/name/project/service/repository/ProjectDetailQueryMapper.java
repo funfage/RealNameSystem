@@ -1,6 +1,7 @@
 package com.real.name.project.service.repository;
 
 import com.real.name.person.entity.Person;
+import com.real.name.project.entity.ProjectDetail;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.query.GroupPersonNum;
 import org.apache.ibatis.annotations.Mapper;
@@ -23,6 +24,9 @@ public interface ProjectDetailQueryMapper {
      */
     List<ProjectDetailQuery> findOtherWorker();
 
+    /**
+     * 查询项目下的人员信息和班组信息
+     */
     List<ProjectDetailQuery> getPersonAndWorkerGroupInfo(String projectCode);
 
     /**
@@ -36,7 +40,7 @@ public interface ProjectDetailQueryMapper {
     ProjectDetailQuery getSendInfo(@Param("personId") Integer personId,@Param("projectCode") String projectCode);
 
     /**
-     * 查询某个班组下的人员个数
+     * 查询某个项目下所有班组的人员个数
      */
     List<GroupPersonNum> getWorkGroupPersonNum(@Param("projectCode") String projectCode);
 
@@ -79,5 +83,38 @@ public interface ProjectDetailQueryMapper {
      * 获取需要下发到控制器的人员信息
      */
     List<ProjectDetailQuery> getProjectAccessIssueDetail(String projectCode);
+
+    /**
+     * 查询某个项目下所有的班组信息
+     */
+    List<ProjectDetailQuery> getWorkerGroupInProject(String projectCode);
+
+    /**
+     * 获取某个班组下所有的project_detail_id
+     */
+    List<Integer> getProjectIdByGroup(Integer teamSysNo);
+
+    /**
+     * 获取某个班组下的人数
+     */
+    Integer getPersonNumInGroup(@Param("teamSysNo") Integer teamSysNo);
+
+    /**
+     * 查询某个项目下所有人员信息和工作天数等
+     */
+    List<ProjectDetailQuery> findPersonWorkDayInfoInProject(@Param("projectCode") String projectCode,
+                                                   @Param("startDate") Date startDate,
+                                                   @Param("endDate") Date endDate);
+
+    /**
+     * 查询项目下所有project_detail_id和人员信息
+     */
+    List<ProjectDetailQuery> findIdAndPersonInProject(String projectCode);
+
+    /**
+     * 查询项目下的人员信息
+     */
+    List<ProjectDetailQuery> findDelPersonInDeviceByProject(@Param("projectCode") String projectCode);
+
 
 }

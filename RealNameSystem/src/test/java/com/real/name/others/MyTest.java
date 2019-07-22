@@ -1,10 +1,8 @@
 package com.real.name.others;
 
-import com.real.name.common.utils.CommonUtils;
 import com.real.name.common.utils.ConvertCode;
 import com.real.name.common.utils.TimeUtil;
 import com.real.name.device.netty.model.AccessResponse;
-import com.real.name.device.netty.serial.BufferFactory;
 import com.real.name.device.netty.utils.ConvertUtils;
 import io.netty.buffer.ByteBuf;
 
@@ -15,11 +13,10 @@ import java.util.*;
 public class MyTest {
 
     public static void main(String[] args) throws Exception {
-        StringBuilder id = new StringBuilder();
-        id.append("123");
-        id.append(",");
-        id.deleteCharAt(id.length() - 1);
-        System.out.println(id.toString());
+        Date todayBegin = new Date(TimeUtil.getTodayBegin() * 1000);
+        Date todayEnd = new Date(TimeUtil.getTomorrowBegin() * 1000);
+        System.out.println(todayBegin);
+        System.out.println(todayEnd);
     }
 
     public static void testMap() {
@@ -75,26 +72,7 @@ public class MyTest {
     }
 
     public static void testA() {
-        String data = "123";
-        AccessResponse response = new AccessResponse();
-        response.setType((byte) 0x17);
-        response.setFunctionId((byte) 0x50);
-        byte[] fillBytes = fillBytes(data.getBytes());
-        response.setData(fillBytes);
-        response.setSequenceId(0);
-        ByteBuf buffer = BufferFactory.getBuffer();
-        buffer.writeByte(response.getType());
-        buffer.writeShort(response.getReserved());
-        buffer.writeByte(response.getFunctionId());
-        buffer.writeBytes(response.getData());
-        buffer.writeInt(response.getSequenceId());
-        buffer.writeBytes(response.getExternalData());
-        int length = buffer.readableBytes();
-        byte bytes[] = new byte[length];
-        buffer.readBytes(bytes);
-        String hexStr = ConvertCode.receiveHexToString(bytes);
-        System.out.println(hexStr);
-        System.out.println(Arrays.toString(bytes));
+
     }
 
     public static void testB() {
@@ -173,4 +151,5 @@ public class MyTest {
         System.out.println(str.length());
         System.out.println(str2.length());
     }
+
 }

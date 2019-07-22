@@ -11,16 +11,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-
-import java.net.InetSocketAddress;
 
 @Import(SpringUtil.class)
 @EnableCaching
 @EnableScheduling
 @SpringBootApplication
-public class NameApplication extends WebMvcConfigurerAdapter implements CommandLineRunner {
+public class NameApplication implements CommandLineRunner {
 
     private static Logger logger = LoggerFactory.getLogger(NameApplication.class);
 
@@ -30,17 +26,8 @@ public class NameApplication extends WebMvcConfigurerAdapter implements CommandL
     public static void main(String[] args) {
         SpringApplication.run(NameApplication.class, args);
         /*UdpServerStart.startUdpServer();*/
-
     }
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
 
-        registry.addMapping("/**")
-                .allowCredentials(true)
-                .allowedHeaders("*")
-                .allowedOrigins("*")
-                .allowedMethods("*");
-    }
     @Override
     public void run(String... args) throws Exception {
 //        udpServer.start(new InetSocketAddress(61008));

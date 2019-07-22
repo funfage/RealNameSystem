@@ -14,7 +14,7 @@ public enum ResultError {
     ID_CARD_ERROR(6, "身份证号码不正确"),
     PERSON_NAME_ERROR(7, "人员姓名不正确"),
     DEVICE_EXIST(8, "设备已存在"),
-    DEVICE_NOT_EXIST(9, "读头设备不存在"),
+    DEVICE_NOT_EXIST(9, "设备不存在"),
     GROUP_EXIST(10, "班组已存在"),
     GROUP_NOT_EXIST(11, "班组不存在"),
     PHONE_ERROR(12, "手机号码不正确"),

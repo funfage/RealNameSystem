@@ -1,5 +1,7 @@
 package com.real.name.device;
 
+import com.real.name.device.query.DeviceQuery;
+import com.real.name.device.service.repository.DeviceQueryMapper;
 import com.real.name.others.BaseTest;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.repository.DeviceRepository;
@@ -13,6 +15,9 @@ import java.util.Optional;
 public class DeviceTest extends BaseTest {
     @Autowired
     private DeviceRepository repository;
+
+    @Autowired
+    private DeviceQueryMapper deviceQueryMapper;
 
     @Test
     public void findAllByDeviceTypeTest() {
@@ -60,5 +65,17 @@ public class DeviceTest extends BaseTest {
         repository.updateDeviceIPByProjectCode("169.254.39.59", "067R9HQR0dmw178890C4BKubNU2d9gG7");
     }
 
+    @Test
+    public void findDeviceIdsByProjectCode() {
+        List<String> deviceIdsByProjectCode = repository.findDeviceIdsByProjectCode("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        System.out.println(deviceIdsByProjectCode);
+    }
 
+    @Test
+    public void searchDevice() {
+        DeviceQuery deviceQuery = new DeviceQuery();
+        deviceQuery.setDeviceId("E28");
+        List<Device> devices = deviceQueryMapper.searchDevice(deviceQuery);
+        System.out.println(devices);
+    }
 }

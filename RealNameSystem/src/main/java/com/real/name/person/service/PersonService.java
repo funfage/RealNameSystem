@@ -3,6 +3,7 @@ package com.real.name.person.service;
 import com.real.name.person.entity.Person;
 import com.real.name.person.entity.Person2;
 import com.real.name.person.entity.Person3;
+import com.real.name.person.entity.PersonQuery;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -107,6 +108,12 @@ public interface PersonService {
      * 查询人员的身份证索引号
      */
     String getIdCardIndexByPersonId(Integer personId);
+
+    /**
+     * 搜索人员信息
+     */
+    List<Person> searchPerson(PersonQuery personQuery);
+
 
 
 }

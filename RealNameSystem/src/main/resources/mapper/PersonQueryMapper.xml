@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.real.name.person.service.repository.PersonQueryMapper">
 
-    <resultMap id="queryMap" type="com.real.name.person.entity.PersonQuery">
+    <resultMap id="queryMap" type="com.real.name.person.entity.Person">
         <id property="personId" column="p_person_id"/>
         <result property="personName" column="person_name"/>
         <result property="subordinateCompany" column="subordinate_company"/>
@@ -44,6 +44,45 @@
         <result property="workType" column="work_type"/>
     </resultMap>
 
+    <sql id="personInfo">
+        p.person_id as p_person_id, p.person_name, p.subordinate_company, p.gender, p.address, p.age, p.bank_link_number, p.card_number,
+        p.cell_phone, p.culture_level_type, p.expiry_date, p.grant_org, p.group_no, p.has_bad_medical_history,
+        p.has_buy_insurance, p.hometown, p.id_card_index, p.id_card_number, p.id_card_type, p.issue_card_date,
+        p.issue_card_pic, p.is_team_leader, p.joined_time, p.marital_status, p.nation, p.negative_id_card_image,
+        p.pay_roll_bank_card_number, p.pay_roll_bank_name, p.pay_roll_top_bank_code, p.politics_type, p.positive_id_card_image,
+        p.specialty, p.start_date, p.suffix_name, p.urgent_link_man, p.urgent_link_man_phone, p.work_date,
+        p.work_role, p.work_type
+    </sql>
+
+    <select id="searchPerson" resultMap="queryMap">
+        select
+        <include refid="personInfo"/>
+        from
+        person p
+        <where>
+            <if test="personQuery.nameOrIdCard != null ">
+                and
+                (
+                person_name like '%${personQuery.nameOrIdCard}%'
+                or
+                id_card_number like '%${personQuery.nameOrIdCard}%'
+                )
+            </if>
+            <if test="personQuery.workRole != null">
+                and work_role = #{personQuery.workRole}
+            </if>
+            <if test="personQuery.gender != null ">
+                and gender = #{personQuery.gender}
+            </if>
+            <if test="personQuery.nation != null">
+                and nation = #{personQuery.nation}
+            </if>
+            <if test="personQuery.age != null">
+                and gender &gt;= #{personQuery.ageBegin}
+                and gender &lt;= #{personQuery.ageEnd}
+            </if>
+        </where>
+    </select>
 
 
 </mapper>

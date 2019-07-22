@@ -6,9 +6,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ProjectRepository extends JpaRepository<Project, String> {
@@ -36,5 +36,11 @@ public interface ProjectRepository extends JpaRepository<Project, String> {
      */
     @Query(value = "select new com.real.name.project.entity.Project(p.name, p.contractorCorpName) from Project p where p.projectCode = ?1")
     Project findProNameAndCorp(String projectCode);
+
+    /**
+     * 获取所有项目的id
+     */
+    @Query("select projectCode from Project")
+    List<String> findAllProjectCode();
 
 }

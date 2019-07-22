@@ -14,9 +14,9 @@ public class Attendance {
 
     private Long attendanceId;
 
-    private String projectDetailId;
+    private Integer projectDetailId;
 
-    private double workHours;
+    private Double workHours;
 
     private Date workTime;
 
