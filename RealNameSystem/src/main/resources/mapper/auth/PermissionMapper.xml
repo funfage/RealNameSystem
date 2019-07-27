@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.real.name.auth.service.repository.PermissionMapper">
+    <resultMap id="queryMap" type="com.real.name.auth.entity.Permission">
+        <id property="permissionId" column="permission_id"/>
+        <result property="url" column="url"/>
+        <result property="permissionId" column="permission_id"/>
+    </resultMap>
+
+    <select id="getPermissionInSet" resultType="string" parameterType="list">
+        select
+          `name`
+        from
+          permission
+        where
+          permission_id
+        in
+        <foreach collection="idSet" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+</mapper>
