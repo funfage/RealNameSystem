@@ -64,4 +64,13 @@
         </where>
     </select>
 
+    <select id="findIPByProjectCode" resultType="string" parameterType="string">
+        select
+          ip
+        from
+          device
+        where
+          project_code = #{projectCode}
+    </select>
+
 </mapper>

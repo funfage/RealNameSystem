@@ -83,10 +83,9 @@ public class CallBackController {
                 record.setType(3);
             }
             //获取用户信息
-            Optional<Person> optionalPerson = personService.findPersonNameByPersonId(Integer.valueOf(personId));
+            Person person = personService.findPersonNameByPersonId(Integer.valueOf(personId));
             //设置用户名
-            if (optionalPerson.isPresent()) {
-                Person person = optionalPerson.get();
+            if (person != null) {
                 record.setPersonName(person.getPersonName());
                 record.setPersonId(person.getPersonId());
                 //获取设备信息

@@ -1,8 +1,14 @@
 package com.real.name.person.service.implement;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.real.name.auth.entity.User;
+import com.real.name.auth.service.AuthUtils;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.result.ResultError;
+import com.real.name.common.result.ResultVo;
+import com.real.name.common.utils.PageUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.device.service.DeviceService;
@@ -15,6 +21,7 @@ import com.real.name.person.service.repository.Person2Rep;
 import com.real.name.person.service.repository.PersonQueryMapper;
 import com.real.name.person.service.repository.PersonRepository;
 import com.real.name.project.service.ProjectDetailQueryService;
+import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +31,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -91,13 +100,48 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
+    public ResultVo findMainPagePerson(Integer personId, Integer pageNum, Integer pageSize, Integer workRole) {
+        User user = (User) SecurityUtils.getSubject().getSession().getAttribute("user");
+        boolean onlyProjectRole = AuthUtils.isOnlyProjectRole(user);
+        if (personId == -1 && workRole != 0) { //如果id为-1 则根据workRole查询
+            if (workRole == -1) {//查询所有人员信息
+                PageHelper.startPage(pageNum + 1, pageSize);
+                List<Person> allPeople = personQueryMapper.findAll();
+                PageInfo<Person> pageInfo = new PageInfo<>(allPeople);
+                return PageUtils.pageResult(pageInfo, allPeople);
+            } else {//根据workRole查询
+                if (onlyProjectRole) {//如果是项目管理员,则根据workRole查询该项目下或未被分配项目的人员信息
+                    PageHelper.startPage(pageNum + 1, pageSize);
+                    List<Person> personList = personQueryMapper.findByWorkRoleInUnionNotAttendProject(workRole, user.getProjectSet());
+                    PageInfo<Person> pageInfo = new PageInfo<>(personList);
+                    return PageUtils.pageResult(pageInfo, personList);
+                } else { //否则根据workRole查出所有
+                    PageHelper.startPage(pageNum + 1, pageSize);
+                    List<Person> personList = personQueryMapper.findByWorkRole(workRole);
+                    PageInfo<Person> pageInfo = new PageInfo<>(personList);
+                    return PageUtils.pageResult(pageInfo, personList);
+                }
+            }
+        } else { //如果id不为-1, 则根据id查询
+            Person person = personQueryMapper.findByPersonId(personId);
+            if (person != null) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("data", person);
+                return ResultVo.success(map);
+            } else {
+                return ResultVo.failure("查询信息为空");
+            }
+        }
+    }
+
+    @Override
     public Page<Person> findAll(Pageable pageable) {
         return personRepository.findAll(pageable);
     }
 
     @Override
     public List<Person> findByPersonIdIn(List<Integer> personIds) {
-        return personRepository.findByPersonIdIn(personIds);
+        return personQueryMapper.findByPersonIdIn(personIds);
     }
 
     @Override
@@ -115,7 +159,7 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public List<Person> findPersons(List<Integer> personIds) {
-        return personRepository.findByPersonIdIn(personIds);
+        return personQueryMapper.findByPersonIdIn(personIds);
     }
 
     @Override
@@ -124,23 +168,18 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public Optional<Person> findByIdCardNumber(String idCardNumber) {
-        return personRepository.findByIdCardNumber(idCardNumber);
+    public Person findByIdCardNumber(String idCardNumber) {
+        return personQueryMapper.findByIdCardNumber(idCardNumber);
     }
 
     @Override
-    public Optional<Person> findByIdCardIndex(String idCardIndex) {
-        return personRepository.findByIdCardIndex(idCardIndex);
+    public Person findByIdCardIndex(String idCardIndex) {
+        return personQueryMapper.findByIdCardIndex(idCardIndex);
     }
 
     @Override
-    public Person3 findByPersonId(Integer id) {
-        return personRepository.findByPersonId(id);
-    }
-
-    @Override
-    public Page<Person> findByWorkRole(PageRequest pageRequest, Integer workRole) {
-        return personRepository.findByWorkRole(pageRequest, workRole);
+    public List<Person> findByWorkRole(Integer workRole) {
+        return personQueryMapper.findByWorkRole(workRole);
     }
 
     @Override
@@ -155,27 +194,27 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public Person findIssuePersonImageInfo(Integer personId) {
-        return personRepository.findIssuePersonImageInfo(personId);
+        return personQueryMapper.findIssuePersonImageInfo(personId);
     }
 
     @Override
-    public Optional<Person> findPersonNameByPersonId(Integer personId) {
-        return personRepository.findPersonNameByPersonId(personId);
+    public Person findPersonNameByPersonId(Integer personId) {
+        return personQueryMapper.findPersonNameByPersonId(personId);
     }
 
     @Override
     public List<Integer> findAllPersonId() {
-        return personRepository.findAllPersonId();
+        return personQueryMapper.findAllPersonId();
     }
 
     @Override
     public List<Person> findAllPersonRole() {
-        return personRepository.findAllPersonRole();
+        return personQueryMapper.findAllPersonRole();
     }
 
     @Override
     public String getIdCardIndexByPersonId(Integer personId) {
-        return personRepository.getIdCardIndexByPersonId(personId);
+        return personQueryMapper.getIdCardIndexByPersonId(personId);
     }
 
     @Override

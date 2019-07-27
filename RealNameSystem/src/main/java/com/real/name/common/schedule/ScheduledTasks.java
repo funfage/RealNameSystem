@@ -21,6 +21,7 @@ import com.real.name.project.entity.ProjectDetail;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.ProjectDetailService;
+import com.real.name.project.service.repository.ProjectQueryMapper;
 import com.real.name.project.service.repository.ProjectRepository;
 import com.real.name.record.entity.Attendance;
 import com.real.name.record.entity.GroupAttend;
@@ -81,6 +82,9 @@ public class ScheduledTasks {
     @Autowired
     private GroupAttendMapper groupAttendMapper;
 
+    @Autowired
+    private ProjectQueryMapper projectQueryMapper;
+
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -139,11 +143,11 @@ public class ScheduledTasks {
                         Record selectRecord = recordMapper.findAttendancePerson(person.getPersonId(), device.getDeviceId(), faceRecord.getTime());
                         //若在数据库中查询不到记录则存入数据库
                         if (selectRecord == null) {
-                            Optional<Person> personOptional = personService.findPersonNameByPersonId(person.getPersonId());
-                            if (personOptional.isPresent()) {
+                            Person selectPerson = personService.findPersonNameByPersonId(person.getPersonId());
+                            if (selectPerson != null) {
                                 //若查询记录为空则将从设备查询的记录插入数据库
-                                recordMapper.saveRecord(new Record(device.getDeviceId(), device.getDeviceType(), personOptional.get().getPersonId(),
-                                        personOptional.get().getPersonName(), faceRecord.getTime(), new Date(faceRecord.getTime()) ,faceRecord.getType(),
+                                recordMapper.saveRecord(new Record(device.getDeviceId(), device.getDeviceType(), selectPerson.getPersonId(),
+                                        selectPerson.getPersonName(), faceRecord.getTime(), new Date(faceRecord.getTime()) ,faceRecord.getType(),
                                         faceRecord.getPath(), device.getDirection(), device.getChannel()));
                             }
                         }
@@ -234,7 +238,7 @@ public class ScheduledTasks {
         logger.warn("统计班组工时定时任务开始");
         try {
             //查询所有的projectCode
-            List<String> allProjectCode = projectRepository.findAllProjectCode();
+            List<String> allProjectCode = projectQueryMapper.findAllProjectCode();
             for (String projectCode : allProjectCode) {
                 //查询该项目下所有班组信息
                 List<ProjectDetailQuery> groupList = projectDetailQueryService.getWorkerGroupInProject(projectCode);

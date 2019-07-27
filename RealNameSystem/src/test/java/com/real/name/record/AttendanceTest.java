@@ -6,6 +6,7 @@ import com.real.name.others.BaseTest;
 import com.real.name.project.entity.Project;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.service.ProjectDetailQueryService;
+import com.real.name.project.service.repository.ProjectQueryMapper;
 import com.real.name.project.service.repository.ProjectRepository;
 import com.real.name.record.entity.Attendance;
 import com.real.name.record.entity.GroupAttend;
@@ -25,6 +26,9 @@ public class AttendanceTest extends BaseTest {
 
     @Autowired
     private ProjectRepository projectRepository;
+
+    @Autowired
+    private ProjectQueryMapper projectQueryMapper;
 
     @Autowired
     private ProjectDetailQueryService projectDetailQueryService;
@@ -48,7 +52,7 @@ public class AttendanceTest extends BaseTest {
     @Test
     public void countGroupTime() {
         //查询所有的projectCode
-        List<String> allProjectCode = projectRepository.findAllProjectCode();
+        List<String> allProjectCode = projectQueryMapper.findAllProjectCode();
         for (String projectCode : allProjectCode) {
             //查询该项目下所有班组信息
             List<ProjectDetailQuery> groupList = projectDetailQueryService.getWorkerGroupInProject(projectCode);

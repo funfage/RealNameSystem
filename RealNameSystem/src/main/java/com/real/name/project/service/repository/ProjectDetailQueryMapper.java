@@ -116,5 +116,10 @@ public interface ProjectDetailQueryMapper {
      */
     List<ProjectDetailQuery> findDelPersonInDeviceByProject(@Param("projectCode") String projectCode);
 
+    /**
+     * 获取一个项目下所有人员数目
+     */
+    Integer countPersonNumByProjectCode(@Param("projectCode") String projectCode);
+
 
 }

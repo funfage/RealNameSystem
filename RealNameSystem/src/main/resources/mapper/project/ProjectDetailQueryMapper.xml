@@ -123,12 +123,11 @@
 
     <select id="findOtherAdmins" resultMap="queryAllMap">
         select
-        id,
         <include refid="personSql"/>
         from
         person p
         where
-        work_role = 10
+        p.work_role = 10
         and
         not exists
         (select pd.person_id from project_detail pd where pd.project_code = #{projectCode} and p.person_id =
@@ -137,7 +136,6 @@
 
     <select id="findOtherWorker" resultMap="queryAllMap">
         select
-        id,
         <include refid="personSql"/>
         from
         person p
@@ -379,6 +377,15 @@
         left join person p on p.person_id = pd.person_id
         where
         pd.project_code = #{projectCode}
+    </select>
+
+    <select id="countPersonNumByProjectCode" resultType="integer">
+        select
+          count(person_id)
+        from
+          project_detail
+        where
+          project_code = #{projectCode}
     </select>
 
 </mapper>

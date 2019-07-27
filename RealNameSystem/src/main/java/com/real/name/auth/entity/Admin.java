@@ -1,4 +1,4 @@
-package com.real.name.login.entity;
+package com.real.name.auth.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;

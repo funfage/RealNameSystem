@@ -21,6 +21,9 @@ public class PathUtil {
 		PathUtil.linuxPath = linuxPath;
 	}
 
+	public PathUtil() {
+	}
+
 	public static String getImgBasePath() {
 		String os = System.getProperty("os.name");
 		String basePath = "";

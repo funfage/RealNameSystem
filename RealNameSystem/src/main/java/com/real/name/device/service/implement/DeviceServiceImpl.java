@@ -4,9 +4,9 @@ import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.utils.JedisService;
+import com.real.name.device.entity.Device;
 import com.real.name.device.netty.utils.AccessDeviceUtils;
 import com.real.name.device.netty.utils.FaceDeviceUtils;
-import com.real.name.device.entity.Device;
 import com.real.name.device.query.DeviceQuery;
 import com.real.name.device.service.AccessService;
 import com.real.name.device.service.DeviceService;
@@ -22,7 +22,7 @@ import com.real.name.issue.service.IssueFaceService;
 import com.real.name.person.entity.Person;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.service.ProjectDetailQueryService;
-import io.netty.util.internal.StringUtil;
+import com.real.name.record.entity.Attendance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,9 +30,10 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
-public class DeviceServiceImp implements DeviceService {
+public class DeviceServiceImpl implements DeviceService {
 
     @Autowired
     private DeviceRepository deviceRepository;
@@ -94,22 +95,9 @@ public class DeviceServiceImp implements DeviceService {
     public void addAccessDevice(Device device) {
         //校验设备是否合法
         isValidAccess(device);
-        long startTime = System.currentTimeMillis();
-        //重置设备
-        accessService.clearAccess(device.getDeviceId(), device.getIp(), device.getOutPort());
-        while (true) {
-            if (jedisKeys.hasKey(device.getDeviceId() + DeviceConstant.CLEAR_AUTHORITY)) {
-                break;
-            }
-            if (System.currentTimeMillis() - startTime > 3000) {
-                break;
-            }
-        }
-        //是否成功
-        Boolean isClear = (Boolean) jedisStrings.get(device.getDeviceId() + DeviceConstant.CLEAR_AUTHORITY);
-        if (isClear == null || !isClear) {
-            throw new AttendanceException(ResultError.RESET_DEVICE_ERROR);
-        }
+        //校验是否重置设备成功
+        isResetAccessDevice(device);
+        //保存设备信息
         Device newDevice = deviceRepository.save(device);
         if (newDevice == null) {
             throw new AttendanceException(ResultError.INSERT_ERROR);
@@ -173,6 +161,22 @@ public class DeviceServiceImp implements DeviceService {
         if (newDevice == null) {
             throw new AttendanceException(ResultError.UPDATE_ERROR);
         }
+    }
+
+    @Transactional
+    @Override
+    public void deleteDevice(Device device) {
+        //发送重置报文
+        if (device.getDeviceType() == DeviceConstant.faceDeviceType) {
+            Boolean isSuccess = FaceDeviceUtils.issueResetDevice(device);
+            if (!isSuccess) {
+                throw new AttendanceException(ResultError.RESET_DEVICE_ERROR);
+            }
+        } else if (device.getDeviceType() == DeviceConstant.AccessDeviceType) {
+            isResetAccessDevice(device);
+        }
+        //删除数据库中的设备信息
+        deviceRepository.delete(device);
     }
 
     /**
@@ -292,6 +296,11 @@ public class DeviceServiceImp implements DeviceService {
         return deviceQueryMapper.searchDevice(deviceQuery);
     }
 
+    @Override
+    public Set<String> findIPByProjectCode(String projectCode) {
+        return deviceQueryMapper.findIPByProjectCode(projectCode);
+    }
+
     private void isValidAccess(Device device) {
         //搜索控制器
         accessService.searchAccess(device.getDeviceId(), device.getIp(), device.getOutPort());
@@ -301,7 +310,7 @@ public class DeviceServiceImp implements DeviceService {
             if (jedisKeys.hasKey(device.getDeviceId() + DeviceConstant.SEARCH_ACCESS)) {
                 break;
             }
-            if (System.currentTimeMillis() - startTime > 3000) {
+            if (System.currentTimeMillis() - startTime > 5000) {
                 break;
             }
         }
@@ -309,8 +318,26 @@ public class DeviceServiceImp implements DeviceService {
         if (!StringUtils.hasText(ip)) {
             throw new AttendanceException(ResultError.DEVICE_SEARCH_EMPTY);
         }
-        if (!ip.equals(device.getIp())) {
+        /*if (!ip.equals(device.getIp())) {
             throw new AttendanceException(ResultError.DEVICE_IP_NO_MATCH);
+        }*/
+    }
+
+    private void isResetAccessDevice(Device device) {
+        accessService.clearAccess(device.getDeviceId(), device.getIp(), device.getOutPort());
+        long startTime = System.currentTimeMillis();
+        while (true) {
+            if (jedisKeys.hasKey(device.getDeviceId() + DeviceConstant.CLEAR_AUTHORITY)) {
+                break;
+            }
+            if (System.currentTimeMillis() - startTime > 5000) {
+                break;
+            }
+        }
+        //是否成功
+        Boolean isClear = (Boolean) jedisStrings.get(device.getDeviceId() + DeviceConstant.CLEAR_AUTHORITY);
+        if (isClear == null || !isClear) {
+            throw new AttendanceException(ResultError.RESET_DEVICE_ERROR);
         }
     }
 }

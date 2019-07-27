@@ -1,6 +1,7 @@
 package com.real.name.person;
 
 import com.alibaba.fastjson.JSONObject;
+import com.real.name.auth.entity.User;
 import com.real.name.others.BaseTest;
 import com.real.name.common.utils.ImageTool;
 import com.real.name.httptest.RunService;
@@ -8,6 +9,7 @@ import com.real.name.person.controller.PersonController;
 import com.real.name.person.entity.Person;
 import com.real.name.person.entity.PersonQuery;
 import com.real.name.person.service.PersonService;
+import com.real.name.person.service.repository.PersonQueryMapper;
 import com.real.name.person.service.repository.PersonRepository;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -34,6 +36,9 @@ public class PersonTest extends BaseTest {
     @Autowired
     private RunService runService;
 
+    @Autowired
+    private PersonQueryMapper personQueryMapper;
+
     @Test
     public void testGetPersonAll(){
         PageRequest pageRequest = PageRequest.of(0, 10);
@@ -52,8 +57,8 @@ public class PersonTest extends BaseTest {
     public void testGetPersonAllByWorkRole(){
         PageRequest pageRequest = PageRequest.of(0, 10);
         Integer workRole = 20;
-        Page<Person> allByWorkRole = personRepository.findByWorkRole(pageRequest, workRole);
-        System.out.println(allByWorkRole.getContent());
+        /*Page<Person> allByWorkRole = personRepository.findByWorkRole(pageRequest, workRole);
+        System.out.println(allByWorkRole.getContent());*/
     }
 
     @Test
@@ -81,8 +86,8 @@ public class PersonTest extends BaseTest {
     @Test
     public void findPersonTest() {
         PageRequest p = PageRequest.of(0, 10);
-        Page<Person> work = personRepository.findByWorkRole(p, 10);
-        System.out.println(work);
+        /*Page<Person> work = personRepository.findByWorkRole(p, 10);
+        System.out.println(work);*/
     }
 
     @Test
@@ -145,7 +150,7 @@ public class PersonTest extends BaseTest {
         }
     }
 
-    @Test
+    /*@Test
     public void findIssuePersonImageInfoTest() {
         Person issuePersonInfo = personRepository.findIssuePersonImageInfo(100);
         System.out.println(issuePersonInfo);
@@ -173,6 +178,45 @@ public class PersonTest extends BaseTest {
     public void getIdCardIndexByPersonId() {
         String idCardIndex = personRepository.getIdCardIndexByPersonId(1100);
         System.out.println(idCardIndex);
+    }*/
+
+    /**
+     * ==============================================================
+     */
+
+    @Test
+    public void findAll() {
+        List<Person> all = personQueryMapper.findAll();
+        User user = new User();
+        System.out.println(all);
+    }
+
+    @Test
+    public void findAllPersonInProjects() {
+        Set<String> projectList = new HashSet<>();
+        projectList.add("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        List<Person> allPersonInProjects = personQueryMapper.findAllPersonInProjects(projectList);
+        System.out.println(allPersonInProjects);
+    }
+
+    @Test
+    public void findAllPersonNotAttendProject() {
+        List<Person> allPersonNotAttendProject = personQueryMapper.findAllPersonNotAttendProject();
+        System.out.println(allPersonNotAttendProject);
+    }
+
+    @Test
+    public void findByWorkRole() {
+        List<Person> personList = personQueryMapper.findByWorkRole(10);
+        System.out.println(personList);
+    }
+
+    @Test
+    public void findByWorkRoleInProject() {
+        Set<String> projectCOdeList = new HashSet<>();
+        projectCOdeList.add("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        List<Person> byWorkRoleInProject = personQueryMapper.findByWorkRoleInProject(10, projectCOdeList);
+        System.out.println(byWorkRoleInProject);
     }
 
 

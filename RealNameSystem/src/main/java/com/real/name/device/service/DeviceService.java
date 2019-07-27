@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface DeviceService {
 
@@ -24,6 +25,11 @@ public interface DeviceService {
     void updateFaceDevice(Device device);
 
     void updateAccessDevice(Device device);
+
+    /**
+     * 删除设备
+     */
+    void deleteDevice(Device device);
 
     /**
      * 删除设备的人员信息
@@ -108,7 +114,15 @@ public interface DeviceService {
 
     List<String> findDeviceIdsByProjectCode(String projectCode);
 
+    /**
+     * 搜索设备
+     */
     List<Device> searchDevice(DeviceQuery deviceQuery);
+
+    /**
+     * 根据项目id查询设备ip
+     */
+    Set<String> findIPByProjectCode(String projectCode);
 
 
 

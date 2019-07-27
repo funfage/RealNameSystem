@@ -3,6 +3,7 @@ package com.real.name.record.controller;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.real.name.common.result.ResultVo;
+import com.real.name.common.utils.PageUtils;
 import com.real.name.common.utils.TimeUtil;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.person.entity.Person;
@@ -107,12 +108,7 @@ public class AttendanceController {
             workDayInfo.setWorkHours(hours);
             workDayInfoList.add(workDayInfo);
         }
-        Map<String, Object> map = new HashMap<>();
-        map.put("workDayInfoList", workDayInfoList);
-        map.put("pageNum", pageInfo.getPageNum());
-        map.put("pageSize", pageInfo.getPageSize());
-        map.put("total", pageInfo.getTotal());
-        return ResultVo.success(map);
+        return PageUtils.pageResult(pageInfo, workDayInfoList);
     }
 
     /**

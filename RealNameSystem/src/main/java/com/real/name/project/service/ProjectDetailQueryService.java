@@ -97,4 +97,9 @@ public interface ProjectDetailQueryService {
      */
     List<ProjectDetailQuery> findDelPersonInDeviceByProject(String projectCode);
 
+    /**
+     * 获取一个项目下所有人员数目
+     */
+    Integer countPersonNumByProjectCode( String projectCode);
+
 }

@@ -57,12 +57,11 @@ public class ReadHeadServerHandler extends SimpleChannelInboundHandler<DatagramP
                 ApplicationContext appCtx = SpringUtil.getApplicationContext();
                 PersonService personService = appCtx.getBean(PersonService.class);
                 //根据身份证索引号查询人员信息
-                Optional<Person> personOptional = personService.findByIdCardIndex(cardNo);
+                Person person = personService.findByIdCardIndex(cardNo);
                 int personId = 0;
                 String personName = null;
-                if (personOptional.isPresent()) {
-                    Person person = personOptional.get();
-                    personId = personOptional.get().getPersonId();
+                if (person != null) {
+                    personId = person.getPersonId();
                     personName = person.getPersonName();
                     //map存储返回给前端的人员信息
                 }

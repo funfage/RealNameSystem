@@ -1,6 +1,6 @@
 package com.real.name.project.controller;
 
-import com.alibaba.fastjson.JSONArray;
+import com.alibaba.druid.sql.PagerUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -11,7 +11,7 @@ import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.CommonUtils;
 import com.real.name.common.utils.JedisService;
-import com.real.name.common.utils.NationalUtils;
+import com.real.name.common.utils.PageUtils;
 import com.real.name.common.utils.TimeUtil;
 import com.real.name.common.websocket.WebSocket;
 import com.real.name.device.entity.Device;
@@ -97,8 +97,8 @@ public class ProjectController {
         }
         try {
             // 判断项目名称是否唯一
-            Optional<Project> optionalProject = projectService.findByName(project.getName());
-            if (optionalProject.isPresent()) {
+            Project selectProject = projectService.findByName(project.getName());
+            if (selectProject != null) {
                 throw new AttendanceException(ResultError.PROJECT_EXIST);
             }
             //为项目生成一个唯一的projectCode
@@ -122,7 +122,7 @@ public class ProjectController {
     @GetMapping("/queryProject")
     public ResultVo queryProject(@RequestParam(value = "pageIndex", defaultValue = "0") Integer pageIndex,
                        @RequestParam(value = "pageSize", defaultValue = "20") Integer pageSize) throws Exception {
-        // 从全国对接平台查询项目
+        /*// 从全国对接平台查询项目
         JSONObject jsonObject = NationalUtils.queryProject(pageIndex, pageSize);
         //判断是否查询成功
         if(!jsonObject.getBoolean("error")){
@@ -139,13 +139,15 @@ public class ProjectController {
                     }
                 }
             }
-        }
+        }*/
         //从数据库查询信息
-        Page<Project> queryList = projectService.findAll(PageRequest.of(pageIndex, pageSize));
+        PageHelper.startPage(pageIndex + 1, pageSize);
+        List<Project> queryList = projectService.findAll();
+        PageInfo<Project> pageInfo = new PageInfo<>(queryList);
         if (queryList.isEmpty()) {
             return ResultVo.failure(ResultError.QUERY_EMPTY);
         }
-        return ResultVo.success(queryList);
+        return PageUtils.pageResult(pageInfo, queryList);
     }
 
     /**
@@ -157,11 +159,10 @@ public class ProjectController {
             throw AttendanceException.emptyMessage("projectCode");
         }
         //查询该项目是否存在
-        Optional<Project> projectOptional = projectService.findByProjectCode(project.getProjectCode());
-        if(!projectOptional.isPresent()){
+        Project selectProject = projectService.findByProjectCode(project.getProjectCode());
+        if(selectProject == null){
             throw new AttendanceException(ResultError.PROJECT_NOT_EXIST);
         }
-        Project selectProject = projectOptional.get();
         //信息的合并
         mergeProject(selectProject, project);
         try {
@@ -218,8 +219,8 @@ public class ProjectController {
                               @RequestParam("projectCode") String projectCode,
                               @RequestParam("teamSysNo") Integer teamSysNo) {
         // 判断是否存在该项目
-        Optional<Project> project = projectService.findByProjectCode(projectCode);
-        if (!project.isPresent()) {
+        Project project = projectService.findByProjectCode(projectCode);
+        if (project == null) {
             throw new AttendanceException(ResultError.PROJECT_NOT_EXIST);
         }
         // 判断是否存在该班组
@@ -236,8 +237,7 @@ public class ProjectController {
         //查询项目绑定的控制器设备
         List<Device> projectAccessDevices = deviceService.findByProjectCodeAndDeviceType(projectCode, DeviceConstant.AccessDeviceType);
         //判断该项目是否有绑定设备
-        if ((projectFaceDevices == null || projectFaceDevices.size() <= 0) &&
-                (projectAccessDevices == null || projectAccessDevices.size() <= 0)) {
+        if ((projectFaceDevices.size() <= 0) && (projectAccessDevices.size() <= 0)) {
             throw new AttendanceException(ResultError.PROJECT_NO_BIND_DEVICE);
         }
         // 添加人员到项目中

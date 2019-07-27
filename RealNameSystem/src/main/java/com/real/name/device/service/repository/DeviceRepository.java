@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface DeviceRepository extends JpaRepository<Device, String> {
 
@@ -43,11 +44,13 @@ public interface DeviceRepository extends JpaRepository<Device, String> {
     @Transactional
     void updateDeviceIPByProjectCode(@Param("ip") String ip, @Param("projectCode") String projectCode);
 
-    Optional<Device> findByDeviceId(String deviceId);
-
     /**
      * 根据projectId查询所有的deviceId
      */
     @Query("select deviceId from Device where projectCode = :projectCode")
     List<String> findDeviceIdsByProjectCode(@Param("projectCode") String projectCode);
+
+    /**
+     * 根据projectCode查询设备ip
+     */
 }

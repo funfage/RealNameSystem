@@ -19,13 +19,13 @@ public interface ProjectService {
     /**
      * 分页查询
      */
-    Page<Project> findAll(Pageable pageable);
+    List<Project> findAll();
 
     /**
      * 查找项目
      * @param projectCode 项目id
      */
-    Optional<Project> findByProjectCode(String projectCode);
+    Project findByProjectCode(String projectCode);
 
     /**
      * 修改项目信息
@@ -40,7 +40,7 @@ public interface ProjectService {
     /**
      * 根据项目名查询
      */
-    Optional<Project> findByName(String projectName);
+    Project findByName(String projectName);
 
     /**
      * 根据projectCode查询项目名称
@@ -56,6 +56,8 @@ public interface ProjectService {
      * 搜索项目
      */
     List<Project> searchProject(ProjectQuery projectQuery);
+
+
 
 
 }

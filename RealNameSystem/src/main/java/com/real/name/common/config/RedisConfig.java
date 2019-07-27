@@ -67,7 +67,6 @@ public class RedisConfig extends CachingConfigurerSupport {
     @Value("${redis.password}")
     private String password;
 
-
     @Bean
     public JedisPoolConfig getPool(){
         JedisPoolConfig config = new JedisPoolConfig();

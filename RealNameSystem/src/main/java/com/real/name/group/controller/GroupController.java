@@ -69,8 +69,8 @@ public class GroupController {
             }
         }
         // 判断项目是否存在
-        Optional<Project> projectOptional = projectService.findByProjectCode(group.getProjectCode());
-        if (!projectOptional.isPresent()) {
+        Project project = projectService.findByProjectCode(group.getProjectCode());
+        if (project == null) {
             throw new AttendanceException(ResultError.PROJECT_NOT_EXIST);
         }
         //判断是否选择的是管理员班组
@@ -80,7 +80,6 @@ public class GroupController {
                 throw new AttendanceException(ResultError.ADMIN_GROUP_ERROR);
             }
         }
-        Project project = projectOptional.get();
         group.setCorpCode(project.getContractorCorpCode());
         group.setCorpName(project.getContractorCorpName());
         // 判断是否需要上传到全国平台

@@ -1,10 +1,11 @@
 package com.real.name.others;
 
-import com.real.name.common.utils.ConvertCode;
+import com.real.name.auth.entity.Role;
+import com.real.name.auth.entity.User;
+import com.real.name.auth.service.AuthUtils;
 import com.real.name.common.utils.TimeUtil;
 import com.real.name.device.netty.model.AccessResponse;
 import com.real.name.device.netty.utils.ConvertUtils;
-import io.netty.buffer.ByteBuf;
 
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
@@ -13,10 +14,7 @@ import java.util.*;
 public class MyTest {
 
     public static void main(String[] args) throws Exception {
-        Date todayBegin = new Date(TimeUtil.getTodayBegin() * 1000);
-        Date todayEnd = new Date(TimeUtil.getTomorrowBegin() * 1000);
-        System.out.println(todayBegin);
-        System.out.println(todayEnd);
+        roleTest();
     }
 
     public static void testMap() {
@@ -150,6 +148,20 @@ public class MyTest {
         String str2 = "175A00001B7E4D0D0DD7370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
         System.out.println(str.length());
         System.out.println(str2.length());
+    }
+
+    public static void roleTest() {
+        User user = new User();
+        Role role = new Role();
+        role.setRoleName("admin");
+        Role role1 = new Role();
+        role1.setRoleName("admin");
+        Set<Role> roleList = new HashSet<>();
+        roleList.add(role);
+        roleList.add(role1);
+        user.setRoles(roleList);
+        boolean bool = AuthUtils.isOnlyProjectRole(user);
+        System.out.println(bool);
     }
 
 }

@@ -32,8 +32,8 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public WorkerGroup create(WorkerGroup group) {
 
-        Optional<Project> project = projectService.findByProjectCode(group.getProjectCode());
-        if (!project.isPresent()) {
+        Project project = projectService.findByProjectCode(group.getProjectCode());
+        if (project == null) {
             throw new AttendanceException(ResultError.PROJECT_NOT_EXIST);
         }
         return groupRepository.save(group);

@@ -1,7 +1,10 @@
 package com.real.name.person.controller;
+
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.real.name.auth.entity.User;
+import com.real.name.auth.service.AuthUtils;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.result.ResultError;
@@ -20,7 +23,7 @@ import com.real.name.project.entity.ProjectPersonDetail;
 import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.ProjectPersonDetailService;
 import com.real.name.project.service.ProjectService;
-import com.real.name.record.entity.Attendance;
+import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -81,7 +85,7 @@ public class PersonController {
             logger.error("将personStr转换为json字符串出现异常");
             throw AttendanceException.errorMessage(ResultError.OPERATOR_ERROR);
         }
-        if (personService.findByIdCardNumber(person.getIdCardNumber()).isPresent()) {
+        if (personService.findByIdCardNumber(person.getIdCardNumber()) != null) {
             throw new AttendanceException(ResultError.PERSON_EXIST);
         }
         //判断传入的照片是否为空
@@ -152,7 +156,6 @@ public class PersonController {
     /**
      * 修改员工信息
      * @param personStr 人员的json字符串
-     * @return
      */
     @Transactional
     @PostMapping("updatePerson")
@@ -239,32 +242,12 @@ public class PersonController {
     /**
      * 根据id查找人员，若id=-1则查找全部人员
      */
-    @GetMapping("/find")
-    public ResultVo findPerson(@RequestParam("id") Integer id,
-                         @RequestParam(name = "page", defaultValue = "0") Integer page,
-                         @RequestParam(name = "size", defaultValue = "10") Integer size,
+    @GetMapping("/findPerson")
+    public ResultVo findPerson(@RequestParam("personId") Integer personId,
+                         @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
+                         @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                          @RequestParam(name = "workRole", defaultValue = "0") Integer workRole) {
-        PageRequest p = PageRequest.of(page, size);
-        if (id == -1 && workRole != 0) {
-            Page<Person> people;
-            if (workRole == -1) {
-                people = personService.findAll(p);
-            } else {
-                people = personService.findByWorkRole(p, workRole);
-            }
-            if (people.isEmpty()) {
-                return ResultVo.failure("查询信息为空");
-            } else {
-                return ResultVo.success(people);
-            }
-        } else {
-            Optional<Person> optional = personService.findById(id);
-            if (optional.isPresent()) {
-                return ResultVo.success(optional);
-            } else {
-                return ResultVo.failure("查询信息为空");
-            }
-        }
+        return personService.findMainPagePerson(personId, pageNum, pageSize, workRole);
     }
 
     @PostMapping("/searchPerson")

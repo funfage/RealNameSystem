@@ -1,10 +1,10 @@
-package com.real.name.login.service.implement;
+package com.real.name.auth.service.implement;
 
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
-import com.real.name.login.entity.Admin;
-import com.real.name.login.service.AdminService;
-import com.real.name.login.service.repository.AdminRepository;
+import com.real.name.auth.entity.Admin;
+import com.real.name.auth.service.AdminService;
+import com.real.name.auth.service.repository.AdminRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

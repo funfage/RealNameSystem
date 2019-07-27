@@ -42,6 +42,101 @@
         pj.function_num, pj.nation_num, pj.is_upload
     </sql>
 
+    <insert id="saveProject" parameterType="com.real.name.project.entity.Project"
+    keyProperty="project.projectCode" keyColumn="project_code" useGeneratedKeys="true">
+        insert into
+        project
+        (project_code, `name`, contractor_corp_name, contractor_corp_code, category, description,
+        build_corp_name, build_corp_code, builder_licenses, build_plan_num, prj_plan_num, area_code,
+        invest, building_area, building_length, start_date, complete_date, address, lat, lng,
+        prj_status, link_phone, link_man, approval_num, approval_level_num, prj_size, property_num,
+        function_num, nation_num, is_upload)
+        values
+        (#{project.projectCode}, #{project.name}, #{project.contractorCorpName}, #{project.contractorCorpCode}, #{project.category},
+        #{project.description}, #{project.buildCorpName}, #{project.buildCorpCode}, #{project.builderLicenses},#{project.buildPlanNum},
+        #{project.prjPlanNum}, #{project.areaCode}, #{project.invest}, #{project.buildingArea}, #{project.buildingLength},
+        #{project.startDate}, #{project.completeDate}, #{project.address}, #{project.lat}, #{project.lng}, #{project.prjStatus},
+        #{project.linkPhone}, #{project.linkMan}, #{project.approvalNum}, #{project.approvalLevelNum}, #{project.prjSize},
+        #{project.propertyNum}, #{project.functionNum}, #{project.nationNum}, #{project.isUpload}
+        )
+    </insert>
+
+    <select id="findByName" resultMap="queryMap" parameterType="string">
+        select
+          <include refid="projectSql"/>
+        from
+          project pj
+        where
+          pj.name = #{projectName}
+    </select>
+
+    <select id="findByProjectCode" resultMap="queryMap" parameterType="string">
+        select
+          <include refid="projectSql"/>
+        from
+          project pj
+        where
+          pj.project_code = #{projectCode}
+    </select>
+
+    <select id="findAll" resultMap="queryMap">
+        select
+          <include refid="projectSql"/>
+        from
+          project pj
+    </select>
+    <select id="findAllInProjectCode" resultMap="queryMap">
+        select
+          <include refid="projectSql"/>
+        from
+          project pj
+        where
+        project_code
+        in
+        <choose>
+            <when test="projectCodeList != null and projectCodeList.size() != 0">
+                <foreach collection="projectCodeList" item="id" index="index" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </when>
+            <otherwise>
+                ("")
+            </otherwise>
+        </choose>
+    </select>
+
+    <delete id="deleteByProjectCode" parameterType="string">
+        delete from
+          project
+        where
+          project_code = #{projectCode}
+    </delete>
+
+    <select id="findProjectName" parameterType="string" resultType="string">
+        select
+          `name`
+        from
+          project
+        where
+          project_code = #{projectCode}
+    </select>
+
+    <select id="findProNameAndCorp" parameterType="string" resultMap="queryMap">
+        select
+          pj.name, pj.contractor_corp_name
+        from
+          project pj
+        where
+          project_code = #{projectCode}
+    </select>
+
+    <select id="findAllProjectCode" resultType="string">
+        select
+          project_code
+        from
+          project
+    </select>
+
     <select id="searchProject" resultMap="queryMap">
         select
         <include refid="projectSql"/>
@@ -62,5 +157,7 @@
             </if>
         </where>
     </select>
+
+
 
 </mapper>

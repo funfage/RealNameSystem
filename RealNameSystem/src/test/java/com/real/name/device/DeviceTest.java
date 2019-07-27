@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class DeviceTest extends BaseTest {
     @Autowired
@@ -77,5 +78,18 @@ public class DeviceTest extends BaseTest {
         deviceQuery.setDeviceId("E28");
         List<Device> devices = deviceQueryMapper.searchDevice(deviceQuery);
         System.out.println(devices);
+    }
+
+    @Test
+    public void delete() {
+        Device device = new Device();
+        device.setDeviceId("E0F28CF710E2596CF8");
+        repository.delete(device);
+    }
+
+    @Test
+    public void findIPByProjectCode() {
+        Set<String> ips = deviceQueryMapper.findIPByProjectCode("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        System.out.println(ips.iterator().next());
     }
 }

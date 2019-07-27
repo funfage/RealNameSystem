@@ -12,7 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ProjectTest extends BaseTest {
     @Autowired
@@ -24,9 +27,18 @@ public class ProjectTest extends BaseTest {
     @Autowired
     private ProjectQueryMapper projectQueryMapper;
 
+
+    @Test
+    public void findByName() {
+        Project project = projectQueryMapper.findByName("新兴县四馆一中心工程");
+        System.out.println(project);
+    }
+
+
     @Test
     public void deleteByProjectCodeTestRep() {
-        int i = projectRepository.deleteByProjectCode("55010620190510008");
+//        int i = projectRepository.deleteByProjectCode("55010620190510008");
+        int i = projectQueryMapper.deleteByProjectCode("7gU44Drw914wQe8aYK245ks8v32Iu50X");
         Assert.assertEquals(1, i);
     }
 
@@ -42,31 +54,46 @@ public class ProjectTest extends BaseTest {
 
     @Test
     public void findAll() {
-        PageRequest pageRequest = PageRequest.of(2, 5);
-        Page<Project> all = projectRepository.findAll(pageRequest);
+       /* PageRequest pageRequest = PageRequest.of(2, 5);
+        Page<Project> all = projectRepository.findAll(pageRequest);*/
         /*for (Project project : all) {
             System.out.println(project);
         }*/
-        System.out.println(all.get());
+        List<Project> all = projectQueryMapper.findAll();
+        System.out.println(all);
+    }
+
+    @Test
+    public void findAllInProjectCode() {
+        Set<String> projectList = new HashSet<>();
+        projectList.add("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        projectList.add("44010620190510008");
+        List<Project> projects = projectQueryMapper.findAllInProjectCode(projectList);
+        System.out.println(projects);
     }
 
     @Test
     public void findProjectName() {
-        String projectName = projectRepository.findProjectName("36bj84W235Zgc8O78yuS32510ppMkHfe");
+//        String projectName = projectRepository.findProjectName("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        String projectName = projectQueryMapper.findProjectName("36bj84W235Zgc8O78yuS32510ppMkHfe");
         System.out.println(projectName);
     }
 
     @Test
     public void findProNameAndCorp() {
-        Project proNameAndCorp = projectRepository.findProNameAndCorp("36bj84W235Zgc8O78yuS32510ppMkHfe");
+//        Project proNameAndCorp = projectRepository.findProNameAndCorp("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        Project proNameAndCorp = projectQueryMapper.findProNameAndCorp("36bj84W235Zgc8O78yuS32510ppMkHfe");
         System.out.println(proNameAndCorp);
     }
 
     @Test
     public void findAllProjectCode() {
-        List<String> allProjectCode = projectRepository.findAllProjectCode();
+//        List<String> allProjectCode = projectRepository.findAllProjectCode();
+        List<String> allProjectCode = projectQueryMapper.findAllProjectCode();
         System.out.println(allProjectCode);
     }
+
+
 
     @Test
     public void searchProject() {
@@ -77,6 +104,19 @@ public class ProjectTest extends BaseTest {
         projectQuery.setCategory("01");*/
         List<Project> projects = projectQueryMapper.searchProject(projectQuery);
         System.out.println(projects);
+    }
+
+    @Test
+    public void saveProject() {
+        Project project = new Project();
+        project.setProjectCode("dfdfdff");
+        project.setAddress("address");
+        project.setCategory("01");
+        project.setContractorCorpName("dgdg");
+        project.setDescription("dfdf");
+        project.setName("dgddfff");
+        int i = projectQueryMapper.saveProject(project);
+        System.out.println(i);
     }
 
 

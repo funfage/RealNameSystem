@@ -14,6 +14,7 @@ import com.real.name.device.service.repository.DeviceQueryMapper;
 import com.real.name.netty.dao.DeviceDao;
 import com.real.name.project.entity.Project;
 import com.real.name.project.service.ProjectService;
+import com.real.name.project.service.repository.ProjectQueryMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,12 +34,6 @@ public class DeviceController {
     private Logger logger = LoggerFactory.getLogger(DeviceController.class);
 
     @Autowired
-    private JedisService.JedisKeys jedisKeys;
-
-    @Autowired
-    private JedisService.JedisStrings jedisStrings;
-
-    @Autowired
     private DeviceDao deviceDao;
 
     @Autowired
@@ -46,6 +41,9 @@ public class DeviceController {
 
     @Autowired
     private DeviceService deviceService;
+
+    @Autowired
+    private ProjectQueryMapper projectQueryMapper;
 
     /**
      * 查询某个项目下设备信息
@@ -55,35 +53,35 @@ public class DeviceController {
                                Long endTime,
                                String deviceId,
                                String projectCode,
-                               @RequestParam("pageNumber")Integer pageNumber,
-                               @RequestParam("pageSize") Integer pageSize){
-        Map<String,Object> map = new HashMap<>();
-        if (startTime != null){
+                               @RequestParam("pageNumber") Integer pageNumber,
+                               @RequestParam("pageSize") Integer pageSize) {
+        Map<String, Object> map = new HashMap<>();
+        if (startTime != null) {
             Date startDate = new Date(startTime);
-            map.put("startTime",startDate);
+            map.put("startTime", startDate);
         }
-        if (deviceId != null){
-            map.put("deviceId",deviceId);
+        if (deviceId != null) {
+            map.put("deviceId", deviceId);
         }
-        if (projectCode != null){
-            map.put("projectCode",projectCode);
+        if (projectCode != null) {
+            map.put("projectCode", projectCode);
         }
-        if (endTime != null){
+        if (endTime != null) {
             Date endDate = new Date(endTime);
-            map.put("endTime",endDate);
+            map.put("endTime", endDate);
         }
-        map.put("start",pageNumber*pageSize);
-        map.put("end",pageSize);
+        map.put("start", pageNumber * pageSize);
+        map.put("end", pageSize);
         List<Device> result = deviceDao.getDevice(map);
         Integer allNumber = deviceDao.countDevice(map);
-        Map<String,Object> finalRes = new HashMap<>();
-        if (result != null && allNumber != null){
-            finalRes.put("totalCount",allNumber);
-            finalRes.put("rows",result);
+        Map<String, Object> finalRes = new HashMap<>();
+        if (result != null && allNumber != null) {
+            finalRes.put("totalCount", allNumber);
+            finalRes.put("rows", result);
             return ResultVo.success(finalRes);
-        }else {
-            finalRes.put("totalCount",0);
-            finalRes.put("rows",null);
+        } else {
+            finalRes.put("totalCount", 0);
+            finalRes.put("rows", null);
             return ResultVo.success(finalRes);
         }
     }
@@ -91,36 +89,49 @@ public class DeviceController {
     @PostMapping("/updatedevice")
     public ResultVo updatedevice(String factory,
                                  Integer deviceType,
-                                 @RequestParam("deviceId")String deviceId,
+                                 @RequestParam("deviceId") String deviceId,
                                  String ip,
                                  Integer direction,
                                  Integer channel,
                                  Long installTime,
                                  Integer outPort,
-                                 @RequestParam("projectCode")String projectCode,
+                                 @RequestParam("projectCode") String projectCode,
                                  String phone,
                                  String pass,
-                                 String remark){
+                                 String remark) {
         if (!StringUtils.hasText(deviceId)) {
             throw AttendanceException.emptyMessage("设备id");
+        }
+        if (projectQueryMapper.findByProjectCode(projectCode) == null) {
+            throw new AttendanceException(ResultError.PROJECT_NOT_EXIST);
         }
         //查询设备是否存在
         Optional<Device> deviceOptional = deviceService.findByDeviceId(deviceId);
         if (!deviceOptional.isPresent()) {
             throw new AttendanceException(ResultError.DEVICE_NOT_EXIST);
         }
+        //查询设备的IP和端口是否重复
+        if (deviceService.findByIpAndOutPort(ip, outPort).isPresent()) {
+            throw new AttendanceException(ResultError.IP_PORT_REPEAT);
+        }
         Device selectDevice = deviceOptional.get();
         //校验参数并设置
         verifyParam(factory, deviceType, ip, direction, channel, installTime, outPort, phone, remark, projectCode, pass, selectDevice);
+        //判断设备是否绑定项目,如果绑定项目则修改设备ip
+        if (projectCode != null) {
+            Set<String> ipSet = deviceService.findIPByProjectCode(projectCode);
+            selectDevice.setIp(ipSet.iterator().next());
+        }
         //更新人脸设备
         if (selectDevice.getDeviceType() == 3) {
+            //人脸设备
             deviceService.updateFaceDevice(selectDevice);
         } else if (selectDevice.getDeviceType() == 1) {
-
+            //控制器
+            deviceService.updateAccessDevice(selectDevice);
         } else {
             /**
              * TODO 更新其他设备信息
-             * 后续处理
              */
             Device device = deviceService.save(selectDevice);
             if (device == null) {
@@ -132,18 +143,18 @@ public class DeviceController {
 
     @PostMapping("/adddevice")
     @Transactional
-    public ResultVo adddevice(@RequestParam("factory")String factory,
-                                 @RequestParam("deviceType")Integer deviceType,
-                                 @RequestParam("deviceId")String deviceId,
-                                 @RequestParam("ip")String ip,
-                                 @RequestParam("direction")Integer direction,
-                                 @RequestParam("channel")Integer channel,
-                                 @RequestParam("installTime")Long installTime,
-                                 @RequestParam("outPort")Integer outPort,
-                                 String projectCode,
-                                 String phone,
-                                 String pass,
-                                 String remark){
+    public ResultVo adddevice(@RequestParam("factory") String factory,
+                              @RequestParam("deviceType") Integer deviceType,
+                              @RequestParam("deviceId") String deviceId,
+                              @RequestParam("ip") String ip,
+                              @RequestParam("direction") Integer direction,
+                              @RequestParam("channel") Integer channel,
+                              @RequestParam("installTime") Long installTime,
+                              @RequestParam("outPort") Integer outPort,
+                              String projectCode,
+                              String phone,
+                              String pass,
+                              String remark) {
         if (!StringUtils.hasText(deviceId)) {
             throw AttendanceException.emptyMessage("设备id");
         } else if (deviceType == null) {
@@ -180,10 +191,24 @@ public class DeviceController {
         } else if (device.getDeviceType() == 1) {
             //添加控制器
             deviceService.addAccessDevice(device);
-        } else if (device.getDeviceType() == 2){
+        } else if (device.getDeviceType() == 2) {
             //添加录用读头
             deviceService.save(device);
         }
+        return ResultVo.success();
+    }
+
+    /**
+     * 删除设备
+     */
+    @GetMapping("/deleteDevice")
+    public ResultVo deleteDevice(@RequestParam("deviceId") String deviceId) {
+        //查询该设备信息
+        Optional<Device> deviceOptional = deviceService.findByDeviceId(deviceId);
+        if (!deviceOptional.isPresent()) {
+            throw new AttendanceException(ResultError.DEVICE_NOT_EXIST);
+        }
+        deviceService.deleteDevice(deviceOptional.get());
         return ResultVo.success();
     }
 
@@ -206,14 +231,14 @@ public class DeviceController {
         PageInfo<Device> pageInfo = new PageInfo<>(devices);
         Map<String, Object> map = new HashMap<>();
         map.put("devices", devices);
-        map.put("pageNum", pageInfo.getPageSize());
+        map.put("pageNum", pageInfo.getPageNum());
         map.put("pageSize", pageInfo.getPageSize());
         map.put("total", pageInfo.getTotal());
         return ResultVo.success(map);
     }
 
     private void verifyParam(String factory, Integer deviceType, String ip, Integer direction, Integer channel,
-                            Long installTime, Integer outPort, String phone, String remark, String projectCode,
+                             Long installTime, Integer outPort, String phone, String remark, String projectCode,
                              String pass, Device device) {
         if (StringUtils.hasText(factory)) {
             device.setFactory(factory);
@@ -264,8 +289,8 @@ public class DeviceController {
         }
         if (StringUtils.hasText(projectCode)) {
             //从数据库中查询该项目编码是否存在
-            Optional<Project> projectOptional = projectService.findByProjectCode(projectCode);
-            if (!projectOptional.isPresent()) {
+            Project project = projectService.findByProjectCode(projectCode);
+            if (project == null) {
                 throw new AttendanceException(ResultError.PROJECT_NOT_EXIST);
             }
             device.setProjectCode(projectCode);

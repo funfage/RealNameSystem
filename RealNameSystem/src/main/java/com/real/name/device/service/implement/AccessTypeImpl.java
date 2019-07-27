@@ -38,13 +38,7 @@ public class AccessTypeImpl implements AccessType {
     private final int HexRadix = 16;
 
     @Autowired
-    private UDPClient udpClient;
-
-    @Autowired
     private JedisService.JedisStrings jedisStrings;
-
-    @Autowired
-    private JedisService.JedisKeys jedisKeys;
 
     @Autowired
     private DeviceService deviceService;
@@ -59,9 +53,6 @@ public class AccessTypeImpl implements AccessType {
     private IssueAccessService issueAccessService;
 
     @Autowired
-    private AccessService accessService;
-
-    @Autowired
     private DeleteInfoService deleteInfoService;
 
     /**
@@ -74,7 +65,6 @@ public class AccessTypeImpl implements AccessType {
         logger.info("十六进制数据为dataStr:{}", dataStr);
         //获取卡号
         String cardNoStr = dataStr.substring(16, 24);
-        logger.info("十六进制卡号为cardNoStr:", cardNoStr);
         byte[] cardNoBytes = ConvertUtils.reverse(ConvertUtils.hexToByteArray(cardNoStr));
         String cardNo = ConvertUtils.byte4ToInt(cardNoBytes, 0) + "";
         logger.warn("接收到的身份证索引号为cardNo:{}", cardNo);
@@ -95,10 +85,9 @@ public class AccessTypeImpl implements AccessType {
             }
             Optional<Device> deviceOptional = deviceService.findByDeviceId(deviceId + "");
             if (deviceOptional.isPresent() && date != null) {
-                Optional<Person> personOptional = personService.findByIdCardIndex(cardNo);
-                if (personOptional.isPresent()) {
+                Person person = personService.findByIdCardIndex(cardNo);
+                if (person != null) {
                     Device device = deviceOptional.get();
-                    Person person = personOptional.get();
                     //保存记录
                     Record record = new Record(deviceId + "",  DeviceConstant.AccessDeviceType, person.getPersonId(),
                             person.getPersonName(), date.getTime(), date, type, null, device.getDirection(), device.getChannel());
@@ -119,9 +108,8 @@ public class AccessTypeImpl implements AccessType {
         byte[] cardIndexBytes = ConvertUtils.reverse(ConvertUtils.hexToByteArray(cardIndexHex));
         int cardIndex = ConvertUtils.byte4ToInt(cardIndexBytes, 0);
         logger.info("查询的身份证索引号为:{}", cardIndex);
-        Optional<Person> personOptional = personService.findByIdCardIndex(cardIndex + "");
-        if (personOptional.isPresent()) {
-            Person person = personOptional.get();
+        Person person = personService.findByIdCardIndex(cardIndex + "");
+        if (person != null) {
             if (cardIndex != 0) {//接收到卡号则说明用户有权限
                 //修改下发标识
                 IssueAccess issueAccess = new IssueAccess(person, new Device(deviceId + ""), 1);

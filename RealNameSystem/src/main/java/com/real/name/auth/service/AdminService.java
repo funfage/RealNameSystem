@@ -1,6 +1,6 @@
-package com.real.name.login.service;
+package com.real.name.auth.service;
 
-import com.real.name.login.entity.Admin;
+import com.real.name.auth.entity.Admin;
 
 import java.util.Optional;
 

@@ -37,6 +37,10 @@ public class ResultVo {
         return new ResultVo(error.getCode(), false, error.getMessage() + message);
     }
 
+    public static ResultVo failure(Object data, ResultError error) {
+        return new ResultVo(error.getCode(), false, data, error.getMessage());
+    }
+
     public static ResultVo failure(Integer code, String message) {
         return new ResultVo(code, false, message);
     }

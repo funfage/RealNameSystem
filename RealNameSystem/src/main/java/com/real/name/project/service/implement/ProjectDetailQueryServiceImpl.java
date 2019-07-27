@@ -114,6 +114,11 @@ public class ProjectDetailQueryServiceImpl implements ProjectDetailQueryService 
         return projectDetailQueryMapper.findDelPersonInDeviceByProject(projectCode);
     }
 
+    @Override
+    public Integer countPersonNumByProjectCode(String projectCode) {
+        return projectDetailQueryMapper.countPersonNumByProjectCode(projectCode);
+    }
+
 }
 
 
