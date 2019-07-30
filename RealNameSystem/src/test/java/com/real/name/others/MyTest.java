@@ -3,6 +3,7 @@ package com.real.name.others;
 import com.real.name.auth.entity.Role;
 import com.real.name.auth.entity.User;
 import com.real.name.auth.service.AuthUtils;
+import com.real.name.common.utils.PathUtil;
 import com.real.name.common.utils.TimeUtil;
 import com.real.name.device.netty.model.AccessResponse;
 import com.real.name.device.netty.utils.ConvertUtils;
@@ -14,7 +15,12 @@ import java.util.*;
 public class MyTest {
 
     public static void main(String[] args) throws Exception {
-        roleTest();
+        Date date = new Date(System.currentTimeMillis());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
+        String format = dateFormat.format(date);
+        Date parse = dateFormat.parse(format);
+        System.out.println(format);
+        System.out.println(parse.getTime());
     }
 
     public static void testMap() {
@@ -160,8 +166,6 @@ public class MyTest {
         roleList.add(role);
         roleList.add(role1);
         user.setRoles(roleList);
-        boolean bool = AuthUtils.isOnlyProjectRole(user);
-        System.out.println(bool);
     }
 
 }

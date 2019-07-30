@@ -158,5 +158,19 @@ public class ProjectDetailQueryTest extends BaseTest {
 
     }
 
+    @Test
+    public void getIdWhileExists() {
+        Integer idWhileExists = mapper.getIdWhileExists(103);
+        Integer idWhileExists1 = mapper.getIdWhileExists(1002);
+        System.out.println(idWhileExists);
+        System.out.println(idWhileExists1);
+    }
+
+    @Test
+    public void getIdByProjectCodeAndPersonId() {
+        Integer id = mapper.getIdByProjectCodeAndPersonId("36bj84W235Zgc8O78yuS32510ppMkHfe", 94);
+        System.out.println(id);
+    }
+
 
 }

@@ -9,6 +9,7 @@
             <id property="personId" column="p_person_id"/>
             <result property="personName" column="person_name"/>
             <result property="subordinateCompany" column="subordinate_company"/>
+            <result property="corpCode" column="p_corp_code"/>
             <result property="gender" column="gender"/>
             <result property="address" column="p_address"/>
             <result property="age" column="age"/>
@@ -106,7 +107,7 @@
     </resultMap>
 
     <sql id="personSql">
-        p.person_id as p_person_id, p.person_name, p.subordinate_company, p.gender, p.address as p_address, p.age, p.bank_link_number, p.card_number,
+        p.person_id as p_person_id, p.person_name, p.subordinate_company, p.corp_code as p_corp_code, p.gender, p.address as p_address, p.age, p.bank_link_number, p.card_number,
         p.cell_phone, p.culture_level_type, p.expiry_date, p.grant_org, p.group_no, p.has_bad_medical_history,
         p.has_buy_insurance, p.hometown, p.id_card_index, p.id_card_number, p.id_card_type, p.issue_card_date,
         p.issue_card_pic, p.is_team_leader, p.joined_time, p.marital_status, p.nation, p.negative_id_card_image,
@@ -149,17 +150,17 @@
 
     <select id="getPersonAndWorkerGroupInfo" resultMap="queryAllMap">
         select
-        id,
-        <include refid="personSql"/>,
-        <include refid="workerGroupSql"/>
+          id,
+          <include refid="personSql"/>,
+          <include refid="workerGroupSql"/>
         from
-        project_detail pd, worker_group wg, person p
+          project_detail pd, worker_group wg, person p
         where
-        pd.person_id = p.person_id
+          pd.person_id = p.person_id
         and
-        pd.team_sys_no = wg.team_sys_no
+          pd.team_sys_no = wg.team_sys_no
         and
-        pd.project_code = #{projectCode}
+          pd.project_code = #{projectCode}
     </select>
 
     <select id="getProjectIdsByPersonId" resultType="string">
@@ -386,6 +387,25 @@
           project_detail
         where
           project_code = #{projectCode}
+    </select>
+
+    <select id="getIdWhileExists" resultType="integer">
+        select 1 from project_detail where id = #{id} limit 1;
+    </select>
+
+    <select id="getIdByProjectCodeAndPersonId" resultType="integer">
+        select
+          id
+        from
+          project_detail pd
+        <where>
+            <if test="personId != null">
+                pd.person_id = #{personId}
+            </if>
+            <if test="projectCode != null and projectCode != ''">
+                and pd.project_code = #{projectCode}
+            </if>
+        </where>
     </select>
 
 </mapper>

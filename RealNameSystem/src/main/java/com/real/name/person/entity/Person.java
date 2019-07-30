@@ -33,6 +33,11 @@ public class Person {
     private String subordinateCompany;
 
     /**
+     * 所在企业统一社会信用代码
+     */
+    private String corpCode;
+
+    /**
      * 身份证
      */
     private String idCardNumber;
@@ -217,10 +222,10 @@ public class Person {
      */
     private String suffixName;
 
-    /*@JsonIgnore
-    @OneToMany(mappedBy = "person", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
-    private List<ProjectPersonDetail> projectPersonDetails;*/
-
+    /**
+     * 是否上传到全国平台
+     */
+    private Integer uploadStatus;
 
     public Person() { }
 

@@ -121,5 +121,16 @@ public interface ProjectDetailQueryMapper {
      */
     Integer countPersonNumByProjectCode(@Param("projectCode") String projectCode);
 
+    /**
+     * 根据id判断记录是否存在
+     */
+    Integer getIdWhileExists(Integer id);
+
+    /**
+     * 通过projectCode和personId查询id
+     */
+    Integer getIdByProjectCodeAndPersonId(@Param("projectCode") String projectCode,
+                                          @Param("personId") Integer personId);
+
 
 }

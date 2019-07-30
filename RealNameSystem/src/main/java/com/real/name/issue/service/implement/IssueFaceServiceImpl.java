@@ -1,8 +1,12 @@
 package com.real.name.issue.service.implement;
 
+import com.real.name.device.entity.Device;
+import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.issue.entity.IssueFace;
+import com.real.name.issue.entity.IssuePersonStatus;
 import com.real.name.issue.service.IssueFaceService;
 import com.real.name.issue.service.repository.IssueFaceMapper;
+import com.real.name.person.entity.Person;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +22,19 @@ public class IssueFaceServiceImpl implements IssueFaceService {
 
     @Autowired
     private IssueFaceMapper mapper;
+
+    @Override
+    public void resend(int issuePersonStatus, int issueImageStatus, Person person, Device device) {
+        if (person != null) {
+            if (issuePersonStatus == 0) {
+                //表示下发人员失败
+                FaceDeviceUtils.issuePersonToOneDevice(device, person, 1);
+            } else if (issuePersonStatus == 1 && issueImageStatus == 0) {
+                //表示下发照片失败
+                FaceDeviceUtils.issueImageToOneDevice(device, person, 1);
+            }
+        }
+    }
 
     @Override
     public int updateByPersonIdAndDeviceId(IssueFace issueFace) {

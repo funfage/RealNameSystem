@@ -9,7 +9,6 @@ import com.real.name.auth.shiro.filter.MyFormAuthenticationFilter;
 import com.real.name.auth.shiro.filter.MyLogoutFilter;
 import com.real.name.auth.shiro.filter.MyPermissionsAuthorizationFilter;
 import com.real.name.auth.shiro.filter.MyUserFilter;
-import com.real.name.common.utils.PathUtil;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.shiro.cache.CacheManager;
 import org.apache.shiro.cache.ehcache.EhCacheManager;
@@ -26,7 +25,6 @@ import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.SimpleCookie;
-import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -56,12 +54,6 @@ public class ShiroConfig {
         System.out.println("ShiroConfiguration.shirFilter()");
         ShiroFilterFactoryBean bean = new ShiroFilterFactoryBean();
         bean.setSecurityManager(securityManager);
-        //设置登录URL, 如果不设置默认会自动寻找Web工程根目录下的"/login.jsp"页面
-        /*bean.setLoginUrl(noLoginUrl);
-        //登录成功后要跳转的链接
-        /*bean.setSuccessUrl(loginSuccessUrl);*/
-        //未授权界面
-        //bean.setUnauthorizedUrl(unauthorizedUrl);
 
         //配置自定义拦截器
         Map<String, Filter> filterMap = new LinkedHashMap<>();
@@ -73,20 +65,42 @@ public class ShiroConfig {
 
         //配置访问权限
         Map<String, String> map = new LinkedHashMap<>();
-        //登录
-        //map.put(noLoginUrl, "anon");
-        //map.put(loginSuccessUrl, "anon");
-        //map.put(unauthorizedUrl, "anon");
-        map.put("/user/submitLogin", "anon");
-        //注册
-        map.put("/user/userRegister", "anon");
         //静态资源
         map.put("/static/**", "anon");
-        //登出
+        //用户
+        map.put("/user/submitLogin", "anon");
+        map.put("/user/userRegister", "anon");
         map.put("/user/logout", "logout");
+        map.put("/user/getUsers", "authc,perms[getUsers]");
+        map.put("/user/userApply", "perms[userApply]");
+        map.put("/user/updateUserByAdmin", "perms[updateUserByAdmin]");
+        map.put("/user/deleteUser", "perms[deleteUser]");
         //项目
-        //map.put("/project/searchProject", "perms[searchProject]");
-        //authc:所有url都必须认证通过才可以访问; anon:所有url都都可以匿名访问,就是不用登录
+        map.put("/project/createProject", "perms[createProject]");
+        map.put("/project/updateProject", "perms[updateProject]");
+        map.put("/project/deleteProject", "perms[deleteProject]");
+        map.put("/project/addPerson", "perms[addPerson]");
+        map.put("/project/deletePersonInProject", "perms[deletePersonInProject]");
+        map.put("/project/uninstallDevice", "perms[uninstallDevice]");
+        map.put("/project/getAllProjectCodeAndName", "anon");
+        //工人
+        map.put("/person/savePerson", "perms[savePerson]");
+        map.put("/person/deletePerson", "perms[deletePerson]");
+        map.put("/person/updatePerson", "perms[updatePerson]");
+        //设备
+        map.put("/device/addDevice", "perms[addDevice]");
+        map.put("/device/updateDevice", "perms[updateDevice]");
+        map.put("/device/deleteDevice", "perms[deleteDevice]");
+        //班组
+        map.put("/group/createWorkerGroup", "perms[createWorkerGroup]");
+        map.put("/group/updateWorkerGroup", "perms[updateWorkerGroup]");
+        map.put("/group/deleteWorkerGroup", "perms[deleteWorkerGroup]");
+        //下发
+        map.put("/issueFace/resend", "perms[resend]");
+        map.put("/issueFace/resendUpdate", "perms[resendUpdate]");
+        //薪资
+        map.put("/pay/savePayInfo", "anon");
+        //user:所有url都必须认证通过才可以访问或者记住我;
         map.put("/**", "user");
         bean.setFilterChainDefinitionMap(map);
         return bean;
@@ -207,8 +221,8 @@ public class ShiroConfig {
         SimpleCookie simpleCookie = new SimpleCookie("sessionIdCookie");
         simpleCookie.setHttpOnly(true);
         //simpleCookie.setDomain(localUrl);
-        //设置有效时间,单位秒, 12小时 3600 * 24 * 12
-        simpleCookie.setMaxAge(3600 * 24 * 12);
+        //设置有效时间,单位秒, 12小时 3600 * 12
+        simpleCookie.setMaxAge(3600 * 12);
         return simpleCookie;
     }
 

@@ -102,7 +102,7 @@ public class ProjectController {
                 throw new AttendanceException(ResultError.PROJECT_EXIST);
             }
             //为项目生成一个唯一的projectCode
-            project.setProjectCode(CommonUtils.getUniqueString(32));
+            project.setProjectCode(CommonUtils.getUniqueString(20));
             //此处日期可能要修改
             Project insertProject = projectService.createProject(project);
             if (insertProject == null) {
@@ -296,29 +296,6 @@ public class ProjectController {
     }
 
     /**
-     * 获取项目中的人员
-     */
-    @GetMapping("/personInProject")
-    public ResultVo personInProject(@RequestParam("projectCode") String  projectCode,
-                                    @RequestParam(name = "pageIndex", defaultValue = "0") Integer page,
-                                    @RequestParam(name = "pageSize", defaultValue = "20") Integer size) {
-        try {
-            PageHelper.startPage(page + 1, size);
-            List<ProjectDetailQuery> detailQueries = projectDetailQueryService.getPersonAndWorkerGroupInfo(projectCode);
-            PageInfo<ProjectDetailQuery> pageInfo = new PageInfo<>(detailQueries);
-            Map<String, Object> map = new HashMap<>();
-            map.put("pageNum", pageInfo.getPageNum());
-            map.put("pageSize", pageInfo.getPageSize());
-            map.put("total", pageInfo.getTotal());
-            map.put("detailQueries", detailQueries);
-            return ResultVo.success(map);
-        } catch (Exception e) {
-            logger.error("查询某个项目下的人员信息和班组信息失败, e:{}", e.getMessage());
-            return ResultVo.failure();
-        }
-    }
-
-    /**
      * 从项目中移除人员
      */
     @GetMapping("/deletePersonInProject")
@@ -356,28 +333,29 @@ public class ProjectController {
         return ResultVo.success();
     }
 
+
+
     /**
-     * 查询项目
+     * 获取项目中的人员
      */
-    @PostMapping("searchProject")
-    public ResultVo searchProject(ProjectQuery projectQuery) {
-        PageHelper.startPage(projectQuery.getPageNum() + 1, projectQuery.getPageSize());
-        List<Project> projectList = projectService.searchProject(projectQuery);
-        PageInfo<Project> pageInfo = new PageInfo<>(projectList);
-        int presentNum = 0;
-        //统计在场人数
-        for (Project project : projectList) {
-            //获取在场人数
-            Set<String> keys = jedisKeys.keys(project.getProjectCode() + CommConstant.PRESENT + "*");
-            presentNum += keys.size();
+    @GetMapping("/personInProject")
+    public ResultVo personInProject(@RequestParam("projectCode") String  projectCode,
+                                    @RequestParam(name = "pageIndex", defaultValue = "0") Integer page,
+                                    @RequestParam(name = "pageSize", defaultValue = "20") Integer size) {
+        try {
+            PageHelper.startPage(page + 1, size);
+            List<ProjectDetailQuery> detailQueries = projectDetailQueryService.getPersonAndWorkerGroupInfo(projectCode);
+            PageInfo<ProjectDetailQuery> pageInfo = new PageInfo<>(detailQueries);
+            Map<String, Object> map = new HashMap<>();
+            map.put("pageNum", pageInfo.getPageNum());
+            map.put("pageSize", pageInfo.getPageSize());
+            map.put("total", pageInfo.getTotal());
+            map.put("detailQueries", detailQueries);
+            return ResultVo.success(map);
+        } catch (Exception e) {
+            logger.error("查询某个项目下的人员信息和班组信息失败, e:{}", e.getMessage());
+            return ResultVo.failure();
         }
-        Map<String, Object> map = new HashMap<>();
-        map.put("projectList", projectList);
-        map.put("pageNum", pageInfo.getPageNum());
-        map.put("pageSize", pageInfo.getPageSize());
-        map.put("total", pageInfo.getTotal());
-        map.put("presentNum", presentNum);
-        return ResultVo.success(map);
     }
 
     /**
@@ -403,6 +381,35 @@ public class ProjectController {
         device.setProjectCode(null);
         deviceService.save(device);
         return ResultVo.success();
+    }
+
+    /**
+     * =====================================以下只与查询有关============================================
+     */
+
+
+    /**
+     * 查询项目
+     */
+    @PostMapping("searchProject")
+    public ResultVo searchProject(ProjectQuery projectQuery) {
+        PageHelper.startPage(projectQuery.getPageNum() + 1, projectQuery.getPageSize());
+        List<Project> projectList = projectService.searchProject(projectQuery);
+        PageInfo<Project> pageInfo = new PageInfo<>(projectList);
+        int presentNum = 0;
+        //统计在场人数
+        for (Project project : projectList) {
+            //获取在场人数
+            Set<String> keys = jedisKeys.keys(project.getProjectCode() + CommConstant.PRESENT + "*");
+            presentNum += keys.size();
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("projectList", projectList);
+        map.put("pageNum", pageInfo.getPageNum());
+        map.put("pageSize", pageInfo.getPageSize());
+        map.put("total", pageInfo.getTotal());
+        map.put("presentNum", presentNum);
+        return ResultVo.success(map);
     }
 
     /**
@@ -519,6 +526,15 @@ public class ProjectController {
             }
             selectProject.setStartDate(project.getStartDate());
         }
+    }
+
+    /**
+     * 查询所有的项目id和名字,供用户注册使用
+     */
+    @GetMapping("getAllProjectCodeAndName")
+    public ResultVo getAllProjectCodeAndName() {
+        List<Map<String, String>> allProjectCodeAndName = projectService.findAllProjectCodeAndName();
+        return ResultVo.success(allProjectCodeAndName);
     }
 
 }

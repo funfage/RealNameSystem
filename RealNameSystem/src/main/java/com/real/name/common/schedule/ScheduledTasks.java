@@ -246,8 +246,8 @@ public class ScheduledTasks {
                     WorkerGroup workerGroup = projectDetailQuery.getWorkerGroup();
                     //获取该班组所有的project_detail_id
                     List<Integer> ids = projectDetailQueryService.getProjectIdByGroup(workerGroup.getTeamSysNo());
-                    Date todayBegin = new Date(TimeUtil.getTodayBegin() * 1000 - CommConstant.DAY_MILLISECOND);
-                    Date todayEnd = new Date(TimeUtil.getTomorrowBegin() * 1000 - CommConstant.DAY_MILLISECOND);
+                    Date todayBegin = new Date(TimeUtil.getTodayBegin() * 1000);
+                    Date todayEnd = new Date(TimeUtil.getTomorrowBegin() * 1000);
                     //获取班组当天下的总工时
                     Double hours = attendanceService.countWorkerHours(ids, todayBegin, todayEnd);
                     if (hours == null) {

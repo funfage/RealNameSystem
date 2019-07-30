@@ -160,9 +160,6 @@ public class Project {
      */
     private Integer isUpload;
 
-    /*@OneToMany(mappedBy = "project", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
-    private List<ProjectPersonDetail> projectPersonDetailList;*/
-
     public Project(String projectName, String projectCompany, String projectLocal, String projectType, Integer projectContact) {
         this.name = projectName;
         this.buildCorpName = projectCompany;

@@ -12,10 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ProjectTest extends BaseTest {
     @Autowired
@@ -53,12 +50,7 @@ public class ProjectTest extends BaseTest {
     }
 
     @Test
-    public void findAll() {
-       /* PageRequest pageRequest = PageRequest.of(2, 5);
-        Page<Project> all = projectRepository.findAll(pageRequest);*/
-        /*for (Project project : all) {
-            System.out.println(project);
-        }*/
+        public void findAll() {
         List<Project> all = projectQueryMapper.findAll();
         System.out.println(all);
     }
@@ -119,6 +111,11 @@ public class ProjectTest extends BaseTest {
         System.out.println(i);
     }
 
+    @Test
+    public void findAllProjectCodeAndName() {
+        List<Map<String, String>> allProjectCodeAndName = projectQueryMapper.findAllProjectCodeAndName();
+        System.out.println(allProjectCodeAndName);
+    }
 
 
 }

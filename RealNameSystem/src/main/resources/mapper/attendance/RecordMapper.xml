@@ -24,40 +24,40 @@
     <insert id="saveRecord" parameterType="com.real.name.record.entity.Record"
     useGeneratedKeys="true" keyColumn="record_id" keyProperty="recordId">
         insert into
-        record
-        (device_id, device_type, person_id, person_name, `time_number`, detail_time, `type`, path,
-        direction, channel)
+          record
+          (device_id, device_type, person_id, person_name, `time_number`, detail_time, `type`, path,
+          direction, channel)
         values
-        (#{deviceId}, #{deviceType}, #{personId}, #{personName}, #{timeNumber}, #{detailTime}, #{type},
-        #{path}, #{direction}, #{channel});
+          (#{deviceId}, #{deviceType}, #{personId}, #{personName}, #{timeNumber}, #{detailTime}, #{type},
+          #{path}, #{direction}, #{channel});
     </insert>
 
     <select id="findAttendancePerson" resultType="com.real.name.record.entity.Record">
         select
-        r.record_id, r.device_id, r.person_id, r.time_number, r.detail_time
+          r.record_id, r.device_id, r.person_id, r.time_number, r.detail_time
         from
-        record r
+          record r
         where
-        r.device_id = #{deviceId}
+          r.device_id = #{deviceId}
         and
-        r.person_id = #{personId}
+          r.person_id = #{personId}
         and
-        r.time_number = #{timeNumber}
+          r.time_number = #{timeNumber}
     </select>
     
     <select id="getTodayRecord" resultMap="recordMap">
         select
-        record_id, person_id, time_number, direction as r_direction
+          record_id, person_id, time_number, direction as r_direction
         from
-        record
+          record
         where
-        time_number &gt;= #{todayTime}
+          time_number &gt;= #{todayTime}
         and
-        time_number &lt;= #{tomorrowTime}
+          time_number &lt;= #{tomorrowTime}
         and
-        person_id = #{personId}
+          person_id = #{personId}
         order by
-        time_number
+          time_number
     </select>
 
 

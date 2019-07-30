@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -60,7 +61,10 @@ public interface ProjectQueryMapper {
      */
     List<Project> searchProject(@Param("projectQuery") ProjectQuery projectQuery);
 
-
+    /**
+     * 查询所有的projectCode和name
+     */
+    List<Map<String, String>> findAllProjectCodeAndName();
 
 
 }

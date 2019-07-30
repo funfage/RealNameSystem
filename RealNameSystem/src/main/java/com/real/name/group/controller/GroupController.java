@@ -54,8 +54,8 @@ public class GroupController {
     /**
      * 创建班组
      */
-    @PostMapping("create")
-    public Object create(WorkerGroup group) {
+    @PostMapping("/createWorkerGroup")
+    public Object createWorkerGroup(WorkerGroup group) {
         if (!StringUtils.hasText(group.getProjectCode())) {
             throw AttendanceException.emptyMessage("项目编码");
         } else if (!StringUtils.hasText(group.getTeamName())) {
@@ -109,23 +109,6 @@ public class GroupController {
             groupService.create(group);
             return ResultVo.success(group);
         }
-    }
-
-    /**
-     * 查询班组
-     */
-    @GetMapping("find")
-    public Object find(@RequestParam(name = "teamSysNo", required = false) Integer teamSysNo,
-                       @RequestParam(name = "projectCode", required = false) String  projectCode) {
-
-        if (teamSysNo == null && projectCode == null) {
-            return ResultVo.success(groupService.findAll());
-        } else if (teamSysNo != null) {
-            return ResultVo.success(groupService.findById(teamSysNo));
-        } else if (StringUtils.hasText(projectCode)) {
-            return ResultVo.success(groupService.findByProjectCode(projectCode));
-        }
-        return ResultVo.failure(ResultError.PARAM_ERROR);
     }
 
     /**
@@ -198,6 +181,27 @@ public class GroupController {
         } else {
             return ResultVo.success("删除班组成功");
         }
+    }
+
+    /**
+     * ========================================以下只与查询有关===============================================
+     */
+
+    /**
+     * 查询班组
+     */
+    @GetMapping("find")
+    public Object find(@RequestParam(name = "teamSysNo", required = false) Integer teamSysNo,
+                       @RequestParam(name = "projectCode", required = false) String  projectCode) {
+
+        if (teamSysNo == null && projectCode == null) {
+            return ResultVo.success(groupService.findAll());
+        } else if (teamSysNo != null) {
+            return ResultVo.success(groupService.findById(teamSysNo));
+        } else if (StringUtils.hasText(projectCode)) {
+            return ResultVo.success(groupService.findByProjectCode(projectCode));
+        }
+        return ResultVo.failure(ResultError.PARAM_ERROR);
     }
 
     /**

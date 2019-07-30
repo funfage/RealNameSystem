@@ -13,8 +13,6 @@ public class IssueInfo {
 
     private String deviceId;
 
-
-
     public IssueInfo() {
     }
 

@@ -8,6 +8,7 @@
             <id property="personId" column="p_person_id"/>
             <result property="personName" column="person_name"/>
             <result property="subordinateCompany" column="subordinate_company"/>
+            <result property="corpCode" column="p_corp_code"/>
             <result property="gender" column="gender"/>
             <result property="address" column="p_address"/>
             <result property="age" column="age"/>

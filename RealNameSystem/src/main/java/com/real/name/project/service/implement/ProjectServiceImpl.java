@@ -1,6 +1,5 @@
 package com.real.name.project.service.implement;
 
-import com.real.name.auth.entity.Role;
 import com.real.name.auth.entity.User;
 import com.real.name.auth.service.AuthUtils;
 import com.real.name.project.entity.Project;
@@ -15,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 @Service
 public class ProjectServiceImpl implements ProjectService {
@@ -40,8 +39,10 @@ public class ProjectServiceImpl implements ProjectService {
         //从session获取用户
         Session session = SecurityUtils.getSubject().getSession();
         User user = (User) session.getAttribute("user");
-       /* if (user != null) {
-            if (AuthUtils.isOnlyProjectRole(user)) {
+        if (user != null) {
+            boolean containProjectRole = AuthUtils.isContainProjectRole(user);
+            boolean containFuncRole = AuthUtils.isContainFuncRole(user);
+            if (containProjectRole && ! containFuncRole) { //如果只是项目管理员
                 //只查询本项目相关信息
                 return projectQueryMapper.findAllInProjectCode(user.getProjectSet());
             } else {
@@ -49,8 +50,7 @@ public class ProjectServiceImpl implements ProjectService {
             }
         } else {
             return new ArrayList<>();
-        }*/
-        return projectQueryMapper.findAll();
+        }
     }
 
     @Override
@@ -87,4 +87,10 @@ public class ProjectServiceImpl implements ProjectService {
     public List<Project> searchProject(ProjectQuery projectQuery) {
         return projectQueryMapper.searchProject(projectQuery);
     }
+
+    @Override
+    public List<Map<String, String>> findAllProjectCodeAndName() {
+        return projectQueryMapper.findAllProjectCodeAndName();
+    }
+
 }

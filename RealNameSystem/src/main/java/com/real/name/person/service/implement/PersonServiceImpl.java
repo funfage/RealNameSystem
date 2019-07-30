@@ -96,13 +96,18 @@ public class PersonServiceImpl implements PersonService {
     @Transactional
     @Override
     public Person createPerson(Person person) {
-        return personRepository.save(person);
+        Person selectPerson = personRepository.save(person);
+        if (selectPerson == null) {
+            throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "人员");
+        }
+        return selectPerson;
     }
 
     @Override
     public ResultVo findMainPagePerson(Integer personId, Integer pageNum, Integer pageSize, Integer workRole) {
         User user = (User) SecurityUtils.getSubject().getSession().getAttribute("user");
-        boolean onlyProjectRole = AuthUtils.isOnlyProjectRole(user);
+        boolean containProjectRole = AuthUtils.isContainProjectRole(user);
+        boolean containFuncRole = AuthUtils.isContainFuncRole(user);
         if (personId == -1 && workRole != 0) { //如果id为-1 则根据workRole查询
             if (workRole == -1) {//查询所有人员信息
                 PageHelper.startPage(pageNum + 1, pageSize);
@@ -110,7 +115,7 @@ public class PersonServiceImpl implements PersonService {
                 PageInfo<Person> pageInfo = new PageInfo<>(allPeople);
                 return PageUtils.pageResult(pageInfo, allPeople);
             } else {//根据workRole查询
-                if (onlyProjectRole) {//如果是项目管理员,则根据workRole查询该项目下或未被分配项目的人员信息
+                if (containProjectRole && !containFuncRole) {//如果只是项目管理员,则根据workRole查询该项目下或未被分配项目的人员信息
                     PageHelper.startPage(pageNum + 1, pageSize);
                     List<Person> personList = personQueryMapper.findByWorkRoleInUnionNotAttendProject(workRole, user.getProjectSet());
                     PageInfo<Person> pageInfo = new PageInfo<>(personList);
@@ -132,6 +137,25 @@ public class PersonServiceImpl implements PersonService {
                 return ResultVo.failure("查询信息为空");
             }
         }
+    }
+
+    @Override
+    public Person updatePerson(Person person) {
+        User user = (User) SecurityUtils.getSubject().getSession().getAttribute("user");
+        boolean containAdminRole = AuthUtils.isContainAdminRole(user);
+        boolean containProjectRole = AuthUtils.isContainProjectRole(user);
+        if (containAdminRole) {
+            return personRepository.save(person);
+        } else if (containProjectRole) {
+            //判断该人员是否属于该项目管理员所在的项目下或者是否是没有参见项目的人员
+            List<String> ids = projectDetailQueryService.getProjectIdsByPersonId(person.getPersonId());
+            for (String id : user.getProjectSet()) {
+                if (ids.contains(id)) {
+                    return personRepository.save(person);
+                }
+            }
+        }
+        return null;
     }
 
     @Override
@@ -185,11 +209,6 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public int deleteByPersonId(Integer personId) {
         return personRepository.deleteByPersonId(personId);
-    }
-
-    @Override
-    public Person updateByPersonId(Person person) {
-        return personRepository.save(person);
     }
 
     @Override

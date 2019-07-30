@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.real.name.pay.service.repository.PayInfoMapper">
+    <resultMap id="payInfoMap" type="com.real.name.pay.entity.PayInfo">
+        <id property="payId" column="pay_id"/>
+        <result property="payMonth" column="pay_month"/>
+        <result property="payBankCardNumber" column="pay_bank_card_number"/>
+        <result property="payBankCode" column="pay_bank_code"/>
+        <result property="payBankName" column="pay_bank_name"/>
+        <result property="totalPayAmount" column="total_pay_amount"/>
+        <result property="actualAmount" column="actual_amount"/>
+        <result property="isBackPay" column="is_back_pay"/>
+        <result property="balanceDate" column="balance_date"/>
+        <result property="thirdPayrollCode" column="third_payroll_code"/>
+        <result property="suffixName" column="suffix_name"/>
+        <result property="uploadStatus" column="upload_status"/>
+        <association property="projectDetailQuery" javaType="com.real.name.project.entity.ProjectDetailQuery" column="person_id">
+            <id property="id" column="id"/>
+            <association property="person" javaType="com.real.name.person.entity.Person" column="person_id">
+                <id property="personId" column="person_id"/>
+                <result property="personName" column="person_name"/>
+                <result property="corpCode" column="corp_code"/>
+                <result property="subordinateCompany" column="subordinate_company"/>
+                <result property="idCardType" column="id_card_type"/>
+                <result property="idCardNumber" column="id_card_number"/>
+                <result property="payRollBankCardNumber" column="pay_roll_bank_card_number"/>
+                <result property="payRollBankName" column="pay_roll_bank_name"/>
+                <result property="bankLinkNumber" column="bank_link_number"/>
+                <result property="payRollTopBankCode" column="pay_roll_top_bank_code"/>
+            </association>
+            <association property="workerGroup" javaType="com.real.name.group.entity.WorkerGroup" column="team_sys_no">
+                <id property="teamSysNo" column="team_sys_no"/>
+                <result property="teamName" column="team_name"/>
+            </association>
+            <association property="project" javaType="com.real.name.project.entity.Project" column="project_code">
+                <id property="projectCode" column="project_code"/>
+                <result property="name" column="name"/>
+            </association>
+        </association>
+    </resultMap>
+
+    <sql id="searchAll">
+        py.pay_id, py.pay_month, py.pay_bank_card_number, py.pay_bank_code, py.pay_bank_name, py.total_pay_amount,
+        py.actual_amount, py.is_back_pay, py.balance_date, py.third_pay_roll_code, py.suffix_name, py.upload_status,
+        p.person_id, p.person_name, p.corp_code, p.subordinate_company, p.id_card_type, p.id_card_number, p.pay_roll_bank_card_number,
+        p.pay_roll_bank_name, p.bank_link_number, p.pay_roll_top_bank_code,
+        wg.team_sys_no, wg.team_name,
+        pj.project_code, pj.name,
+        pd.id
+    </sql>
+
+    <insert id="savePayInfo" parameterType="com.real.name.pay.entity.PayInfo"
+            keyProperty="payInfo.payId" keyColumn="pay_id" useGeneratedKeys="true">
+        insert into
+          pay_info (project_detail_id, pay_month, pay_bank_card_number, pay_bank_code, pay_bank_name,
+          total_pay_amount, actual_amount, is_back_pay, balance_date, back_pay_month, third_pay_roll_code,
+          suffix_name)
+        values
+          (#{payInfo.projectDetailQuery.id}, #{payInfo.payMonth}, #{payInfo.payBankCardNumber},
+          #{payInfo.payBankCode}, #{payInfo.payBankName}, #{payInfo.totalPayAmount}, #{payInfo.actualAmount}, #{payInfo.isBackPay},
+           #{payInfo.balanceDate}, #{payInfo.backPayMonth}, #{payInfo.thirdPayrollCode}, #{payInfo.suffixName} )
+    </insert>
+
+    <update id="updatePayInfoById" parameterType="com.real.name.pay.entity.PayInfo"
+            keyProperty="payId" keyColumn="pay_id" useGeneratedKeys="true">
+        update pay_info
+        <set>
+            <if test="payInfo.payMonth != null">
+                pay_month = #{payInfo.payMonth},
+            </if>
+            <if test="payInfo.payBankCardNumber != null">
+                pay_bank_card_number = #{payInfo.payBankCardNumber},
+            </if>
+            <if test="payInfo.payBankCode != null">
+                pay_bank_code = #{payInfo.payBankCode},
+            </if>
+            <if test="payInfo.payBankName != null">
+                pay_bank_name = #{payInfo.payBankName},
+            </if>
+            <if test="payInfo.totalPayAmount != null">
+                total_pay_amount = #{payInfo.totalPayAmount},
+            </if>
+            <if test="payInfo.actualAmount != null">
+                actual_amount = #{payInfo.actualAmount},
+            </if>
+            <if test="payInfo.isBackPay != null">
+                is_back_pay = #{payInfo.isBackPay},
+            </if>
+            <if test="payInfo.balanceDate != null">
+                balance_date = #{payInfo.balanceDate},
+            </if>
+            <if test="payInfo.backPayMonth != null">
+                back_pay_month = #{payInfo.backPayMonth},
+            </if>
+            <if test="payInfo.thirdPayrollCode != null">
+                third_pay_roll_code = #{payInfo.thirdPayrollCode},
+            </if>
+            <if test="payInfo.suffixName != null">
+                suffix_name = #{payInfo.suffixName},
+            </if>
+            <if test="payInfo.uploadStatus != null">
+                upload_status = #{payInfo.uploadStatus},
+            </if>
+        </set>
+        where
+          pay_id = #{payInfo.payId}
+    </update>
+
+    <delete id="deletePayInfoById" parameterType="integer">
+        delete from
+          pay_info
+        where
+          pay_id = #{payId}
+    </delete>
+
+    <select id="getAllPayInfo" resultMap="payInfoMap">
+        select
+          <include refid="searchAll"/>
+        from
+          pay_info py, project_detail pd, person p, worker_group wg, project pj
+        where
+          py.project_detail_id = pd.id
+        and
+          p.person_id = pd.person_id
+        and
+          wg.team_sys_no = pd.team_sys_no
+        and
+          pj.project_code = pd.project_code
+    </select>
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

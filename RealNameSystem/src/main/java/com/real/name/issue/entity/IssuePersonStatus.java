@@ -14,6 +14,7 @@ public class IssuePersonStatus {
     private Integer issueImageStatus;
 
     public IssuePersonStatus() {
+
     }
 
     public IssuePersonStatus(Integer personId, Integer issuePersonStatus, Integer issueImageStatus) {

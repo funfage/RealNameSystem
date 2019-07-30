@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface ProjectService {
@@ -57,7 +58,10 @@ public interface ProjectService {
      */
     List<Project> searchProject(ProjectQuery projectQuery);
 
-
+    /**
+     * 查询所有的projectCode和name
+     */
+    List<Map<String, String>> findAllProjectCodeAndName();
 
 
 }

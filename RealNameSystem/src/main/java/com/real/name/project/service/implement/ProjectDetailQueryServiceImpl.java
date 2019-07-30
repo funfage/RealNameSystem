@@ -119,6 +119,15 @@ public class ProjectDetailQueryServiceImpl implements ProjectDetailQueryService 
         return projectDetailQueryMapper.countPersonNumByProjectCode(projectCode);
     }
 
+    @Override
+    public boolean judgeEmptyById(Integer id) {
+        Integer queryId = projectDetailQueryMapper.getIdWhileExists(id);
+        if (queryId != null && queryId >= 0) {
+            return false;
+        }
+        return true;
+    }
+
 }
 
 

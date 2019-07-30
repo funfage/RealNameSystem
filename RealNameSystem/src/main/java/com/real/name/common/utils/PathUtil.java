@@ -5,20 +5,34 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class PathUtil {
-	private static String seperator = System.getProperty("file.separator");
+	private static String separator = System.getProperty("file.separator");
 
-	private static String winPath;
+	private static String winImagePath;
 
-	private static String linuxPath;
+	private static String linuxImagePath;
 
-	@Value("${win.base.path}")
-	public void setWinPath(String winPath) {
-		PathUtil.winPath = winPath;
+	private static String winPayFilePath;
+
+	private static String linuxPayFilePath;
+
+	@Value("${win.image.base.path}")
+	public void setWinPath(String winImagePath) {
+		PathUtil.winImagePath = winImagePath;
 	}
 
-	@Value("${linux.base.path}")
-	public void setLinuxPath(String linuxPath) {
-		PathUtil.linuxPath = linuxPath;
+	@Value("${linux.image.base.path}")
+	public void setLinuxPath(String linuxImagePath) {
+		PathUtil.linuxImagePath = linuxImagePath;
+	}
+
+	@Value("${win.payFile.path}")
+	public void setWinPayFilePath(String winPayFilePath) {
+		PathUtil.winPayFilePath = winPayFilePath;
+	}
+
+	@Value("${linux.payFile.path}")
+	public void setLinuxImagePath(String linuxPayFilePath) {
+		PathUtil.linuxPayFilePath = linuxPayFilePath;
 	}
 
 	public PathUtil() {
@@ -28,11 +42,23 @@ public class PathUtil {
 		String os = System.getProperty("os.name");
 		String basePath = "";
 		if (os.toLowerCase().contains("win")) {
-			basePath = winPath;
+			basePath = winImagePath;
 		} else {
-			basePath = linuxPath;
+			basePath = linuxImagePath;
 		}
-		basePath = basePath.replace("/", seperator);
+		basePath = basePath.replace("/", separator);
+		return basePath;
+	}
+
+	public static String getPayFileBasePath() {
+		String os = System.getProperty("os.name");
+		String basePath = "";
+		if (os.toLowerCase().contains("win")) {
+			basePath = winPayFilePath;
+		} else {
+			basePath = linuxPayFilePath;
+		}
+		basePath = basePath.replace("/", separator);
 		return basePath;
 	}
 

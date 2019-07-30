@@ -3,11 +3,10 @@ package com.real.name.person;
 import com.alibaba.fastjson.JSONObject;
 import com.real.name.auth.entity.User;
 import com.real.name.others.BaseTest;
-import com.real.name.common.utils.ImageTool;
+import com.real.name.common.utils.FileTool;
 import com.real.name.httptest.RunService;
 import com.real.name.person.controller.PersonController;
 import com.real.name.person.entity.Person;
-import com.real.name.person.entity.PersonQuery;
 import com.real.name.person.service.PersonService;
 import com.real.name.person.service.repository.PersonQueryMapper;
 import com.real.name.person.service.repository.PersonRepository;
@@ -138,17 +137,6 @@ public class PersonTest extends BaseTest {
         File file = new File("C:\\Users\\admin\\Pictures\\Saved Pictures\\99.jpg");
     }
 
-    @Test
-    public void imageToBase64() {
-        try {
-            File file = new File("C:\\Users\\admin\\Pictures\\Saved Pictures\\99.jpg");
-            InputStream inputStream = new FileInputStream(file);
-            String str = ImageTool.imageToBase64(inputStream);
-            System.out.println(str);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
 
     /*@Test
     public void findIssuePersonImageInfoTest() {

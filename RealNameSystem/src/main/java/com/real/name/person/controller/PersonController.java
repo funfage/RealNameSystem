@@ -3,19 +3,17 @@ package com.real.name.person.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.real.name.auth.entity.User;
-import com.real.name.auth.service.AuthUtils;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
-import com.real.name.common.utils.ImageTool;
+import com.real.name.common.utils.FileTool;
 import com.real.name.common.utils.NationalUtils;
+import com.real.name.common.utils.PathUtil;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import com.real.name.issue.entity.IssueFace;
 import com.real.name.issue.service.IssueFaceService;
-import com.real.name.issue.service.repository.DeleteInfoMapper;
 import com.real.name.person.entity.Person;
 import com.real.name.person.entity.PersonQuery;
 import com.real.name.person.service.PersonService;
@@ -23,28 +21,25 @@ import com.real.name.project.entity.ProjectPersonDetail;
 import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.ProjectPersonDetailService;
 import com.real.name.project.service.ProjectService;
-import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/person")
 public class PersonController {
+
     private Logger logger = LoggerFactory.getLogger(PersonController.class);
+
+    private List<String> suffixList = new ArrayList<>();
 
     @Value("${customize.file-size}")
     private Long imgFileMaxSize;
@@ -67,8 +62,11 @@ public class PersonController {
     @Autowired
     private DeviceService deviceService;
 
-    @Autowired
-    private DeleteInfoMapper deleteInfoMapper;
+    public PersonController() {
+        suffixList.add(".jpg");
+        suffixList.add(".png");
+        suffixList.add(".jpeg");
+    }
 
     /**
      * 添加工人
@@ -96,16 +94,10 @@ public class PersonController {
         verifyPerson(person, imageFile);
         //设置图片信息给人员
         setImageInfoToPerson(person, imageFile);
-        Person selectPerson = null;
         //保存人员信息到数据库
-        selectPerson = personService.createPerson(person);
-        if (selectPerson == null) {
-            throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "人员");
-        }
-        boolean isSuccess = ImageTool.generateImage(imageFile, selectPerson);
-        if (!isSuccess) {
-            throw new AttendanceException("照片生成失败");
-        }
+        Person selectPerson = personService.createPerson(person);
+        //保存照片信息
+        FileTool.generateFile(imageFile, PathUtil.getImgBasePath(), selectPerson.getPersonId() + selectPerson.getSuffixName());
         Map<String, Object> m = new HashMap<>();
         m.put("personId", selectPerson.getPersonId());
         return ResultVo.success(m);
@@ -139,10 +131,7 @@ public class PersonController {
             deviceService.deletePersonInDeviceList(deviceList, person);
         }
         //删除头像
-        boolean isSuccess = ImageTool.deleteImage(personId, suffixName);
-        if (!isSuccess) {
-            throw new AttendanceException(ResultError.DELETE_IMAGE_ERROR);
-        }
+        FileTool.deleteFile(PathUtil.getImgBasePath(), personId + suffixName);
         //删除personDetail中的信息
         projectPersonDetailService.deleteByPerson(new Person(personId));
         int effectNum = personService.deleteByPersonId(personId);
@@ -224,7 +213,7 @@ public class PersonController {
             }
         }
         //修改本地工人信息
-        Person updatePerson = personService.updateByPersonId(selectPerson);
+        Person updatePerson = personService.updatePerson(selectPerson);
         if (updatePerson == null) {
             throw new AttendanceException(ResultError.UPDATE_ERROR);
         }
@@ -238,6 +227,10 @@ public class PersonController {
         }
         return ResultVo.success();
     }
+
+    /**
+     * ========================================以下只与查询有关===============================================
+     */
 
     /**
      * 根据id查找人员，若id=-1则查找全部人员
@@ -322,6 +315,17 @@ public class PersonController {
             if (person.getStartDate().getTime() > person.getExpiryDate().getTime()) {
                 throw AttendanceException.errorMessage("证件有效期开始日期不能大于结束日期");
             }
+        } else if (!imageFile.isEmpty()) {
+            String WholeFileName = imageFile.getOriginalFilename();
+            if (!StringUtils.hasText(WholeFileName)) {
+                throw new AttendanceException(ResultError.EMPTY_NAME);
+            }
+            String suffixName = WholeFileName.substring(WholeFileName.lastIndexOf("."));
+            if (!suffixList.contains(suffixName)) {
+                throw new AttendanceException(ResultError.IMAGE_TYPE_ERROR);
+            }
+            //设置文件后缀名
+            person.setSuffixName(suffixName);
         }
     }
 
@@ -332,7 +336,7 @@ public class PersonController {
         }
         String imageStr = null;
         try {
-            imageStr = ImageTool.imageToBase64(imageFile.getInputStream());
+            imageStr = FileTool.fileToBase64(imageFile.getInputStream());
         } catch (IOException e) {
             logger.error("照片转换成base64编码失败, e:{}", e.getMessage());
             throw new AttendanceException("照片转换成base64编码失败");
@@ -341,19 +345,13 @@ public class PersonController {
             logger.error("照片转换成base64编码为空");
             throw new AttendanceException("照片转换成base64编码为空");
         }
-        //将原有的图片信息删除
         if (person.getPersonId() != null) {
-            boolean isDelete = ImageTool.deleteImage(person.getPersonId(), person.getSuffixName());
-            if (!isDelete) {
-                logger.error("删除照片失败");
-                throw new AttendanceException(ResultError.GENERATE_IMAGE_ERROR);
-            }
+            String fileName = person.getPersonId() + person.getSuffixName();
+            String basePath = PathUtil.getImgBasePath();
+            //将原有的图片信息删除
+            FileTool.deleteFile(basePath, fileName);
             //保存照片信息
-            boolean isGenerate = ImageTool.generateImage(imageFile, person);
-            if (!isGenerate) {
-                logger.error("生成照片失败");
-                throw new AttendanceException(ResultError.GENERATE_IMAGE_ERROR);
-            }
+            FileTool.generateFile(imageFile, basePath, fileName);
         }
         person.setHeadImage(imageStr.trim());
     }

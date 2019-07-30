@@ -35,17 +35,8 @@
         work_time &lt; #{end}
     </select>
 
-    <select id="findByProjectDetailId" resultType="com.real.name.record.entity.Attendance">
-        select
-        attendance_id, project_detail_id, work_hours, work_time
-        from
-        attendance
-        where
-        project_detail_id = #{projectDetailId};
-    </select>
-
     <select id="findPeriodAttendByProjectDetailId" resultType="com.real.name.record.entity.Attendance">
-         select
+        select
         attendance_id, project_detail_id, work_hours, work_time
         from
         attendance

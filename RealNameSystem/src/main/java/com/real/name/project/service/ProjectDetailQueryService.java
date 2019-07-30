@@ -46,6 +46,9 @@ public interface ProjectDetailQueryService {
      */
     int deletePersonInProject(@Param("projectCode") String projectCode, @Param("personId") Integer personId);
 
+    /**
+     * 查询班组名称
+     */
     String findTeamName(String projectCode, Integer personId);
 
     /**
@@ -101,5 +104,13 @@ public interface ProjectDetailQueryService {
      * 获取一个项目下所有人员数目
      */
     Integer countPersonNumByProjectCode( String projectCode);
+
+    /**
+     * 判断记录是否存在
+     *
+     * @return true 不存在
+     * false 记录存在
+     */
+    boolean judgeEmptyById(Integer id);
 
 }

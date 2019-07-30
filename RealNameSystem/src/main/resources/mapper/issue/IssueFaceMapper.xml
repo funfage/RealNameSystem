@@ -95,36 +95,36 @@
 
     <select id="findAllFaceIssuePersonFailure" resultMap="faceIssuePersonFailure">
       select
-      f.issue_face_id, f.issue_image_status, f.issue_person_status,
-      f.person_id as i_person_id, f.device_id as i_device_id,
-      p.person_id, p.person_name, p.head_image,
-      d.device_id, d.device_type, d.out_port, d.ip
+          f.issue_face_id, f.issue_image_status, f.issue_person_status,
+          f.person_id as i_person_id, f.device_id as i_device_id,
+          p.person_id, p.person_name, p.head_image,
+          d.device_id, d.device_type, d.out_port, d.ip
       from
-      issue_face f, person p, device d
+        issue_face f, person p, device d
       where
-      f.issue_person_status = 0
+        f.issue_person_status = 0
       and
-      f.device_id = d.device_id
+        f.device_id = d.device_id
       and
-      f.person_id = p.person_id
+        f.person_id = p.person_id
     </select>
 
     <select id="findAllFaceIssueImageFailure" resultMap="faceIssuePersonFailure">
-        select
-      f.issue_face_id, f.issue_image_status, f.issue_person_status,
-      f.person_id as i_person_id, f.device_id as i_device_id,
-      p.person_id, p.person_name, p.head_image,
-      d.device_id, d.device_type, d.out_port, d.ip
+      select
+          f.issue_face_id, f.issue_image_status, f.issue_person_status,
+          f.person_id as i_person_id, f.device_id as i_device_id,
+          p.person_id, p.person_name, p.head_image,
+          d.device_id, d.device_type, d.out_port, d.ip
       from
-      issue_face f, person p, device d
+        issue_face f, person p, device d
       where
-      f.issue_image_status = 0
+        f.issue_image_status = 0
       and
-      f.issue_person_status = 1
+        f.issue_person_status = 1
       and
-      f.device_id = d.device_id
+        f.device_id = d.device_id
       and
-      f.person_id = p.person_id
+        f.person_id = p.person_id
     </select>
 
     <update id="updateByPersonIdAndDeviceId"  parameterType="com.real.name.issue.entity.IssueFace"
@@ -146,111 +146,91 @@
 
     <insert id="insertInitIssue" parameterType="com.real.name.issue.entity.IssueFace"
             useGeneratedKeys="true" keyProperty="issueFaceId" keyColumn="issue_face_id">
-        insert into issue_face
-        (person_id, device_id, issue_person_status, issue_image_status)
+        insert into
+          issue_face (person_id, device_id, issue_person_status, issue_image_status)
         values
-        (#{person.personId}, #{device.deviceId}, #{issuePersonStatus}, #{issueImageStatus})
+          (#{person.personId}, #{device.deviceId}, #{issuePersonStatus}, #{issueImageStatus})
     </insert>
 
     <select id="findAllFailDeviceIds" resultType="string">
        select
-       device_id
+        device_id
        from
-       issue_face
+        issue_face
     </select>
 
     <select id="findAllFailDeviceIdsByProjectCode" resultType="string">
        select
-       f.device_id as f_device_id
+        f.device_id as f_device_id
        from
-       issue_face f, device d
+        issue_face f, device d
        where
-       (d.project_code is null
-       or
-       d.project_code = ""
-       or
-       d.project_code = #{projectCode})
+        (d.project_code is null or d.project_code = "" or d.project_code = #{projectCode})
        and
-       f.device_id = d.device_id
+        f.device_id = d.device_id
        and
-        (f.issue_person_status = 0
-        or
-        f.issue_image_status = 0)
+        (f.issue_person_status = 0 or f.issue_image_status = 0)
     </select>
 
     <select id="findIssueFailPersonInfoByProjectCode" resultMap="findIssueFailPersonInfo">
         select
-        <include refid="issuePersonFailInfoWithImage"/>
+          <include refid="issuePersonFailInfoWithImage"/>
         from
-        issue_face f, person p, device d
+          issue_face f, person p, device d
         where
-        f.device_id = d.device_id
+          f.device_id = d.device_id
         and
-        f.person_id = p.person_id
+          f.person_id = p.person_id
         and
-        (d.project_code is null
-        or
-        d.project_code = ""
-        or
-        d.project_code = #{projectCode})
+          (d.project_code is null or d.project_code = "" or d.project_code = #{projectCode})
         and
-        (f.issue_person_status = 0
-        or
-        f.issue_image_status = 0)
+          (f.issue_person_status = 0 or f.issue_image_status = 0)
     </select>
 
     <select id="findIssueFailPersonInfoByDeviceId" resultMap="findIssueFailPersonInfo">
         select
-        <include refid="issuePersonFailInfoWithImage"/>
+          <include refid="issuePersonFailInfoWithImage"/>
         from
-        issue_face f, person p, device d
+          issue_face f, person p, device d
         where
-        f.device_id = d.device_id
+          f.device_id = d.device_id
         and
-        f.person_id = p.person_id
+          f.person_id = p.person_id
         and
-        d.device_id = #{deviceId}
+          d.device_id = #{deviceId}
         and
-        (f.issue_person_status = 0
-        or
-        f.issue_image_status = 0)
+          (f.issue_person_status = 0 or f.issue_image_status = 0)
     </select>
 
     <select id="findIssueFailPersonByPersonId" resultMap="findIssueFailPersonInfo">
         select
-        f.issue_face_id, f.issue_person_status, f.issue_image_status,
-        d.device_id as d_device_id, d.project_code
+            f.issue_face_id, f.issue_person_status, f.issue_image_status,
+            d.device_id as d_device_id, d.project_code
         from
-        issue_face f, device d
+          issue_face f, device d
         where
-        f.device_id = d.device_id
+          f.device_id = d.device_id
         and
-        f.person_id = #{personId}
+          f.person_id = #{personId}
         and
-        (f.issue_person_status = 0
-        or
-        f.issue_image_status = 0)
+          (f.issue_person_status = 0 or f.issue_image_status = 0)
     </select>
 
     <select id="findUpdateFailPersonByWorkRole" resultMap="findIssueFailPersonInfo">
         select
-        f.issue_face_id, f.device_id, f.issue_person_status, f.issue_image_status,
-        p.person_id as p_person_id, p.person_name, p.gender, p.address, p.age, p.id_card_number
+            f.issue_face_id, f.device_id, f.issue_person_status, f.issue_image_status,
+            p.person_id as p_person_id, p.person_name, p.gender, p.address, p.age, p.id_card_number
         from
-        issue_face f,
-        person p
+            issue_face f,
+            person p
         where
-        f.person_id = p.person_id
+          f.person_id = p.person_id
         and
-        p.work_role = #{workRole}
+          p.work_role = #{workRole}
         and
-        (
-        f.issue_person_status = -1
-        or
-        f.issue_image_status = -1
-        )
+          (f.issue_person_status = -1 or f.issue_image_status = -1)
         group by
-        p.person_id
+          p.person_id
     </select>
 
 </mapper>

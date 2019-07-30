@@ -5,8 +5,6 @@ import com.real.name.auth.service.UserService;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
-import com.real.name.common.utils.CookieUtils;
-import com.real.name.auth.service.AdminService;
 import org.apache.ibatis.annotations.Param;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -17,17 +15,13 @@ import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -36,15 +30,7 @@ import java.util.UUID;
 public class UserController {
 
     @Autowired
-    private AdminService adminService;
-
-    @Autowired
-    private StringRedisTemplate redisTemplate;
-
-    @Autowired
     private UserService userService;
-
-
 
     /**
      * 用户登录提交访问的方法
@@ -66,7 +52,11 @@ public class UserController {
             subject.login(token);
             Session session = SecurityUtils.getSubject().getSession();
             User user = (User) session.getAttribute("user");
-            return ResultVo.success(user.getRoles());
+            Map<String, Object> map = new HashMap<>();
+            map.put("username", user.getUsername());
+            map.put("phone", user.getPhone());
+            map.put("roles", user.getRoles());
+            return ResultVo.success(map);
         } catch (UnknownAccountException e) {
             return ResultVo.failure(ResultError.USER_NOT_EXIST);
         } catch (LockedAccountException e) {
@@ -79,70 +69,79 @@ public class UserController {
     /**
      * 用户注册
      */
-    @Transactional
     @PostMapping("/userRegister")
     public ResultVo userRegister(User user) {
         //TODO 判断用户输入的验证码书否正确
         //校验用户输入的信息是否符合要求
         verifyUser(user);
+        //根据电话号码查询用户是否已注册
+        User selectUser = userService.getUserByPhone(user.getPhone());
+        if (selectUser != null) {
+            throw new AttendanceException(ResultError.USER_HAS_REGISTER);
+        }
         //判断两次输入的密码是否正确
         if (StringUtils.isEmpty(user.getPassword()) || !user.getPassword().equals(user.getPasswordAgain())) {
             throw new AttendanceException(ResultError.USER_PASSWORD_NO_MATCH);
         }
-        //先将用户设置为无效
-        user.setStatus(0);
-        //保存用户
-        int effNum = userService.saveUser(user);
-        if (effNum <= 0) {
-            throw new AttendanceException(ResultError.INSERT_ERROR);
-        }
-        //保存用户角色关联
-        effNum = userService.saveUserRole(user.getUserId(), user.getRoleId());
-        if (effNum < 0) {
-            throw new AttendanceException(ResultError.INSERT_ERROR);
+        //注册用户
+        userService.registerUser(user);
+        return ResultVo.success();
+    }
+
+    /**
+     * @param operator 用户申请是否批准 1:批准, 0:不批准
+     */
+    @GetMapping("/userApply")
+    public ResultVo userApply(@Param("userId") Integer userId,
+                              @Param("operator") Integer operator) {
+        User user = new User(userId);
+        user.setStatus(operator);
+        userService.updateUser(user);
+        return ResultVo.success();
+    }
+
+    /**
+     * 超级管理员对用户信息的修改
+     */
+    @PostMapping("/updateUserByAdmin")
+    public ResultVo updateUserByAdmin(User user) {
+        userService.updateUserByAdmin(user);
+        return ResultVo.success();
+    }
+
+    /**
+     * 对用户信息的删除
+     */
+    @GetMapping("/deleteUser")
+    public ResultVo deleteUser(Integer userId) {
+        int i = userService.deleteUserByUserId(userId);
+        if (i <= 0) {
+            throw new AttendanceException(ResultError.DELETE_ERROR);
         }
         return ResultVo.success();
     }
 
-    @GetMapping("sessionTest")
-    public ResultVo sessionTest() {
-        Session session = SecurityUtils.getSubject().getSession();
-        User user = (User) session.getAttribute("user");
+
+    /**
+     * ==================================以下只与查询有关================================
+     */
+
+    /**
+     * 查询所有用户信息
+     */
+    @GetMapping("getUsers")
+    public ResultVo getUsers() {
+        List<User> users = userService.getUsers();
+        return ResultVo.success(users);
+    }
+
+    /**
+     * 根据电话号码查询用户
+     */
+    @GetMapping("/getUserByPhone")
+    public ResultVo getUserByPhone(@Param("phone") String phone) {
+        User user = userService.getUserByPhone(phone);
         return ResultVo.success(user);
-    }
-
-    /**
-     * 用户还未登录访问的方法
-     */
-    @GetMapping("/noLogin")
-    public ResultVo noLogin(HttpSession session) {
-        //生成一组16位的随机数作为盐值
-        int hashcodeV = UUID.randomUUID().hashCode();
-        if(hashcodeV < 0){
-            hashcodeV = -hashcodeV;
-        }
-        String uuidSalt = String.format("%016d", hashcodeV);
-        //把uuid的盐值，同时保存到前后端中
-        session.setAttribute("uuidSalt", uuidSalt);
-        return ResultVo.failure(uuidSalt, ResultError.USER_UN_LOGIN);
-    }
-
-    /**
-     * 登录成功跳转到这个路径
-     */
-    @GetMapping("/loginSuccess")
-    public ResultVo loginSuccess() {
-        Session session = SecurityUtils.getSubject().getSession();
-        User user = (User) session.getAttribute("user");
-        return ResultVo.success(user.getRoles());
-    }
-
-    /**
-     * 未授权跳转的路径
-     */
-    @GetMapping("/unauthorized")
-    public ResultVo unauthorized() {
-        return ResultVo.failure(ResultError.USER_UN_AUTHORIZED);
     }
 
     /**
@@ -153,6 +152,16 @@ public class UserController {
         SecurityUtils.getSubject().logout();
         return ResultVo.success("退出登录");
     }
+
+    /**
+     * 未授权跳转的路径
+     */
+    @GetMapping("/unauthorized")
+    public ResultVo unauthorized() {
+        return ResultVo.failure(ResultError.USER_UN_AUTHORIZED);
+    }
+
+
 
     private void verifyUser(User user) {
         if (user.getPhone() == null) {

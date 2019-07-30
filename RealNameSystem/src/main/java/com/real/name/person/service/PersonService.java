@@ -95,7 +95,7 @@ public interface PersonService {
     /**
      * 更新员工信息
      */
-    Person updateByPersonId(Person person);
+    Person updatePerson(Person person);
 
     /**
      * 查询人员需要下发的信息

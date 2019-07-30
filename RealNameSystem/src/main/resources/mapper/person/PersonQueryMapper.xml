@@ -6,6 +6,7 @@
         <id property="personId" column="p_person_id"/>
         <result property="personName" column="person_name"/>
         <result property="subordinateCompany" column="subordinate_company"/>
+        <result property="corpCode" column="corp_code"/>
         <result property="gender" column="gender"/>
         <result property="address" column="address"/>
         <result property="age" column="age"/>
@@ -43,6 +44,7 @@
         <result property="workRole" column="work_role"/>
         <result property="workType" column="work_type"/>
         <result property="headImage" column="head_image"/>
+        <result property="uploadStatus" column="upload_status"/>
     </resultMap>
 
     <sql id="personInfo">
@@ -52,17 +54,17 @@
         p.issue_card_pic, p.is_team_leader, p.joined_time, p.marital_status, p.nation, p.negative_id_card_image,
         p.pay_roll_bank_card_number, p.pay_roll_bank_name, p.pay_roll_top_bank_code, p.politics_type, p.positive_id_card_image,
         p.specialty, p.start_date, p.suffix_name, p.urgent_link_man, p.urgent_link_man_phone, p.work_date,
-        p.work_role, p.work_type
+        p.work_role, p.work_type, p.upload_status
     </sql>
 
     <sql id="personInfoWithImage">
-         p.person_id as p_person_id, p.person_name, p.subordinate_company, p.gender, p.address, p.age, p.bank_link_number, p.card_number,
+         p.person_id as p_person_id, p.person_name, p.subordinate_company, p.corp_code, p.gender, p.address, p.age, p.bank_link_number, p.card_number,
         p.cell_phone, p.culture_level_type, p.expiry_date, p.grant_org, p.group_no, p.has_bad_medical_history,
         p.has_buy_insurance, p.hometown, p.id_card_index, p.id_card_number, p.id_card_type, p.issue_card_date,
         p.issue_card_pic, p.is_team_leader, p.joined_time, p.marital_status, p.nation, p.negative_id_card_image,
         p.pay_roll_bank_card_number, p.pay_roll_bank_name, p.pay_roll_top_bank_code, p.politics_type, p.positive_id_card_image,
         p.specialty, p.start_date, p.suffix_name, p.urgent_link_man, p.urgent_link_man_phone, p.work_date,
-        p.work_role, p.work_type, p.head_image
+        p.work_role, p.work_type, p.head_image, p.upload_status
     </sql>
 
     <select id="findAll" resultMap="queryMap">
@@ -147,15 +149,15 @@
 
     <select id="findByWorkRoleInUnionNotAttendProject" resultMap="queryMap">
         select
-        <include refid="personInfo"/>
+          <include refid="personInfo"/>
         from
-        person p, project_detail pd
+          person p, project_detail pd
         where
-        p.person_id = pd.person_id
+          p.person_id = pd.person_id
         and
-        p.work_role = #{workRole}
+          p.work_role = #{workRole}
         and
-        pd.project_code
+          pd.project_code
         in
         <choose>
             <when test="projectCodeList != null and projectCodeList.size() != 0">

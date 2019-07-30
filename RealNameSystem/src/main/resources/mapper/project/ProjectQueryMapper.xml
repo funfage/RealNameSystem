@@ -158,6 +158,11 @@
         </where>
     </select>
 
-
+    <select id="findAllProjectCodeAndName" resultType="map">
+        select
+          pj.project_code, pj.name
+        from
+          project pj
+    </select>
 
 </mapper>

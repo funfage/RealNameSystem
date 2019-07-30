@@ -95,7 +95,7 @@ public class AttendanceController {
             for (Attendance attendance : attendanceList) {
                 if (attendance.getWorkHours() != 0) {
                     workDays++;
-                    hours+=attendance.getWorkHours();
+                    hours += attendance.getWorkHours();
                 }
             }
             WorkDayInfo workDayInfo = new WorkDayInfo();
