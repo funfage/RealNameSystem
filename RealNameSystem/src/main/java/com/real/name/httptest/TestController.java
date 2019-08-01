@@ -1,28 +1,92 @@
 package com.real.name.httptest;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.real.name.common.annotion.JSON;
+import com.real.name.common.annotion.JSONS;
+import com.real.name.common.filter.CustomerJsonSerializer;
+import com.real.name.common.filter.JacksonJsonFilter;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.schedule.entity.FaceRecordData;
 import com.real.name.common.schedule.entity.Records;
 import com.real.name.common.websocket.WebSocket;
+import com.real.name.contract.entity.ContractInfo;
 import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.person.entity.Person;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.service.repository.ProjectDetailQueryMapper;
+import org.omg.CORBA.OBJ_ADAPTER;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.xml.transform.Result;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class TestController {
+
+    public class Article implements Serializable {
+        private String id;
+        private String title;
+        private String content;
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public String getContent() {
+            return content;
+        }
+
+        public void setContent(String content) {
+            this.content = content;
+        }
+    }
+
+    public class Tag {
+        private String id;
+        private String tagName;
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getTagName() {
+            return tagName;
+        }
+
+        public void setTagName(String tagName) {
+            this.tagName = tagName;
+        }
+    }
 
     @Autowired
     private ProjectDetailQueryMapper mapper;
@@ -32,6 +96,7 @@ public class TestController {
 
     /**
      * get方法测试
+     *
      * @return
      */
     @GetMapping("testGet")
@@ -112,7 +177,67 @@ public class TestController {
         webSocket.sendMessageToAll(map.toJSONString());
     }
 
-    public void testFindRecords(Device device, Person person) throws ParseException {
+    @GetMapping("jsonTest")
+    public ResultVo jsonTest() throws JsonProcessingException {
+        CustomerJsonSerializer cjs = new CustomerJsonSerializer();
+        // 设置转换 Article 类时，只包含 id, content
+        cjs.filter(Article.class, "id,content", null);
+        String include = cjs.toJson(new Article());
+        cjs = new CustomerJsonSerializer();
+        // 设置转换 Article 类时，过滤掉 id, content
+        cjs.filter(Article.class, null, "id,content");
+        String filter = cjs.toJson(new Article());
+        Map<String, Object> map = new HashMap<>();
+        map.put("include", include);
+        map.put("filter", filter);
+        return ResultVo.success(map);
+    }
+
+    @GetMapping("jsonTest2")
+    @JSON(type = Article.class, filter = "id,content")
+    public Article jsonTest2() {
+        Article article = new Article();
+        article.setContent("content");
+        article.setId("id");
+        article.setTitle("title");
+        return article;
+    }
+
+    @GetMapping("jsonTest3")
+    @JSON(type = Article.class, include = "id,content")
+    public Article jsonTest3() {
+        Article article = new Article();
+        article.setContent("content");
+        article.setId("id");
+        article.setTitle("title");
+        return article;
+    }
+
+    @GetMapping("jsonTest4")
+    @JSONS({
+            @JSON(type = Article.class, include = "id"),
+            @JSON(type = Tag.class, filter = "tagName")
+    })
+    public ResultVo jsonTest4() {
+        Article article = new Article();
+        article.setContent("content");
+        article.setId("id");
+        article.setTitle("title");
+        Tag tag = new Tag();
+        tag.setId("id");
+        tag.setTagName("tagName");
+        Map<String, Object> map = new HashMap<>();
+        map.put("article", article);
+        map.put("tag", tag);
+        return ResultVo.success(map);
+    }
+
+    @PostMapping("jsonTest5")
+    public ResultVo jsonTest5(@RequestParam("contractInfos") List<ContractInfo> contractInfos) {
+        return ResultVo.success(contractInfos);
+    }
+
+    private void testFindRecords(Device device, Person person) throws ParseException {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date startTime = new Date(System.currentTimeMillis() - 86400000);
         Date endTime = new Date(System.currentTimeMillis());
@@ -125,5 +250,6 @@ public class TestController {
         }
         System.out.println(faceRecordData);
     }
+
 
 }

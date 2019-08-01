@@ -10,4 +10,10 @@ public class TestC extends BaseTest {
         System.out.println(PathUtil.getPayFileBasePath());
     }
 
+    @Test
+    public void testB() {
+        System.out.println(PathUtil.getContractFilePath());
+    }
+
+
 }

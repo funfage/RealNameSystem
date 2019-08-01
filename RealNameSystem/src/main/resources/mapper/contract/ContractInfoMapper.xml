@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.real.name.contract.service.repository.ContractInfoMapper">
+    <resultMap id="contractInfoMap" type="com.real.name.contract.entity.ContractInfo">
+        <id property="contractId" column="contract_id"/>
+        <result property="contractPeriodType" column="contract_period_type"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="uploadStatus" column="upload_status"/>
+        <association property="projectDetailQuery" javaType="com.real.name.project.entity.ProjectDetailQuery" column="person_id">
+            <id property="id" column="id"/>
+            <association property="person" javaType="com.real.name.person.entity.Person" column="person_id">
+                <id property="personId" column="person_id"/>
+                <result property="personName" column="person_name"/>
+                <result property="corpCode" column="corp_code"/>
+                <result property="subordinateCompany" column="subordinate_company"/>
+                <result property="idCardType" column="id_card_type"/>
+                <result property="idCardNumber" column="id_card_number"/>
+            </association>
+            <association property="workerGroup" javaType="com.real.name.group.entity.WorkerGroup" column="team_sys_no">
+                <id property="teamSysNo" column="team_sys_no"/>
+                <result property="teamName" column="team_name"/>
+            </association>
+            <association property="project" javaType="com.real.name.project.entity.Project" column="project_code">
+                <id property="projectCode" column="project_code"/>
+                <result property="name" column="name"/>
+            </association>
+        </association>
+        <collection property="contractFileList" ofType="com.real.name.contract.entity.ContractFile">
+            <id property="id" column="id"/>
+            <result property="contractId" column="c_contract_id"/>
+            <result property="fileName" column="file_name"/>
+        </collection>
+    </resultMap>
+
+    <sql id="searchAll">
+        ci.contract_id, ci.contract_period_type, ci.start_date, ci.end_date, ci.upload_status,
+        p.person_id, p.person_name, p.corp_code, p.subordinate_company, p.id_card_type, p.id_card_number,
+        wg.team_sys_no, wg.team_name,
+        pj.project_code, pj.name,
+        cf.id, cf.file_name,
+        pd.id
+    </sql>
+
+    <insert id="saveContractInfo" parameterType="com.real.name.contract.entity.ContractInfo"
+            keyProperty="contractInfo.contractId" keyColumn="contract_id" useGeneratedKeys="true">
+        insert into
+           contract_info (project_detail_id, contract_period_type, start_date, end_date)
+        values
+          (#{contractInfo.projectDetailQuery.id}, #{contractInfo.contractPeriodType},
+          #{contractInfo.startDate}, #{contractInfo.endDate})
+    </insert>
+
+    <insert id="saveContractFileList" parameterType="com.real.name.contract.entity.ContractFile"
+            useGeneratedKeys="true">
+        <foreach collection="contractFileList" item="contractFile" separator=";">
+            insert into
+              contract_file(contract_id, file_name)
+            values
+              (#{contractFile.contractId}, #{contractFile.fileName})
+        </foreach>
+    </insert>
+
+    <update id="updateContractInfoById" parameterType="com.real.name.contract.entity.ContractInfo"
+            useGeneratedKeys="true">
+        update contract_info
+        <set>
+            <if test="contractInfo.contractId != null">
+                contract_id = #{contractInfo.contractId},
+            </if>
+            <if test="contractInfo.contractPeriodType != null">
+                contract_period_type = #{contractInfo.contractPeriodType},
+            </if>
+            <if test="contractInfo.startDate != null">
+                start_date = #{contractInfo.startDate},
+            </if>
+            <if test="contractInfo.endDate != null">
+                end_date = #{contractInfo.endDate},
+            </if>
+            <if test="contractInfo.uploadStatus != null">
+                upload_status = #{contractInfo.uploadStatus},
+            </if>
+        </set>
+        where
+          contract_id = #{contractInfo.contractId}
+    </update>
+
+    <select id="findFileNameListByContractId" resultType="string">
+        select
+          cf.file_name
+        from
+          contract_info ci, contract_file cf
+        where
+          ci.contract_id = cf.contract_id
+    </select>
+
+    <delete id="deleteContractInfoById" parameterType="integer">
+        delete from
+          contract_info
+        where
+          contract_id = #{contractId}
+    </delete>
+
+    <delete id="deleteContractFileByIdAndFileName">
+        delete from
+          contract_file
+        where
+          contract_id = #{contractId}
+        and
+          file_name = #{fileName}
+    </delete>
+
+    <select id="getAllContractInfo" resultMap="contractInfoMap">
+        select
+          <include refid="searchAll"/>
+        from
+          contract_info ci, person p, worker_group wg, project_detail pd, project pj, contract_file cf
+        where
+          ci.project_detail_id = pd.id
+        and
+          p.person_id = pd.person_id
+        and
+          wg.team_sys_no = pd.team_sys_no
+        and
+          pj.project_code = pd.project_code
+        and
+          ci.contract_id = cf.contract_id
+    </select>
+
+    <select id="searchContractInfo" resultMap="contractInfoMap">
+        select
+          <include refid="searchAll"/>
+        from
+          contract_info ci, person p, worker_group wg, project_detail pd, project pj, contract_file cf
+        where
+          ci.project_detail_id = pd.id
+        and
+          p.person_id = pd.person_id
+        and
+          wg.team_sys_no = pd.team_sys_no
+        and
+          pj.project_code = pd.project_code
+        and
+          ci.contract_id = cf.contract_id
+        <if test="contractInfoQuery.projectName != null">
+            and pj.name like '%${contractInfoQuery.projectName}%'
+        </if>
+        <if test="contractInfoQuery.personName != null">
+            and p.person_name = #{contractInfoQuery.personName}
+        </if>
+        <if test="contractInfoQuery.subordinateCompany != null">
+            and p.subordinate_company like '%${contractInfoQuery.subordinateCompany}%'
+        </if>
+        <if test="contractInfoQuery.corpCode != null">
+            and p.corp_code = #{contractInfoQuery.corpCode}
+        </if>
+    </select>
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

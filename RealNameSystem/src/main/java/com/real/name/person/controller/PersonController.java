@@ -96,6 +96,9 @@ public class PersonController {
         setImageInfoToPerson(person, imageFile);
         //保存人员信息到数据库
         Person selectPerson = personService.createPerson(person);
+        if (StringUtils.isEmpty(selectPerson.getSuffixName())) {
+            throw new AttendanceException(ResultError.OPERATOR_ERROR);
+        }
         //保存照片信息
         FileTool.generateFile(imageFile, PathUtil.getImgBasePath(), selectPerson.getPersonId() + selectPerson.getSuffixName());
         Map<String, Object> m = new HashMap<>();
@@ -111,29 +114,22 @@ public class PersonController {
     @GetMapping("/deletePerson")
     public ResultVo deletePerson(@RequestParam("id") Integer personId,
                                 @RequestParam("idCardIndex")String idCardIndex,
-                                @RequestParam("suffixName") String suffixName){
+                                @RequestParam("suffixName") String suffixName,
+                                @RequestParam("workRole") Integer workRole){
         if(personId <= 0){
             throw AttendanceException.errorMessage("人员编号");
         }
         Person person = new Person();
         person.setPersonId(personId);
+        person.setWorkRole(workRole);
         person.setIdCardIndex(idCardIndex);
-        if (person.getWorkRole() == 10) {
-            //获取所有设备信息
-            List<Device> allDeviceList = deviceService.findAll();
-            //删除设备的人员信息
-            deviceService.deletePersonInDeviceList(allDeviceList, person);
-        } else if (person.getWorkRole() == 20) {
-            //查询用户所在的项目
-            List<String> projectCodes = projectDetailQueryService.getProjectIdsByPersonId(personId);
-            //获取项目绑定的设备
-            List<Device> deviceList = deviceService.findByProjectCodeIn(projectCodes);
-            deviceService.deletePersonInDeviceList(deviceList, person);
-        }
+        //删除设备人员信息
+        personService.deleteDevicesPersonInfo(person);
         //删除头像
         FileTool.deleteFile(PathUtil.getImgBasePath(), personId + suffixName);
         //删除personDetail中的信息
         projectPersonDetailService.deleteByPerson(new Person(personId));
+        //删除人员信息
         int effectNum = personService.deleteByPersonId(personId);
         if (effectNum <= 0) {
             throw AttendanceException.errorMessage(ResultError.DELETE_ERROR, "工人");
@@ -149,7 +145,7 @@ public class PersonController {
     @Transactional
     @PostMapping("updatePerson")
     public ResultVo updatePerson(@RequestParam("person") String personStr,
-                                 @RequestParam("imageFile") MultipartFile imageFile){
+                                 @RequestParam(value = "imageFile", required = false) MultipartFile imageFile){
         Person person = null;
         try {
             person = JSONObject.parseObject(personStr, Person.class);
@@ -160,10 +156,12 @@ public class PersonController {
         if(person.getPersonId() == null || person.getPersonId() <= 0){
             throw AttendanceException.errorMessage("person_id");
         }
-        Person selectPerson = null;
-        boolean attendProject = true;
+        if (person.getWorkRole() == null) {
+            throw AttendanceException.emptyMessage("workRole");
+        }
+        //boolean attendProject = true;
         //查询工人是否参加项目
-        Optional<ProjectPersonDetail> projectPerson = projectPersonDetailService.findByPerson(person);
+        /*Optional<ProjectPersonDetail> projectPerson = projectPersonDetailService.findByPerson(person);
         //工人没有参加项目
         if(!projectPerson.isPresent() || projectPerson.get().getPerson() == null){
             //从数据库中查询工人信息
@@ -175,25 +173,21 @@ public class PersonController {
             attendProject = false;
         }else{
             selectPerson = projectPerson.get().getPerson();
-        }
+        }*/
+        Optional<Person> personOptional = personService.findById(person.getPersonId());
         //人员不存在
-        if(selectPerson == null){
+        if(!personOptional.isPresent()){
             return ResultVo.failure(ResultError.PERSON_NOT_EXIST);
         }
-        //查询人员是否下发, 如果已经下发判断是否下发成功
-        List<IssueFace> issueFailPerson = issueFaceService.findIssueFailPersonByPersonId(selectPerson.getPersonId());
-        if (issueFailPerson.size() > 0) {
-            for (IssueFace issueFace : issueFailPerson) {
-                //下发失败, 不允许用户修改信息
-                if (issueFace.getIssuePersonStatus() == DeviceConstant.issuePersonFailure
-                        || issueFace.getIssueImageStatus() == DeviceConstant.issueImageFailure) {
-                    //查询出对应的项目信息
-                    String projectName = projectService.findProjectName(issueFace.getDevice().getProjectCode());
-                    return ResultVo.failure(projectName);
-                }
-            }
+        Person selectPerson = personOptional.get();
+        //判断人员信息是否下发成功, 如果不成功则不允许修改
+        String projectName = personService.judgeIssueSuccessToDevices(selectPerson);
+        if (projectName != null) {
+            return ResultVo.failure(projectName);
         }
+        //获取旧的人员名称和人员类型
         String oldName = selectPerson.getPersonName();
+        Integer oldWorkRole = selectPerson.getWorkRole();
         //合并信息
         mergePersonInfo(selectPerson, person);
         //校验输入的信息是否正确
@@ -202,7 +196,7 @@ public class PersonController {
         if (!imageFile.isEmpty()) {
             setImageInfoToPerson(selectPerson, imageFile);
         }
-        if(attendProject){
+        /*if(attendProject){
             ProjectPersonDetail projectPersonDetail = projectPerson.get();
             //设置修改后的person
             projectPersonDetail.setPerson(selectPerson);
@@ -211,19 +205,17 @@ public class PersonController {
             if(jsonObject.getBoolean("error")){
                 throw new AttendanceException(ResultError.NATIONAL_ERROR.getCode(), ResultError.NATIONAL_ERROR.getMessage() + jsonObject.getString("message"));
             }
-        }
+        }*/
         //修改本地工人信息
         Person updatePerson = personService.updatePerson(selectPerson);
         if (updatePerson == null) {
             throw new AttendanceException(ResultError.UPDATE_ERROR);
         }
-        //判断用户名是否发生改变, 如果改变则重新下发信息到人脸设备
-        if (!selectPerson.getPersonName().equals(oldName)) {
-            personService.updateDevicesPersonInfo(selectPerson);
-        }
+        //判断人员信息是否发生改变, 如果改变则重新下发信息到人脸设备
+        personService.updateDevicesPersonInfo(updatePerson, oldName, oldWorkRole);
         //如果传入的照片信息不为空则重新下发照片信息到设备
         if (!imageFile.isEmpty()) {
-            personService.updateDevicesImage(selectPerson);
+            personService.updateDevicesImage(updatePerson);
         }
         return ResultVo.success();
     }
@@ -315,21 +307,13 @@ public class PersonController {
             if (person.getStartDate().getTime() > person.getExpiryDate().getTime()) {
                 throw AttendanceException.errorMessage("证件有效期开始日期不能大于结束日期");
             }
-        } else if (!imageFile.isEmpty()) {
-            String WholeFileName = imageFile.getOriginalFilename();
-            if (!StringUtils.hasText(WholeFileName)) {
-                throw new AttendanceException(ResultError.EMPTY_NAME);
-            }
-            String suffixName = WholeFileName.substring(WholeFileName.lastIndexOf("."));
-            if (!suffixList.contains(suffixName)) {
-                throw new AttendanceException(ResultError.IMAGE_TYPE_ERROR);
-            }
-            //设置文件后缀名
-            person.setSuffixName(suffixName);
         }
     }
 
     private void setImageInfoToPerson(Person person, MultipartFile imageFile) {
+        String suffixName = FileTool.getSuffixName(imageFile);
+        //设置文件后缀名
+        person.setSuffixName(suffixName);
         //判断照片大小是否符合要求
         if (imageFile.getSize() > imgFileMaxSize) {
             throw new AttendanceException(ResultError.IMAGE_SIZE_ERROR);

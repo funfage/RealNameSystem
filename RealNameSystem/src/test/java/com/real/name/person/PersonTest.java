@@ -207,6 +207,13 @@ public class PersonTest extends BaseTest {
         System.out.println(byWorkRoleInProject);
     }
 
+    @Test
+    public void findPersonById() {
+        Person byPersonId = personQueryMapper.findByPersonId(89);
+        String s = JSONObject.toJSONString(byPersonId);
+        System.out.println(s);
+    }
+
 
 
 }

@@ -12,6 +12,9 @@ import com.real.name.common.utils.PageUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.device.service.DeviceService;
+import com.real.name.issue.entity.IssueFace;
+import com.real.name.issue.service.repository.IssueAccessMapper;
+import com.real.name.issue.service.repository.IssueFaceMapper;
 import com.real.name.person.entity.Person;
 import com.real.name.person.entity.Person2;
 import com.real.name.person.entity.Person3;
@@ -21,6 +24,8 @@ import com.real.name.person.service.repository.Person2Rep;
 import com.real.name.person.service.repository.PersonQueryMapper;
 import com.real.name.person.service.repository.PersonRepository;
 import com.real.name.project.service.ProjectDetailQueryService;
+import com.real.name.project.service.ProjectService;
+import com.real.name.project.service.repository.ProjectRepository;
 import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +50,9 @@ public class PersonServiceImpl implements PersonService {
     private PersonRepository personRepository;
 
     @Autowired
+    private ProjectService projectService;
+
+    @Autowired
     private DeviceService deviceService;
 
     @Autowired
@@ -56,29 +64,57 @@ public class PersonServiceImpl implements PersonService {
     @Autowired
     private PersonQueryMapper personQueryMapper;
 
+    @Autowired
+    private IssueFaceMapper issueFaceMapper;
+
+
     @Override
-    public void updateDevicesPersonInfo(Person person) {
-        if (person.getWorkRole() == null) {
-            return;
-        } else if (person.getWorkRole() == 10) {
-            //是否有设备存在
-            List<Device> allDevices = deviceService.findAllByDeviceType(DeviceConstant.faceDeviceType);
-            FaceDeviceUtils.updatePersonToDevices(allDevices, person, 3);
+    public void deleteDevicesPersonInfo(Person person) {
+        if (person.getWorkRole() == 10) {
+            //获取所有设备信息
+            List<Device> allDeviceList = deviceService.findAll();
+            //删除设备的人员信息
+            deviceService.deletePersonInDeviceList(allDeviceList, person);
         } else if (person.getWorkRole() == 20) {
+            //查询用户所在的项目
+            List<String> projectCodes = projectDetailQueryService.getProjectIdsByPersonId(person.getPersonId());
+            //获取项目绑定的设备
+            List<Device> deviceList = deviceService.findByProjectCodeIn(projectCodes);
+            deviceService.deletePersonInDeviceList(deviceList, person);
+        }
+    }
+
+    @Override
+    public void updateDevicesPersonInfo(Person person, String oldName, Integer oldWorkRole) {
+        //判断人员类型是否由管理员类型变为其他类型
+        if (oldWorkRole == 10 && person.getWorkRole() == 20) {
+            //删除该人员在所有人脸设备的信息
+            List<Device> allDevices = deviceService.findAllByDeviceType(DeviceConstant.faceDeviceType);
+            deviceService.deletePersonInDeviceList(allDevices, person);
             //查询用户所在的项目
             List<String> projectCodes = projectDetailQueryService.getProjectIdsByPersonId(person.getPersonId());
             //获取该项目所绑定所有人脸设备
             List<Device> faceDeviceList = deviceService.findByProjectCodeInAndDeviceType(projectCodes, DeviceConstant.faceDeviceType);
             //更新人员信息
             FaceDeviceUtils.updatePersonToDevices(faceDeviceList, person, 3);
+        } else if (!person.getPersonName().equals(oldName)) { //如果人员姓名发生了改变
+            if (person.getWorkRole() == 10) {
+                List<Device> allDevices = deviceService.findAllByDeviceType(DeviceConstant.faceDeviceType);
+                FaceDeviceUtils.updatePersonToDevices(allDevices, person, 3);
+            } else if (person.getWorkRole() == 20) {
+                //查询用户所在的项目
+                List<String> projectCodes = projectDetailQueryService.getProjectIdsByPersonId(person.getPersonId());
+                //获取该项目所绑定所有人脸设备
+                List<Device> faceDeviceList = deviceService.findByProjectCodeInAndDeviceType(projectCodes, DeviceConstant.faceDeviceType);
+                //更新人员信息
+                FaceDeviceUtils.updatePersonToDevices(faceDeviceList, person, 3);
+            }
         }
     }
 
     @Override
     public void updateDevicesImage(Person person) {
-        if (person.getWorkRole() == null) {
-            return;
-        } else if (person.getWorkRole() == 10) {//更新所有设备的照片信息
+        if (person.getWorkRole() == 10) {//更新所有设备的照片信息
             //判断是否有设备存在
             List<Device> allDevices = deviceService.findAllByDeviceType(DeviceConstant.faceDeviceType);
             //更新照片信息
@@ -91,6 +127,23 @@ public class PersonServiceImpl implements PersonService {
             //更新照片信息
             FaceDeviceUtils.updateImageToDevices(faceDeviceList, person, 3);
         }
+    }
+
+    @Override
+    public String judgeIssueSuccessToDevices(Person person) {
+        //查询人员是否下发到人脸, 如果已经下发判断是否下发成功
+        List<IssueFace> issueFailPerson = issueFaceMapper.findIssueFailPersonByPersonId(person.getPersonId());
+        if (issueFailPerson.size() > 0) {
+            for (IssueFace issueFace : issueFailPerson) {
+                //下发失败, 不允许用户修改信息
+                if (issueFace.getIssuePersonStatus() == DeviceConstant.issuePersonFailure
+                        || issueFace.getIssueImageStatus() == DeviceConstant.issueImageFailure) {
+                    //查询出对应的项目信息
+                    return projectService.findProjectName(issueFace.getDevice().getProjectCode());
+                }
+            }
+        }
+        return null;
     }
 
     @Transactional

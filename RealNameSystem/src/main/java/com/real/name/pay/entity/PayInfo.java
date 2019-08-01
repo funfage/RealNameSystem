@@ -1,7 +1,5 @@
 package com.real.name.pay.entity;
 
-import com.real.name.group.entity.WorkerGroup;
-import com.real.name.person.entity.Person;
 import com.real.name.project.entity.ProjectDetailQuery;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,11 +15,6 @@ public class PayInfo {
     private Long payId;
 
     private ProjectDetailQuery projectDetailQuery;
-
-    /**
-     * 发放工资的月份, 格式yyyy-MM
-     */
-    private Date payMonth;
 
     /**
      * 工资打发银行卡号
@@ -66,7 +59,7 @@ public class PayInfo {
     /**
      * 第三方工资单编号
      */
-    private String thirdPayrollCode;
+    private String thirdPayRollCode;
 
     /**
      * 上传文件的文件名

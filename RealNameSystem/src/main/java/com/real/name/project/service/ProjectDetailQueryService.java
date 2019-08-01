@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public interface ProjectDetailQueryService {
 
@@ -39,7 +40,7 @@ public interface ProjectDetailQueryService {
     /**
      * 查询某个人员的姓名,身份证,所属单位,班组名,工种 以及每天的工作时长
      */
-    List<ProjectDetailQuery> findPersonWorkHoursInfo(Date startDate, Date endDate);
+    List<Map<String, Object>> findPersonWorkHoursInfo(Date startDate, Date endDate);
 
     /**
      * 将人员从项目中移除

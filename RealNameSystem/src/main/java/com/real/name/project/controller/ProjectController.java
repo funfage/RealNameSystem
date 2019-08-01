@@ -63,9 +63,6 @@ public class ProjectController {
     private ProjectDetailService projectDetailService;
 
     @Autowired
-    private ProjectPersonDetailService projectPersonDetailService;
-
-    @Autowired
     private IssueFaceService issueFaceService;
 
     @Autowired
@@ -302,13 +299,18 @@ public class ProjectController {
     @Transactional
     public ResultVo deletePersonInProject(@RequestParam("projectCode") String projectCode,
                                           @RequestParam("personId") Integer personId,
-                                          @RequestParam("idCardIndex") String idCardIndex) {
+                                          @RequestParam("idCardIndex") String idCardIndex,
+                                          @RequestParam("workRole") Integer workRole) {
         //获取该项目绑定的设备信息
         List<Device> deviceList = deviceService.findByProjectCode(projectCode);
         Person person = new Person();
         person.setPersonId(personId);
+        person.setWorkRole(workRole);
         person.setIdCardIndex(idCardIndex);
-        deviceService.deletePersonInDeviceList(deviceList, person);
+        //如果不是管理员则删除设备信息
+        if (workRole != 10) {
+            deviceService.deletePersonInDeviceList(deviceList, person);
+        }
         //查被删除人员所在的班组
         String teamName = projectDetailQueryService.findTeamName(projectCode, personId);
         String key = projectCode + CommConstant.ABSENT + teamName;

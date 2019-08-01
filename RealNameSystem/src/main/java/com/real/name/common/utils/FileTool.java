@@ -11,11 +11,16 @@ import org.springframework.web.multipart.MultipartFile;
 import sun.misc.BASE64Encoder;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 public class FileTool {
-
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+    private static final Random random = new Random();
     private static Logger logger = LoggerFactory.getLogger(FileTool.class);
 
     /**
@@ -78,6 +83,7 @@ public class FileTool {
         }
     }
 
+
     /**
      * 删除头像
      */
@@ -92,6 +98,48 @@ public class FileTool {
         } else {
             throw new AttendanceException(ResultError.FILE_NOT_EXISTS);
         }
+    }
+
+    /**
+     * 获取下载文件的目录路径
+     * @param 0,人员文件路径
+     *        1,薪资文件路径
+     *        2,合同文件路径
+     */
+    public static String getDownLoadFilePath(Integer downLoadType) {
+        if (downLoadType == 0) {
+            return PathUtil.getImgBasePath();
+        } else if (downLoadType == 1) {
+            return PathUtil.getPayFileBasePath();
+        } else if (downLoadType == 2) {
+            return PathUtil.getContractFilePath();
+        }
+        return null;
+    }
+
+    /**
+     * 生成随机文件名，当前年月日小时分钟秒钟+五位随机数
+     */
+    public static String getRandomPrefixName() {
+        // 获取随机的五位数
+        int rannum = random.nextInt(89999) + 10000;
+        String nowTimeStr = dateFormat.format(new Date());
+        return nowTimeStr + rannum;
+    }
+
+    /**
+     * 获取文件的后缀名
+     */
+    public static String getSuffixName(MultipartFile file) {
+        String WholeFileName = file.getOriginalFilename();
+        if (!StringUtils.hasText(WholeFileName)) {
+            throw new AttendanceException(ResultError.EMPTY_NAME);
+        }
+        String suffixName = WholeFileName.substring(WholeFileName.lastIndexOf("."));
+        if (StringUtils.isEmpty(suffixName)) {
+            throw AttendanceException.emptyMessage("文件后缀名");
+        }
+        return suffixName;
     }
 
 }

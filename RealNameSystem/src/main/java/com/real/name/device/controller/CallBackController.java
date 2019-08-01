@@ -116,7 +116,7 @@ public class CallBackController {
                         sendToClient(sendInfo, device, time);
                         jedisKeys.del(key);
                     }
-                    logger.debug("成功添加了一条人员考勤记录, record:{}", record.toString());
+                    logger.info("成功添加了一条人员考勤记录, record:{}", record.toString());
                 }
             }
         }

@@ -1,4 +1,4 @@
-package com.real.name.device.netty.annotion;
+package com.real.name.common.annotion;
 
 import java.lang.annotation.*;
 

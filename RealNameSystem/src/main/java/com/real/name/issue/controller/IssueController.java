@@ -59,7 +59,7 @@ public class IssueController {
         //查询该设备是否存在
         Optional<Device> optionalDevice = deviceService.findByDeviceId(deviceId);
         if (!optionalDevice.isPresent()) {
-            throw new AttendanceException(ResultError.DEVICE_EXIST);
+            throw new AttendanceException(ResultError.DEVICE_NOT_EXIST);
         }
         Device device = optionalDevice.get();
         //判断是那种下发失败情况

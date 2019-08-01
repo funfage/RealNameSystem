@@ -203,28 +203,21 @@
 
     <select id="findPersonWorkHoursInfo" resultMap="queryAllMap">
         select
-        id,
-        p.person_name, p.id_card_index, p.work_type, p.subordinate_company,
-        wg.team_name,
-        attendance_id, work_hours, work_time
+          pd.id,
+          p.person_id as p_person_id, p.person_name, p.id_card_number, p.id_card_type, p.work_type, p.work_role, p.subordinate_company, p.corp_code,
+          wg.team_sys_no as wg_team_sys_no, wg.team_name,
+          a.attendance_id, a.work_hours, a.work_time
         from
-        project_detail pd
-        left join
-        person p
-        on
-        pd.person_id = p.person_id
-        left join
-        worker_group wg
-        on
-        pd.team_sys_no = wg.team_sys_no
-        left join
-        attendance a
-        on
-        pd.id = a.project_detail_id
+          project_detail pd
+        left join person p on pd.person_id = p.person_id
+        left join worker_group wg on pd.team_sys_no = wg.team_sys_no
+        left join attendance a on pd.id = a.project_detail_id
         where
-        a.work_time &gt;= #{startDate}
+          a.work_time &gt;= #{startDate}
         and
-        a.work_time &lt;= #{endDate}
+          a.work_time &lt;= #{endDate}
+        order by
+          a.work_time
     </select>
 
     <delete id="deletePersonInProject">

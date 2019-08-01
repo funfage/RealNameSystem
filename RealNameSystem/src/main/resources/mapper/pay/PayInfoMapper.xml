@@ -3,7 +3,6 @@
 <mapper namespace="com.real.name.pay.service.repository.PayInfoMapper">
     <resultMap id="payInfoMap" type="com.real.name.pay.entity.PayInfo">
         <id property="payId" column="pay_id"/>
-        <result property="payMonth" column="pay_month"/>
         <result property="payBankCardNumber" column="pay_bank_card_number"/>
         <result property="payBankCode" column="pay_bank_code"/>
         <result property="payBankName" column="pay_bank_name"/>
@@ -11,7 +10,8 @@
         <result property="actualAmount" column="actual_amount"/>
         <result property="isBackPay" column="is_back_pay"/>
         <result property="balanceDate" column="balance_date"/>
-        <result property="thirdPayrollCode" column="third_payroll_code"/>
+        <result property="backPayMonth" column="back_pay_month"/>
+        <result property="thirdPayRollCode" column="third_pay_roll_code"/>
         <result property="suffixName" column="suffix_name"/>
         <result property="uploadStatus" column="upload_status"/>
         <association property="projectDetailQuery" javaType="com.real.name.project.entity.ProjectDetailQuery" column="person_id">
@@ -40,8 +40,8 @@
     </resultMap>
 
     <sql id="searchAll">
-        py.pay_id, py.pay_month, py.pay_bank_card_number, py.pay_bank_code, py.pay_bank_name, py.total_pay_amount,
-        py.actual_amount, py.is_back_pay, py.balance_date, py.third_pay_roll_code, py.suffix_name, py.upload_status,
+        py.pay_id, py.pay_bank_card_number, py.pay_bank_code, py.pay_bank_name, py.total_pay_amount,
+        py.actual_amount, py.is_back_pay, py.balance_date, date_format(py.back_pay_month, '%Y-%m-%d') as back_pay_month, py.third_pay_roll_code, py.suffix_name, py.upload_status,
         p.person_id, p.person_name, p.corp_code, p.subordinate_company, p.id_card_type, p.id_card_number, p.pay_roll_bank_card_number,
         p.pay_roll_bank_name, p.bank_link_number, p.pay_roll_top_bank_code,
         wg.team_sys_no, wg.team_name,
@@ -52,22 +52,19 @@
     <insert id="savePayInfo" parameterType="com.real.name.pay.entity.PayInfo"
             keyProperty="payInfo.payId" keyColumn="pay_id" useGeneratedKeys="true">
         insert into
-          pay_info (project_detail_id, pay_month, pay_bank_card_number, pay_bank_code, pay_bank_name,
+          pay_info (project_detail_id, pay_bank_card_number, pay_bank_code, pay_bank_name,
           total_pay_amount, actual_amount, is_back_pay, balance_date, back_pay_month, third_pay_roll_code,
           suffix_name)
         values
-          (#{payInfo.projectDetailQuery.id}, #{payInfo.payMonth}, #{payInfo.payBankCardNumber},
-          #{payInfo.payBankCode}, #{payInfo.payBankName}, #{payInfo.totalPayAmount}, #{payInfo.actualAmount}, #{payInfo.isBackPay},
-           #{payInfo.balanceDate}, #{payInfo.backPayMonth}, #{payInfo.thirdPayrollCode}, #{payInfo.suffixName} )
+          (#{payInfo.projectDetailQuery.id}, #{payInfo.payBankCardNumber}, #{payInfo.payBankCode},
+          #{payInfo.payBankName}, #{payInfo.totalPayAmount}, #{payInfo.actualAmount}, #{payInfo.isBackPay},
+           #{payInfo.balanceDate}, #{payInfo.backPayMonth}, #{payInfo.thirdPayRollCode}, #{payInfo.suffixName} )
     </insert>
 
     <update id="updatePayInfoById" parameterType="com.real.name.pay.entity.PayInfo"
             keyProperty="payId" keyColumn="pay_id" useGeneratedKeys="true">
         update pay_info
         <set>
-            <if test="payInfo.payMonth != null">
-                pay_month = #{payInfo.payMonth},
-            </if>
             <if test="payInfo.payBankCardNumber != null">
                 pay_bank_card_number = #{payInfo.payBankCardNumber},
             </if>
@@ -92,8 +89,8 @@
             <if test="payInfo.backPayMonth != null">
                 back_pay_month = #{payInfo.backPayMonth},
             </if>
-            <if test="payInfo.thirdPayrollCode != null">
-                third_pay_roll_code = #{payInfo.thirdPayrollCode},
+            <if test="payInfo.thirdPayRollCode != null">
+                third_pay_roll_code = #{payInfo.thirdPayRollCode},
             </if>
             <if test="payInfo.suffixName != null">
                 suffix_name = #{payInfo.suffixName},
@@ -126,6 +123,28 @@
           wg.team_sys_no = pd.team_sys_no
         and
           pj.project_code = pd.project_code
+    </select>
+
+    <select id="searchPayInfo" resultMap="payInfoMap">
+        select
+          <include refid="searchAll"/>
+        from
+          pay_info py, project_detail pd, person p, worker_group wg, project pj
+        where
+          py.project_detail_id = pd.id
+        and
+          p.person_id = pd.person_id
+        and
+          wg.team_sys_no = pd.team_sys_no
+        and
+          pj.project_code = pd.project_code
+        <if test="payInfoQuery.projectCode != null">
+            and pj.project_code = #{payInfoQuery.projectCode}
+        </if>
+        <if test="payInfoQuery.nameOrIdCardNumber != null">
+            and (p.person_name like '%${payInfoQuery.nameOrIdCardNumber}%'
+            or p.id_card_number like '%${payInfoQuery.nameOrIdCardNumber}%')
+        </if>
     </select>
 
 </mapper>

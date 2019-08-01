@@ -58,7 +58,7 @@ public enum ResultError {
     USER_HAS_REGISTER(51, "该用户已被注册"),
     PHONE_EMPTY(52, "电话号码为空"),
     PASSWORD_EMPTY(53, "密码为空"),
-    ROLE_EMPTY(54, "用户类型"),
+    ROLE_EMPTY(54, "用户类型为空"),
     GENERATE_FILE_ERROR(55, "文件生成失败"),
     NO_FIND_PROJECT_DETAIL(56, "未查询到该用户项目详情信息"),
     DELETE_FILE_ERROR(57, "删除文件失败"),

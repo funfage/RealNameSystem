@@ -109,7 +109,8 @@ public class FaceDeviceUtils {
                     issueFace.setDevice(device);
                     issueFace.setPerson(person);
                     issueFace.setIssuePersonStatus(1);
-                    issueFace.setIssueImageStatus(0);//防止前面设置过imageStatus的值
+                    issueFace.setIssueImageStatus(0);
+                    //防止前面设置过imageStatus的值
                     int issueImage = 0;
                     //下发三次照片信息
                     while (issueImage < times) {

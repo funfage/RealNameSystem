@@ -1,7 +1,7 @@
 package com.real.name.device.netty.scanner;
 
-import com.real.name.device.netty.annotion.SocketFunction;
-import com.real.name.device.netty.annotion.SocketType;
+import com.real.name.common.annotion.SocketFunction;
+import com.real.name.common.annotion.SocketType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;

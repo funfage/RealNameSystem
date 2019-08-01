@@ -17,14 +17,24 @@ import java.util.Optional;
 public interface PersonService {
 
     /**
+     * 删除设备人员信息
+     */
+    void deleteDevicesPersonInfo(Person person);
+
+    /**
      * 更新设备人员信息
      */
-    void updateDevicesPersonInfo(Person person);
+    void updateDevicesPersonInfo(Person person, String oldName, Integer oldWorkRole);
 
     /**
      * 将照片信息下发到人脸设备
      */
     void updateDevicesImage(Person person);
+
+    /**
+     * 判断人员信息是否成功下发到设备
+     */
+    String judgeIssueSuccessToDevices(Person person);
 
     /**
      * 新建人员

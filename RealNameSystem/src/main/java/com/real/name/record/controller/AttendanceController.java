@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
@@ -35,12 +37,17 @@ public class AttendanceController {
     @Autowired
     private GroupAttendService groupAttendService;
 
+    /**
+     * 查询某个人员的姓名,身份证,所属单位,班组名,工种 以及每天的工作时长
+     */
     @GetMapping("/getAttendance")
-    public ResultVo getAttendance() {
-        Date start = TimeUtil.initDateByMonth();
+    public ResultVo getAttendance() throws ParseException {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date start = dateFormat.parse("2019-07-01 00:00:00");
+        //Date start = TimeUtil.initDateByMonth();
         Date end = new Date(System.currentTimeMillis());
-        List<ProjectDetailQuery> queryList = projectDetailQueryService.findPersonWorkHoursInfo(start, end);
-        return ResultVo.success(queryList);
+        List<Map<String, Object>> personWorkHoursInfo = projectDetailQueryService.findPersonWorkHoursInfo(start, end);
+        return ResultVo.success(personWorkHoursInfo);
     }
 
     /**

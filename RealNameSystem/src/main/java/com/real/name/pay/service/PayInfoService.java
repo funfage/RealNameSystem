@@ -1,6 +1,7 @@
 package com.real.name.pay.service;
 
 import com.real.name.pay.entity.PayInfo;
+import com.real.name.pay.query.PayInfoQuery;
 
 import java.util.List;
 
@@ -25,5 +26,10 @@ public interface PayInfoService {
      * 查询所有薪资记录
      */
     List<PayInfo> getAllPayInfo();
+
+    /**
+     * 薪资搜索
+     */
+    List<PayInfo> searchPayInfo(PayInfoQuery payInfoQuery);
 
 }

@@ -67,6 +67,10 @@ public class ShiroConfig {
         Map<String, String> map = new LinkedHashMap<>();
         //静态资源
         map.put("/static/**", "anon");
+        //回调地址
+        map.put("/attendance", "anon");
+        map.put("/heartbeat", "anon");
+        map.put("/imgreg", "anon");
         //用户
         map.put("/user/submitLogin", "anon");
         map.put("/user/userRegister", "anon");

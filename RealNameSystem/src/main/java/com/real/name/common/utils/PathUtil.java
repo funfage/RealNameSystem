@@ -15,6 +15,10 @@ public class PathUtil {
 
 	private static String linuxPayFilePath;
 
+	private static String winContractFilePath;
+
+	private static String linuxContractFilePath;
+
 	@Value("${win.image.base.path}")
 	public void setWinPath(String winImagePath) {
 		PathUtil.winImagePath = winImagePath;
@@ -31,8 +35,18 @@ public class PathUtil {
 	}
 
 	@Value("${linux.payFile.path}")
-	public void setLinuxImagePath(String linuxPayFilePath) {
+	public void setLinuxPayFilePath(String linuxPayFilePath) {
 		PathUtil.linuxPayFilePath = linuxPayFilePath;
+	}
+
+	@Value("${win.contractFile.path}")
+	public void setWinContractFilePath(String winContractFilePath) {
+		PathUtil.winContractFilePath = winContractFilePath;
+	}
+
+	@Value("${linux.contractFile.path}")
+	public void setLinuxContractFilePath(String linuxContractFilePath) {
+		PathUtil.linuxContractFilePath = linuxContractFilePath;
 	}
 
 	public PathUtil() {
@@ -57,6 +71,18 @@ public class PathUtil {
 			basePath = winPayFilePath;
 		} else {
 			basePath = linuxPayFilePath;
+		}
+		basePath = basePath.replace("/", separator);
+		return basePath;
+	}
+
+	public static String getContractFilePath() {
+		String os = System.getProperty("os.name");
+		String basePath = "";
+		if (os.toLowerCase().contains("win")) {
+			basePath = winContractFilePath;
+		} else {
+			basePath = linuxContractFilePath;
 		}
 		basePath = basePath.replace("/", separator);
 		return basePath;

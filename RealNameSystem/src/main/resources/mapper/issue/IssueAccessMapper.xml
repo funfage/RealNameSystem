@@ -110,4 +110,5 @@
         a.device_id = d.device_id
     </select>
 
+
 </mapper>

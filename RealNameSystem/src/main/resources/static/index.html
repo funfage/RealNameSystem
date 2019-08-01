@@ -1,0 +1,19 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Title</title>
+</head>
+<body>
+<input type="button" value="下载文件" onclick="doDownload()"/>
+<form id="download" method="get" action="http://localhost:9901/attendance/common/downLoadFile?downLoadType=0&fileName=95.jpg">
+</form>
+<script type="text/javascript">
+    function doDownload() {
+        var upl = document.getElementById("download");
+        upl.submit();
+    }
+</script>
+</body>
+</html>

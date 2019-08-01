@@ -66,7 +66,7 @@ public class ProjectDetailQueryTest extends BaseTest {
     @Test
     public void findPersonWorkHoursInfo() throws ParseException {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date start = TimeUtil.initDateByMonth();
+        Date start = dateFormat.parse("2019-07-01 00:00:00");
         Date end = new Date(System.currentTimeMillis());
         List<ProjectDetailQuery> queryList = mapper.findPersonWorkHoursInfo(start, end);
         System.out.println(queryList);
