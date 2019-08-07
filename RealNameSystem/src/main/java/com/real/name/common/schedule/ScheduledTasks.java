@@ -21,14 +21,17 @@ import com.real.name.project.entity.ProjectDetail;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.ProjectDetailService;
+import com.real.name.project.service.repository.ProjectDetailQueryMapper;
 import com.real.name.project.service.repository.ProjectQueryMapper;
 import com.real.name.project.service.repository.ProjectRepository;
 import com.real.name.record.entity.Attendance;
 import com.real.name.record.entity.GroupAttend;
+import com.real.name.record.entity.ProjectAttend;
 import com.real.name.record.entity.Record;
 import com.real.name.record.service.AttendanceService;
 import com.real.name.record.service.repository.AttendanceMapper;
 import com.real.name.record.service.repository.GroupAttendMapper;
+import com.real.name.record.service.repository.ProjectAttendMapper;
 import com.real.name.record.service.repository.RecordMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +59,9 @@ public class ScheduledTasks {
     private ProjectDetailQueryService projectDetailQueryService;
 
     @Autowired
+    private ProjectDetailQueryMapper projectDetailQueryMapper;
+
+    @Autowired
     private ProjectDetailService projectDetailService;
 
     @Autowired
@@ -74,13 +80,10 @@ public class ScheduledTasks {
     private DeleteInfoMapper deleteInfoMapper;
 
     @Autowired
-    private ProjectRepository projectRepository;
-
-    @Autowired
-    private AttendanceService attendanceService;
-
-    @Autowired
     private GroupAttendMapper groupAttendMapper;
+
+    @Autowired
+    private ProjectAttendMapper projectAttendMapper;
 
     @Autowired
     private ProjectQueryMapper projectQueryMapper;
@@ -192,36 +195,62 @@ public class ScheduledTasks {
         logger.warn("统计工时定时任务开始");
         try {
             List<ProjectDetail> projectDetailList = projectDetailService.findAll();
-            logger.warn("projectDetailList:{}", projectDetailList);
             for (ProjectDetail projectDetail : projectDetailList) {
-                Integer personId = projectDetail.getPersonId();
-                long todayBegin = TimeUtil.getTodayBegin() * 1000;
-                long tomorrowBegin = TimeUtil.getTomorrowBegin() * 1000;
-                //查询该员工的当天的所有进出记录
-                List<Record> todayRecord = recordMapper.getTodayRecord(personId, todayBegin, tomorrowBegin);
-                long totalTime = 0;
-                for (int i = 0; i < todayRecord.size() - 1; i++) {
-                    int direction1 = todayRecord.get(i).getDirection();
-                    long time1 = todayRecord.get(i).getTimeNumber();
-                    int direction2 = todayRecord.get(i + 1).getDirection();
-                    if (direction1 == 1 && direction2 == 2) {
-                        while (++i < todayRecord.size() && todayRecord.get(i).getDirection() == 2) {
-
-                        }
-                        if (i == todayRecord.size()) {
-                            long time2 = todayRecord.get(i - 1).getTimeNumber();
-                            totalTime += time2 - time1;
-                        } else {
-                            long time2 = todayRecord.get(--i).getTimeNumber();
-                            totalTime += time2 - time1;
-                        }
-                    }
-                }
-                //保存员工当天的工作时长
                 Attendance attendance = new Attendance();
                 attendance.setProjectDetailId(projectDetail.getId());
-                attendance.setWorkHours(TimeUtil.getHours(totalTime));
-                attendance.setWorkTime(new Date());
+                Integer personId = projectDetail.getPersonId();
+                long todayBegin = TimeUtil.getTodayBeginMilliSecond();
+                long tomorrowBegin = TimeUtil.getTomorrowBeginMilliSecond();
+                //查询该员工的当天的所有进出记录
+                List<Record> todayRecord = recordMapper.getTodayRecord(personId, todayBegin, tomorrowBegin);
+                if (todayRecord.size() > 0) {
+                    long totalTime = 0;
+                    //判断人员的进出记录是否异常
+                    //1,员工只出不进
+                    if (todayRecord.get(0).getDirection() == 2) {
+                        attendance.setEndTime(new Date(todayRecord.get(0).getTimeNumber()));
+                        attendance.setStatus(0);
+                    } else if (todayRecord.get(todayRecord.size() - 1).getDirection() == 1) { // 2,只进不出
+                        attendance.setStartTime(new Date(todayRecord.get(todayRecord.size() - 1).getTimeNumber()));
+                        attendance.setStatus(-1);
+                    } else {
+                        int index = 0;
+                        for (int i = 0; i < todayRecord.size() - 1; i++) {
+                            int direction1 = todayRecord.get(i).getDirection();
+                            long time1 = todayRecord.get(i).getTimeNumber();
+                            int direction2 = todayRecord.get(i + 1).getDirection();
+                            if (direction1 == 1 && direction2 == 2) {
+                                if (index == 0) {
+                                    //设置开始工作的时间
+                                    attendance.setStartTime(new Date(todayRecord.get(i).getTimeNumber()));
+                                }
+                                index++;
+                                while (++i < todayRecord.size() && todayRecord.get(i).getDirection() == 2) {
+
+                                }
+                                if (i == todayRecord.size()) {
+                                    long time2 = todayRecord.get(i - 1).getTimeNumber();
+                                    totalTime += time2 - time1;
+                                } else {
+                                    long time2 = todayRecord.get(--i).getTimeNumber();
+                                    totalTime += time2 - time1;
+                                }
+                            }
+                        }
+                        if (totalTime < 0) { // 算法异常
+                            attendance.setStatus(-2);
+                        }
+                        //设置结束工作的时间
+                        attendance.setEndTime(new Date(todayRecord.get(todayRecord.size() - 1).getTimeNumber()));
+                    }
+                    //保存员工当天的工作时长
+                    attendance.setWorkHours(TimeUtil.getHours(totalTime));
+                    attendance.setWorkTime(new Date());
+                } else {
+                    //否则今天员工没有来上班
+                    attendance.setWorkHours(0.0);
+                    attendance.setWorkTime(new Date());
+                }
                 attendanceMapper.saveAttendance(attendance);
             }
         } catch (Exception e) {
@@ -231,35 +260,53 @@ public class ScheduledTasks {
     }
 
     /**
-     * 每天晚上11点10分统计班组每日的总工时
+     * 每天晚上11点10分统计班组每日的总工时,考勤次数和异常次数
      */
     @Scheduled(cron = "0 10 23 * * ?")
     public void countGroupTime() {
         logger.warn("统计班组工时定时任务开始");
         try {
+            Date todayBegin = TimeUtil.getTodayBegin();
+            Date todayEnd = TimeUtil.getTodayEnd();
             //查询所有的projectCode
             List<String> allProjectCode = projectQueryMapper.findAllProjectCode();
             for (String projectCode : allProjectCode) {
                 //查询该项目下所有班组信息
                 List<ProjectDetailQuery> groupList = projectDetailQueryService.getWorkerGroupInProject(projectCode);
+                //统计班组相关考勤数据
                 for (ProjectDetailQuery projectDetailQuery : groupList) {
                     WorkerGroup workerGroup = projectDetailQuery.getWorkerGroup();
                     //获取该班组所有的project_detail_id
-                    List<Integer> ids = projectDetailQueryService.getProjectIdByGroup(workerGroup.getTeamSysNo());
-                    Date todayBegin = new Date(TimeUtil.getTodayBegin() * 1000);
-                    Date todayEnd = new Date(TimeUtil.getTomorrowBegin() * 1000);
-                    //获取班组当天下的总工时
-                    Double hours = attendanceService.countWorkerHours(ids, todayBegin, todayEnd);
-                    if (hours == null) {
-                        hours = 0.0;
-                    }
+                    List<Integer> projectDetailIds = projectDetailQueryMapper.getProjectDetailIdByGroup(workerGroup.getTeamSysNo());
+                    //获取当天班组考勤的总工时, 总考勤次数, 不统计异常数据
+                    Double workHours = attendanceMapper.getPeriodWorkHoursInPIds(projectDetailIds, todayBegin, todayEnd);
+                    Integer groupAttendNum = attendanceMapper.getPeriodAttendNumInPIds(projectDetailIds, todayBegin, todayEnd);
+                    //获取班组当天考勤异常的次数
+                    Integer groupAttendErrNum = attendanceMapper.getPeriodAttendErrNumInPIds(projectDetailIds, todayBegin, todayEnd);
+                    //保存班组当天考勤信息
                     GroupAttend groupAttend = new GroupAttend();
                     groupAttend.setWorkerGroup(workerGroup);
                     groupAttend.setProject(new Project(projectCode));
-                    groupAttend.setWorkHours(hours);
+                    groupAttend.setWorkHours(workHours);
+                    groupAttend.setGroupAttendNum(groupAttendNum);
+                    groupAttend.setGroupAttendErrNum(groupAttendErrNum);
                     groupAttend.setWorkTime(new Date());
                     groupAttendMapper.saveGroupAttend(groupAttend);
                 }
+                //统计项目相关考勤数据
+                List<Integer> projectDetailIds = projectDetailQueryMapper.getIdsByProjectCode(projectCode);
+                //获取当天项目考勤的总工时, 总考勤次数, 不统计异常数据
+                Double workHours = attendanceMapper.getPeriodWorkHoursInPIds(projectDetailIds, todayBegin, todayEnd);
+                Integer projectAttendNum = attendanceMapper.getPeriodAttendNumInPIds(projectDetailIds, todayBegin, todayEnd);
+                //获取项目当天考勤异常的次数
+                Integer projectAttendErrNum = attendanceMapper.getPeriodAttendErrNumInPIds(projectDetailIds, todayBegin, todayEnd);
+                //保存项目当天考勤信息
+                ProjectAttend projectAttend = new ProjectAttend();
+                projectAttend.setProjectCode(projectCode);
+                projectAttend.setWorkHours(workHours);
+                projectAttend.setProjectAttendNum(projectAttendNum);
+                projectAttend.setProjectAttendErrNum(projectAttendErrNum);
+                projectAttendMapper.saveProjectAttend(projectAttend);
             }
         } catch (Exception e) {
             logger.error("统计班组工时出现异常, e:{}", e);

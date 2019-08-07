@@ -95,6 +95,16 @@ public interface PersonQueryMapper {
      */
     List<Person> searchPerson(@Param("personQuery") PersonQuery personQuery);
 
+    /**
+     * 获取总的人员数
+     */
+    Integer countPersonNum();
+
+    /**
+     * 获取当日注册的人员数量
+     */
+    Integer countTodayPersonNum();
+
 
 
 }

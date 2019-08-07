@@ -8,7 +8,7 @@
         <result property="endDate" column="end_date"/>
         <result property="uploadStatus" column="upload_status"/>
         <association property="projectDetailQuery" javaType="com.real.name.project.entity.ProjectDetailQuery" column="person_id">
-            <id property="id" column="id"/>
+            <id property="id" column="project_detail_id"/>
             <association property="person" javaType="com.real.name.person.entity.Person" column="person_id">
                 <id property="personId" column="person_id"/>
                 <result property="personName" column="person_name"/>
@@ -39,7 +39,31 @@
         wg.team_sys_no, wg.team_name,
         pj.project_code, pj.name,
         cf.id, cf.file_name,
-        pd.id
+        pd.id as project_detail_id
+    </sql>
+
+    <sql id="searchNoContractFile">
+        ci.contract_id, ci.contract_period_type, ci.start_date, ci.end_date, ci.upload_status,
+        p.person_id, p.person_name, p.corp_code, p.subordinate_company, p.id_card_type, p.id_card_number,
+        wg.team_sys_no, wg.team_name,
+        pj.project_code, pj.name,
+        null, null,
+        pd.id as project_detail_id
+    </sql>
+
+    <sql id="searchCondition">
+        <if test="contractInfoQuery.projectName != null and contractInfoQuery.projectName != ''">
+            and pj.name like '%${contractInfoQuery.projectName}%'
+        </if>
+        <if test="contractInfoQuery.personName != null and contractInfoQuery.personName != ''">
+            and p.person_name = #{contractInfoQuery.personName}
+        </if>
+        <if test="contractInfoQuery.subordinateCompany != null and contractInfoQuery.subordinateCompany != ''">
+            and p.subordinate_company like '%${contractInfoQuery.subordinateCompany}%'
+        </if>
+        <if test="contractInfoQuery.corpCode != null and contractInfoQuery.corpCode != ''">
+            and p.corp_code = #{contractInfoQuery.corpCode}
+        </if>
     </sql>
 
     <insert id="saveContractInfo" parameterType="com.real.name.contract.entity.ContractInfo"
@@ -125,6 +149,21 @@
           pj.project_code = pd.project_code
         and
           ci.contract_id = cf.contract_id
+        union
+        select
+          <include refid="searchNoContractFile"/>
+        from
+          contract_info ci, person p, worker_group wg, project_detail pd, project pj
+        where
+          ci.project_detail_id = pd.id
+        and
+          p.person_id = pd.person_id
+        and
+          wg.team_sys_no = pd.team_sys_no
+        and
+          pj.project_code = pd.project_code
+        and
+          ci.contract_id not in (select contract_id from contract_file)
     </select>
 
     <select id="searchContractInfo" resultMap="contractInfoMap">
@@ -142,18 +181,23 @@
           pj.project_code = pd.project_code
         and
           ci.contract_id = cf.contract_id
-        <if test="contractInfoQuery.projectName != null">
-            and pj.name like '%${contractInfoQuery.projectName}%'
-        </if>
-        <if test="contractInfoQuery.personName != null">
-            and p.person_name = #{contractInfoQuery.personName}
-        </if>
-        <if test="contractInfoQuery.subordinateCompany != null">
-            and p.subordinate_company like '%${contractInfoQuery.subordinateCompany}%'
-        </if>
-        <if test="contractInfoQuery.corpCode != null">
-            and p.corp_code = #{contractInfoQuery.corpCode}
-        </if>
+          <include refid="searchCondition"/>
+        UNION
+        select
+          <include refid="searchNoContractFile"/>
+        from
+          contract_info ci, person p, worker_group wg, project_detail pd, project pj
+        where
+          ci.project_detail_id = pd.id
+        and
+          p.person_id = pd.person_id
+        and
+          wg.team_sys_no = pd.team_sys_no
+        and
+          pj.project_code = pd.project_code
+        and
+          ci.contract_id not in (select contract_id from contract_file)
+          <include refid="searchCondition"/>
     </select>
 
 </mapper>

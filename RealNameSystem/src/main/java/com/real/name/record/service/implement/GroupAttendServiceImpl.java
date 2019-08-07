@@ -16,11 +16,6 @@ public class GroupAttendServiceImpl implements GroupAttendService {
     private GroupAttendMapper groupAttendMapper;
 
     @Override
-    public int saveGroupAttend(GroupAttend groupAttend) {
-        return groupAttendMapper.saveGroupAttend(groupAttend);
-    }
-
-    @Override
     public Double countGroupHoursInPeriod(Integer teamSysNo, Date begin, Date end) {
         return groupAttendMapper.countGroupHoursInPeriod(teamSysNo, begin, end);
     }

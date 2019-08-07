@@ -247,6 +247,14 @@ public class DeviceController {
         return ResultVo.success(map);
     }
 
+    /**
+     * 获取首页信息
+     */
+    @GetMapping("/getMainPageDeviceInfo")
+    public ResultVo getMainPageDeviceInfo() {
+        return ResultVo.success(deviceService.getMainPageDeviceInfo());
+    }
+
     private void verifyParam(String factory, Integer deviceType, String ip, Integer direction, Integer channel,
                              Long installTime, Integer outPort, String phone, String remark, String projectCode,
                              String pass, Device device) {

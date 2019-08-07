@@ -63,5 +63,15 @@ public interface ProjectService {
      */
     List<Map<String, String>> findAllProjectCodeAndName();
 
+    /**
+     * 获取项目首页数据
+     */
+    Map<String, Object> getMainPageProjectInfo();
+
+    /**
+     * 根据用户角色获取项目id和项目名
+     */
+    List<Map<String, String>> getProjectCodeAndNameByUserRole();
+
 
 }

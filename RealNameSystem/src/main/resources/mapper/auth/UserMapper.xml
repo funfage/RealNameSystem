@@ -184,6 +184,23 @@
           user_id = #{userId}
     </select>
 
+    <select id="countUserNum" resultType="integer">
+        select
+          count(user_id)
+        from
+          user
+    </select>
+
+    <select id="countTodayUserNum" resultType="integer">
+        select
+          count(user_id)
+        from
+          user
+        where
+          create_time &gt;= DATE_FORMAT(CURDATE(),'%Y-%m-%d %H:%i:%s')
+        and
+          create_time &lt;= DATE_FORMAT(date_add(CURDATE(),interval 1 day),'%Y-%m-%d %H:%i:%s')
+    </select>
 
 
 </mapper>

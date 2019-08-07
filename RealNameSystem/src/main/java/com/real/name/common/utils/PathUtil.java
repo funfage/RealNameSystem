@@ -19,6 +19,13 @@ public class PathUtil {
 
 	private static String linuxContractFilePath;
 
+	private static String winExcelPath;
+
+	private static String linuxExcelPath;
+
+	private static String os = System.getProperty("os.name");
+
+
 	@Value("${win.image.base.path}")
 	public void setWinPath(String winImagePath) {
 		PathUtil.winImagePath = winImagePath;
@@ -49,12 +56,20 @@ public class PathUtil {
 		PathUtil.linuxContractFilePath = linuxContractFilePath;
 	}
 
+	@Value("${win.excel.path}")
+	public void setWinExcelPath(String winExcelPath) {
+		PathUtil.winExcelPath = winExcelPath;
+	}
+	@Value("${linux.excel.path}")
+	public void setLinuxExcelPath(String linuxExcelPath) {
+		PathUtil.linuxExcelPath = linuxExcelPath;
+	}
+
 	public PathUtil() {
 	}
 
 	public static String getImgBasePath() {
-		String os = System.getProperty("os.name");
-		String basePath = "";
+		String basePath;
 		if (os.toLowerCase().contains("win")) {
 			basePath = winImagePath;
 		} else {
@@ -65,8 +80,7 @@ public class PathUtil {
 	}
 
 	public static String getPayFileBasePath() {
-		String os = System.getProperty("os.name");
-		String basePath = "";
+		String basePath;
 		if (os.toLowerCase().contains("win")) {
 			basePath = winPayFilePath;
 		} else {
@@ -77,8 +91,7 @@ public class PathUtil {
 	}
 
 	public static String getContractFilePath() {
-		String os = System.getProperty("os.name");
-		String basePath = "";
+		String basePath;
 		if (os.toLowerCase().contains("win")) {
 			basePath = winContractFilePath;
 		} else {
@@ -87,5 +100,18 @@ public class PathUtil {
 		basePath = basePath.replace("/", separator);
 		return basePath;
 	}
+
+	public static String getExcelFilePath() {
+		String basePath;
+		if (os.toLowerCase().contains("win")) {
+			basePath = winExcelPath;
+		} else {
+			basePath = linuxExcelPath;
+		}
+		basePath = basePath.replace("/", separator);
+		return basePath;
+	}
+
+
 
 }

@@ -15,5 +15,10 @@ public class TestC extends BaseTest {
         System.out.println(PathUtil.getContractFilePath());
     }
 
+    @Test
+    public void testC() {
+        System.out.println(PathUtil.getExcelFilePath());
+    }
+
 
 }

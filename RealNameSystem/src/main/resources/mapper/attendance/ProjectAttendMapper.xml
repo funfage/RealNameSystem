@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.real.name.record.service.repository.ProjectAttendMapper">
+
+    <resultMap id="queryAll" type="com.real.name.record.entity.ProjectAttend">
+        <id property="projectAttendId" column="project_attend_id"/>
+        <result property="workHours" column="work_hours"/>
+        <result property="projectAttendNum" column="project_attend_num"/>
+        <result property="projectAttendErrNum" column="project_attend_err_num"/>
+        <result property="projectCode" column="project_code"/>
+    </resultMap>
+
+    <resultMap id="projectRangeQuery" type="com.real.name.record.query.ProjectAttendQuery">
+        <id property="projectCode" column="project_code"/>
+        <result property="projectCode" column="project_code"/>
+        <result property="projectName" column="project_name"/>
+        <result property="sumPersonNum" column="sum_person_num"/>
+        <result property="sumProjectAttendNum" column="sum_project_attend_num"/>
+        <result property="sumProjectAttendErrNum" column="sum_project_attend_err_num"/>
+    </resultMap>
+
+    <insert id="saveProjectAttend" parameterType="com.real.name.record.entity.ProjectAttend"
+            keyProperty="projectAttend.projectAttendId" keyColumn="project_attend_id" useGeneratedKeys="true">
+        insert into
+          project_attend
+          (project_code, work_hours, project_attend_num, project_attend_err_num)
+        values
+          (#{projectAttend.projectCode}, #{projectAttend.workHours}, #{projectAttend.projectAttendNum}, #{projectAttend.projectAttendErrNum})
+    </insert>
+
+    <select id="getPeriodAttendNumAndWorkHours" resultType="map">
+        select
+          ifnull(sum(project_attend_num),0) as attendNum,
+          ifnull(sum(work_hours),0.0) as attendHours
+        from
+          project_attend
+        <where>
+            <if test="startTime != null">
+                and work_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and work_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="getPeriodAttendErrNum" resultType="integer">
+        select
+          ifnull(sum(project_attend_err_num),0)
+        from
+          project_attend
+        <where>
+            <if test="startTime != null">
+                and work_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and work_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="getPeriodAttendNumAndWorkHoursByProjectCodeSet" resultType="map">
+        select
+          ifnull(sum(project_attend_num),0) as attendNum,
+          ifnull(sum(work_hours),0.0) as attendHours
+        from
+          project_attend
+        where
+          project_code
+        in
+        <foreach collection="projectSet" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+        <if test="startTime != null">
+            and work_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and work_time &lt;= #{endTime}
+        </if>
+    </select>
+
+    <select id="getPeriodAttendErrNumByProjectCodeSet" resultType="integer">
+        select
+          ifnull(sum(project_attend_err_num),0)
+        from
+          project_attend
+        where
+          project_code
+        in
+        <foreach collection="projectSet" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+        <if test="startTime != null">
+            and work_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and work_time &lt;= #{endTime}
+        </if>
+    </select>
+
+    <select id="rangeByPersonNum" resultMap="projectRangeQuery">
+        select
+	      pj.project_code,
+	      pj.name as project_name,
+	      count(pd.id) as sum_person_num
+        from
+	      project pj
+        left join project_detail pd on pd.project_code = pj.project_code
+        group by
+	      pj.project_code
+        order by
+	      sum_person_num desc
+    </select>
+
+    <select id="rangeBySumWorkHours" resultMap="projectRangeQuery">
+        select
+          pj.project_code,
+          pj.name as project_name,
+          ifnull(sum(pa.work_hours), 0) as sum_work_hours
+        from
+          project pj
+        left join project_attend pa on pa.project_code = pj.project_code
+        and pa.work_time &gt;= #{startTime}
+        and pa.work_time &lt;= #{endTime}
+        group by
+          pj.project_code
+        order by
+          sum_work_hours desc
+    </select>
+
+    <select id="rangeBySumAttendNum" resultMap="projectRangeQuery">
+        select
+          pj.project_code,
+          pj.name as project_name,
+          ifnull(sum(pa.project_attend_num),0) as sum_project_attend_num
+        from
+          project pj
+        left join project_attend pa on pa.project_code = pj.project_code
+        and pa.work_time &gt;= #{startTime}
+        and pa.work_time &lt;= #{endTime}
+        group by
+          pj.project_code
+        order by
+          sum_project_attend_num desc
+    </select>
+
+    <select id="rangeBySumAttendErrNum" resultMap="projectRangeQuery">
+        select
+          pj.project_code,
+          pj. name,
+          ifnull(sum(pa.project_attend_err_num),0) as sum_project_attend_err_num
+        from
+          project pj
+        left join project_attend pa on pa.project_code = pj.project_code
+        and pa.work_time &gt;= #{startTime}
+        and pa.work_time &lt;= #{endTime}
+        group by
+          pj.project_code
+        order by
+          sum_project_attend_err_num desc
+    </select>
+
+</mapper>

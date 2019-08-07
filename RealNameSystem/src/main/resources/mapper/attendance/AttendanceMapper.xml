@@ -1,54 +1,273 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.real.name.record.service.repository.AttendanceMapper">
+    <resultMap id="personWorkRecord" type="com.real.name.record.entity.PersonWorkRecord">
+        <id property="projectDetailId" column="project_detail_id"/>
+        <result property="personId" column="p_person_id"/>
+        <result property="personName" column="person_name"/>
+        <result property="corpCode" column="corp_code"/>
+        <result property="subordinateCompany" column="subordinate_company"/>
+        <result property="workType" column="work_type"/>
+        <result property="workRole" column="work_role"/>
+        <result property="gender" column="gender"/>
+        <result property="idCardNumber" column="id_card_number"/>
+        <result property="idCardType" column="id_card_type"/>
+        <result property="teamSysNo" column="wg_team_sys_no"/>
+        <result property="teamName" column="team_name"/>
+        <collection property="attendanceList" ofType="com.real.name.record.entity.Attendance">
+            <id property="attendanceId" column="attendance_id"/>
+            <result property="projectDetailId" column="project_detail_id"/>
+            <result property="workHours" column="work_hours"/>
+            <result property="workTime" column="work_time"/>
+            <result property="startTime" column="start_time"/>
+            <result property="endTime" column="end_time"/>
+            <result property="status" column="status"/>
+        </collection>
+    </resultMap>
+
+    <sql id="selectProjectDetailIdsByProjectSet">
+        select
+          id
+        from
+          project_detail
+        where
+          project_code
+        in
+        <foreach collection="projectSet" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </sql>
+
+    <sql id="foreachProjectIds">
+        <foreach collection="projectDetailIds" item="project_detail_id" open="(" close=")" separator=",">
+            #{project_detail_id}
+        </foreach>
+    </sql>
 
     <insert id="saveAttendance" keyColumn="attendance_id"
             keyProperty="attendanceId" useGeneratedKeys="true">
         insert into
         attendance
-        (
-        project_detail_id,
-        work_hours,
-        work_time
+        (project_detail_id, work_hours, work_time, start_time, end_time
+            <if test="status != null">
+                ,status
+            </if>
         )
         values
-        (
-        #{projectDetailId},
-        #{workHours},
-        #{workTime}
+        (#{projectDetailId}, #{workHours}, #{workTime}, #{startTime}, #{endTime}
+            <if test="status != null">
+                ,#{status}
+            </if>
         )
     </insert>
 
-    <select id="countWorkerHours" resultType="double">
+    <select id="getPeriodWorkHoursInPIds" resultType="double">
         select
-        sum(work_hours)
+          ifnull(sum(work_hours),0.0)
         from
-        attendance
+          attendance
         where
-        project_detail_id in
+          project_detail_id in
         <foreach collection="projectDetailIds" item="project_detail_id" open="(" close=")" separator=",">
             #{project_detail_id}
         </foreach>
         and
-        work_time &gt; #{begin}
+          work_time &gt; #{startTime}
         and
-        work_time &lt; #{end}
+          work_time &lt; #{endTime}
+        and
+          status = 1
+    </select>
+
+    <select id="getPeriodAttendNumInPIds" resultType="integer">
+        select
+          count(attendance_id)
+        from
+          attendance
+        where
+          project_detail_id
+        in
+        <include refid="foreachProjectIds"/>
+        and
+          work_time &gt; #{startTime}
+        and
+          work_time &lt; #{endTime}
+        and
+          status = 1
+    </select>
+
+    <select id="getPeriodAttendErrNumInPIds" resultType="integer">
+        select
+          count(attendance_id)
+        from
+          attendance
+        where
+          project_detail_id
+        in
+          <include refid="foreachProjectIds"/>
+        and
+          work_time &gt; #{startTime}
+        and
+          work_time &lt; #{endTime}
+        and
+          status != 1
     </select>
 
     <select id="findPeriodAttendByProjectDetailId" resultType="com.real.name.record.entity.Attendance">
         select
-        attendance_id, project_detail_id, work_hours, work_time
+          attendance_id, project_detail_id, work_hours, work_time, start_time, end_time, status
         from
-        attendance
+          attendance
         where
-        project_detail_id = #{projectDetailId}
+          project_detail_id = #{projectDetailId}
         and
-        work_time &gt;= #{begin}
+          work_time &gt;= #{begin}
         and
-        work_time &lt;= #{end}
+          work_time &lt;= #{end}
     </select>
 
+    <select id="findPersonPeriodWorkInfoInProject" resultMap="personWorkRecord">
+        select
+          pd.id as project_detail_id,
+          p.person_id as p_person_id, p.person_name, p.gender, p.id_card_number, p.id_card_type, p.work_type, p.work_role, p.subordinate_company, p.corp_code,
+          wg.team_sys_no as wg_team_sys_no, wg.team_name,
+          a.attendance_id, a.work_hours, a.work_time, a.start_time, a.end_time, a.status
+        from
+          project_detail pd
+        left join person p on pd.person_id = p.person_id
+        left join worker_group wg on pd.team_sys_no = wg.team_sys_no
+        left join attendance a on a.project_detail_id = pd.id
+        where
+          pd.project_code = #{projectCode}
+        and
+          a.work_time &gt;= #{startTime}
+        and
+          a.work_time &lt;= #{endTime}
+        order by
+          a.work_time
+    </select>
 
+    <select id="findPagePersonPeriodWorkInfoInProject" resultMap="personWorkRecord">
+        select
+          pd.id as project_detail_id,
+          p.person_id as p_person_id, p.person_name, p.gender, p.id_card_number, p.id_card_type, p.work_type, p.work_role, p.subordinate_company, p.corp_code,
+          wg.team_sys_no as wg_team_sys_no, wg.team_name,
+          a.attendance_id, a.work_hours, a.work_time, a.start_time, a.end_time, a.status
+        from
+        (
+          select
+            *
+          from
+            project_detail
+          order by
+            id
+          <if test="offset != null and limit != null">
+              limit #{offset}, #{limit}
+          </if>
+        ) pd
+        left join person p on pd.person_id = p.person_id
+        left join worker_group wg on pd.team_sys_no = wg.team_sys_no
+        left join attendance a on a.project_detail_id = pd.id
+        where
+          pd.project_code = #{projectCode}
+        and
+          a.work_time &gt;= #{startTime}
+        and
+          a.work_time &lt;= #{endTime}
+        order by
+          a.work_time
+    </select>
+
+    <select id="getPeriodAttendNumAndWorkHours" resultType="map">
+        select
+          count(attendance_id) as attendNum,
+          ifnull(sum(work_hours),0.0) as attendHours
+        from
+          attendance
+        where
+          status = 1
+        <if test="startTime != null">
+            and work_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and work_time &lt;= #{endTime}
+        </if>
+    </select>
+
+    <select id="getPeriodAttendNumAndWorkHoursByProjectSet" resultType="map">
+        <if test="projectSet != null and projectSet.size() != 0">
+            select
+              count(attendance_id) as attendNum,
+              ifnull(sum(work_hours),0.0) as attendHours
+            from
+              attendance
+            where
+              status = 1
+            and
+              project_detail_id
+            in
+            (
+            <include refid="selectProjectDetailIdsByProjectSet"/>
+            )
+            <if test="startTime != null">
+                and work_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and work_time &lt;= #{endTime}
+            </if>
+        </if>
+    </select>
+
+    <select id="getPeriodAttendErrNumByProjectRole" resultType="integer">
+        select
+          count(attendance_id)
+        from
+          attendance
+        where
+          status != 1
+        and
+          project_detail_id
+        in
+        (
+        <include refid="selectProjectDetailIdsByProjectSet"/>
+        )
+        <if test="startTime != null">
+            and work_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and work_time &lt;= #{endTime}
+        </if>
+    </select>
+
+    <select id="getPeriodAttendErrNum" resultType="integer">
+        select
+          count(attendance_id)
+        from
+          attendance
+        where
+          status != 1
+        <if test="startTime != null">
+            and work_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and work_time &lt;= #{endTime}
+        </if>
+    </select>
+
+    <select id="findAttendances" parameterType="map" resultType="com.real.name.record.entity.Attendance">
+        select
+          a.attendance_id, a.work_hours, a.work_time, a.start_time, a.end_time, a.status
+        from
+          attendance a
+        where
+          a.project_detail_id = #{projectDetailId}
+        and
+          a.work_time &gt;= #{startTime}
+        and
+          a.work_time &lt;= #{endTime}
+        order by
+          a.work_time
+    </select>
 
 </mapper>
 

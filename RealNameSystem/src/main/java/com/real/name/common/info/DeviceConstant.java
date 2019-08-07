@@ -11,6 +11,9 @@ public class DeviceConstant {
     //人脸识别设备
     public final static Integer faceDeviceType = 3;
 
+    //设备在线的唯一前缀
+    public final static String OnlineDevice = "OnlineDevice";
+
     //人员下发失败标识
     public final static Integer issuePersonFailure = 0;
 

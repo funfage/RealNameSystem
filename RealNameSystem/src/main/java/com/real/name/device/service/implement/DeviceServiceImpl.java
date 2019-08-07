@@ -28,9 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class DeviceServiceImpl implements DeviceService {
@@ -301,6 +299,21 @@ public class DeviceServiceImpl implements DeviceService {
         return deviceQueryMapper.findIPByProjectCode(projectCode);
     }
 
+    @Override
+    public Map<String, Object> getMainPageDeviceInfo() {
+        //获取设备总数量
+        //从redis获取在线设备数量
+        int onDeviceNum = jedisKeys.keys(DeviceConstant.OnlineDevice + "*").size();
+        Integer totalDeviceNum = deviceQueryMapper.getFaceDeviceNumber();
+        Map<String, Object> map = new HashMap<>();
+        map.put("onDeviceNum", onDeviceNum);
+        map.put("totalDeviceNum", totalDeviceNum);
+        return map;
+    }
+
+    /**
+     * 判断输入的控制器信息是否合法
+     */
     private void isValidAccess(Device device) {
         //搜索控制器
         accessService.searchAccess(device.getDeviceId(), device.getIp(), device.getOutPort());
@@ -323,6 +336,9 @@ public class DeviceServiceImpl implements DeviceService {
         }*/
     }
 
+    /**
+     * 判断是否重置控制器设备成功
+     */
     private void isResetAccessDevice(Device device) {
         accessService.clearAccess(device.getDeviceId(), device.getIp(), device.getOutPort());
         long startTime = System.currentTimeMillis();

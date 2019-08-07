@@ -317,9 +317,9 @@ public class ProjectController {
         if (jedisKeys.hasKey(key)) {
             String value = (String) jedisStrings.get(key);
             int number = Integer.parseInt(value.substring(value.lastIndexOf(",") + 1)) + 1;
-            jedisStrings.set(key, teamName + "," + number, TimeUtil.getTomorrowBegin(), TimeUnit.SECONDS);
+            jedisStrings.set(key, teamName + "," + number, TimeUtil.getTomorrowBeginMilliSecond(), TimeUnit.MILLISECONDS);
         } else {
-            jedisStrings.set(key, teamName + "," + 1, TimeUtil.getTomorrowBegin(), TimeUnit.SECONDS);
+            jedisStrings.set(key, teamName + "," + 1, TimeUtil.getTomorrowBeginMilliSecond(), TimeUnit.MILLISECONDS);
         }
         //删除人员与项目所关联的信息
         int i = projectDetailQueryService.deletePersonInProject(projectCode, personId);
@@ -386,7 +386,19 @@ public class ProjectController {
     }
 
     /**
-     * =====================================以下只与查询有关============================================
+     * 根据角色用户项目id和项目名
+     */
+    @GetMapping("/getProjectCodeAndNameByUserRole")
+    public ResultVo getProjectCodeAndNameByUserRole() {
+        return ResultVo.success(projectService.getProjectCodeAndNameByUserRole());
+    }
+
+    /**
+     * 考勤数据排序
+     */
+
+    /**
+     * =====================================以下操作不涉及权限============================================
      */
 
 
@@ -414,6 +426,22 @@ public class ProjectController {
         return ResultVo.success(map);
     }
 
+    /**
+     * 查询所有的项目id和名字,供用户注册使用
+     */
+    @GetMapping("getAllProjectCodeAndName")
+    public ResultVo getAllProjectCodeAndName() {
+        List<Map<String, String>> allProjectCodeAndName = projectService.findAllProjectCodeAndName();
+        return ResultVo.success(allProjectCodeAndName);
+    }
+
+    /**
+     * 获取首页信息
+     */
+    @GetMapping("/getMainPageProjectInfo")
+    public ResultVo getMainPageProjectInfo() {
+        return ResultVo.success(projectService.getMainPageProjectInfo());
+    }
     /**
      * 合并项目信息
      */
@@ -530,13 +558,6 @@ public class ProjectController {
         }
     }
 
-    /**
-     * 查询所有的项目id和名字,供用户注册使用
-     */
-    @GetMapping("getAllProjectCodeAndName")
-    public ResultVo getAllProjectCodeAndName() {
-        List<Map<String, String>> allProjectCodeAndName = projectService.findAllProjectCodeAndName();
-        return ResultVo.success(allProjectCodeAndName);
-    }
+
 
 }

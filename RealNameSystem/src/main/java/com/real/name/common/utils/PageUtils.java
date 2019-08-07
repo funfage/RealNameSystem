@@ -10,7 +10,7 @@ public class PageUtils {
     public static ResultVo pageResult(PageInfo pageInfo, Object data) {
         Map<String, Object> map = new HashMap<>();
         map.put("pageNum", pageInfo.getPageNum());
-        map.put("pageSize", pageInfo.getSize());
+        map.put("pageSize", pageInfo.getPageSize());
         map.put("total", pageInfo.getTotal());
         map.put("data", data);
         return ResultVo.success(map);

@@ -92,4 +92,12 @@ public class DeviceTest extends BaseTest {
         Set<String> ips = deviceQueryMapper.findIPByProjectCode("36bj84W235Zgc8O78yuS32510ppMkHfe");
         System.out.println(ips.iterator().next());
     }
+
+
+    @Test
+    public void getDeviceNumber() {
+        Integer deviceNumber = deviceQueryMapper.getFaceDeviceNumber();
+        System.out.println(deviceNumber);
+    }
+
 }

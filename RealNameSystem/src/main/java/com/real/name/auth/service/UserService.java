@@ -3,6 +3,7 @@ package com.real.name.auth.service;
 import com.real.name.auth.entity.User;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface UserService {
@@ -56,5 +57,10 @@ public interface UserService {
      * 保存用户与角色关联信息
      */
     int saveUserRole(Integer userId, Integer roleId);
+
+    /**
+     * 获取用户首页数据
+     */
+    Map<String, Object> getUserMainPageinfo();
 
 }

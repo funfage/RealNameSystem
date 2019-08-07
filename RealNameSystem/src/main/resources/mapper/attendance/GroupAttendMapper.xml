@@ -60,10 +60,10 @@
     <insert id="saveGroupAttend" parameterType="com.real.name.record.entity.GroupAttend"
             keyProperty="groupAttendId" keyColumn="group_attend_id" useGeneratedKeys="true">
         insert into
-        group_attend
-        (team_sys_no, project_code, work_hours, work_time)
+          group_attend
+          (team_sys_no, project_code, work_hours, group_attend_num, group_attend_err_num, work_time)
         values
-        (#{workerGroup.teamSysNo}, #{project.projectCode}, #{workHours}, #{workTime})
+          (#{workerGroup.teamSysNo}, #{project.projectCode}, #{workHours}, #{groupAttendNum}, #{groupAttendErrNum}, #{workTime})
     </insert>
 
     <select id="countGroupHoursInPeriod" resultType="double">

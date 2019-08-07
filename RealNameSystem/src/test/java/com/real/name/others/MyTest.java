@@ -5,22 +5,71 @@ import com.real.name.auth.entity.User;
 import com.real.name.auth.service.AuthUtils;
 import com.real.name.common.utils.PathUtil;
 import com.real.name.common.utils.TimeUtil;
+import com.real.name.common.utils.XSSFExcelUtils;
 import com.real.name.device.netty.model.AccessResponse;
 import com.real.name.device.netty.utils.ConvertUtils;
+import com.real.name.record.entity.ProjectWorkRecord;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.sql.Time;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class MyTest {
 
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
     public static void main(String[] args) throws Exception {
-        Date date = new Date(System.currentTimeMillis());
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
-        String format = dateFormat.format(date);
-        Date parse = dateFormat.parse(format);
-        System.out.println(format);
-        System.out.println(parse.getTime());
+        Date monthBefore = TimeUtil.getMonthBefore();
+        System.out.println(dateFormat.format(monthBefore));
+    }
+
+    public static void exportFileTest() throws ParseException, IOException {
+        List<String> headList = new ArrayList<>();
+        headList.add("姓名");
+        headList.add("身份证号码");
+        headList.add("性别");
+        headList.add("所属公司");
+        headList.add("班组");
+        headList.add("工种");
+        headList.add("出勤天数");
+        headList.add("考勤小时");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date begin = dateFormat.parse("2019-07-01 21:23:41");
+        Date end = dateFormat.parse("2019-07-31 02:43:22");
+        List<String> dayBetweenFormat = TimeUtil.getDayBetweenFormat(begin, end);
+        for (String head : headList) {
+            System.out.println(head);
+        }
+        ProjectWorkRecord projectWorkRecord = new ProjectWorkRecord();
+        projectWorkRecord.setCreateTime(new Date());
+        projectWorkRecord.setEndDate(end);
+        projectWorkRecord.setStartDate(begin);
+        projectWorkRecord.setProjectName("广东工业大学");
+        projectWorkRecord.setProjectCode("dfdfdf");
+        XSSFExcelUtils.exportXSSFExcel(projectWorkRecord, headList, dayBetweenFormat);
+    }
+
+    public static void testYesterday() {
+        Date yesterdayBegin = TimeUtil.getYesterdayBegin();
+        Date todayBegin = TimeUtil.getTodayBegin();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        System.out.println(dateFormat.format(yesterdayBegin));
+        System.out.println(dateFormat.format(todayBegin));
+    }
+
+    public static void getDayBetween() throws ParseException {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date begin = dateFormat.parse("2019-07-01 21:23:41");
+        Date end = dateFormat.parse("2019-07-31 02:43:22");
+        List<Date> dayBetween = TimeUtil.getDayBetween(begin, end);
+        for (Date date : dayBetween) {
+            System.out.println(date.getTime());
+            System.out.println(dateFormat.format(date));
+        }
     }
 
     public static void testMap() {

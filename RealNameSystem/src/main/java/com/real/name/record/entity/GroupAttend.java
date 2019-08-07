@@ -17,17 +17,14 @@ public class GroupAttend {
 
     private double workHours;
 
+    private Integer groupAttendNum;
+
+    private Integer groupAttendErrNum;
+
     private Date workTime;
 
 
     public GroupAttend() {
     }
 
-    public GroupAttend(Integer groupAttendId, WorkerGroup workerGroup, Project project, double workHours, Date workTime) {
-        this.groupAttendId = groupAttendId;
-        this.workerGroup = workerGroup;
-        this.project = project;
-        this.workHours = workHours;
-        this.workTime = workTime;
-    }
 }

@@ -6,10 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Mapper
 public interface ProjectQueryMapper {
@@ -48,8 +45,7 @@ public interface ProjectQueryMapper {
     /**
      * 查询项目名和公司名
      */
-    @Query(value = "select new com.real.name.project.entity.Project(p.name, p.contractorCorpName) from Project p where p.projectCode = ?1")
-    Project findProNameAndCorp(String projectCode);
+    Project findProNameAndCorp(@Param("projectCode") String projectCode);
 
     /**
      * 获取所有项目的id
@@ -65,6 +61,28 @@ public interface ProjectQueryMapper {
      * 查询所有的projectCode和name
      */
     List<Map<String, String>> findAllProjectCodeAndName();
+
+    /**
+     * 获取某个项目id集合的项目id和项目名
+     */
+    List<Map<String, String>> findProjectCodeAndName(@Param("projectCodeList") Set<String> projectCodeList);
+
+    /**
+     * 获取已创建的项目数量
+     */
+    Integer getProjectNumber();
+
+    /**
+     * 获取到当天为止已有考勤数据项目的数量
+     */
+    Integer getProjectAttendNumber();
+
+    /**
+     * 获取有异常考勤数据项目数量
+     */
+    Integer getProjectYedAttendErrNumber(@Param("startTime") Date startTime,
+                                         @Param("endTime") Date endTime);
+
 
 
 }

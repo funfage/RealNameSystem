@@ -28,13 +28,13 @@ public class ProjectDetailQueryTest extends BaseTest {
 
     @Test
     public void findByWorkRoleAndProjectCodeTest() {
-        List<ProjectDetailQuery> list = mapper.findOtherAdmins("067R9HQR0dmw178890C4BKubNU2d9gG7");
+        List<ProjectDetailQuery> list = mapper.findOtherAdmins("36bj84W235Zgc8O78yuS32510ppMkHfe", "123");
         System.out.println(list);
     }
 
     @Test
     public void findOtherWorkerTest() {
-        List<ProjectDetailQuery> list = mapper.findOtherWorker();
+        List<ProjectDetailQuery> list = mapper.findOtherWorker("123");
         System.out.println(list);
     }
 
@@ -63,14 +63,7 @@ public class ProjectDetailQueryTest extends BaseTest {
         System.out.println(workGroupPersonNum);
     }
 
-    @Test
-    public void findPersonWorkHoursInfo() throws ParseException {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date start = dateFormat.parse("2019-07-01 00:00:00");
-        Date end = new Date(System.currentTimeMillis());
-        List<ProjectDetailQuery> queryList = mapper.findPersonWorkHoursInfo(start, end);
-        System.out.println(queryList);
-    }
+
 
     @Test
     public void delete() {
@@ -118,11 +111,11 @@ public class ProjectDetailQueryTest extends BaseTest {
     public void getWorkerGroupInProject() {
         List<ProjectDetailQuery> workerGroupInProject = mapper.getWorkerGroupInProject("36bj84W235Zgc8O78yuS32510ppMkHfe");
         for (ProjectDetailQuery projectDetailQuery : workerGroupInProject) {
-            List<Integer> ids = mapper.getProjectIdByGroup(projectDetailQuery.getWorkerGroup().getTeamSysNo());
+            List<Integer> ids = mapper.getProjectDetailIdByGroup(projectDetailQuery.getWorkerGroup().getTeamSysNo());
             System.out.println(ids);
             Date begin = TimeUtil.getTimesWeekBegin();
             Date end = TimeUtil.getTimesWeekEnd();
-            double hours = attendanceMapper.countWorkerHours(ids, begin, end);
+            double hours = attendanceMapper.getPeriodWorkHoursInPIds(ids, begin, end);
             System.out.println("ids:" + ids + ",hours:" + hours);
         }
         System.out.println(workerGroupInProject);
@@ -132,7 +125,7 @@ public class ProjectDetailQueryTest extends BaseTest {
     public void findPersonWorkDayInfoInProject() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date start = TimeUtil.getMonthFirstDay();
-        Date end = TimeUtil.getMonthLastDay();
+        Date end = TimeUtil.getNextMonthFirstDay();
 //        PageHelper.startPage(0, 5);
         List<ProjectDetailQuery> queryList = mapper.findPersonWorkDayInfoInProject("36bj84W235Zgc8O78yuS32510ppMkHfe", start, end);
 //        PageInfo<ProjectDetailQuery> pageInfo = new PageInfo<>(queryList);
@@ -140,12 +133,15 @@ public class ProjectDetailQueryTest extends BaseTest {
     }
 
     @Test
-    public void findIdAndPersonInProject() {
-        Date monthFirstDay = TimeUtil.getMonthFirstDay();
-        Date monthLastDay = TimeUtil.getMonthLastDay();
+    public void findIdAndPersonInProject() throws ParseException {
+        //Date monthFirstDay = TimeUtil.getMonthFirstDay();
+        //Date monthLastDay = TimeUtil.getMonthLastDay();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date begin = dateFormat.parse("2019-07-01 00:00:00");
+        Date end = new Date(System.currentTimeMillis());
         List<ProjectDetailQuery> detailQueries = mapper.findIdAndPersonInProject("36bj84W235Zgc8O78yuS32510ppMkHfe");
         for (ProjectDetailQuery query : detailQueries) {
-            List<Attendance> attendanceList = attendanceMapper.findPeriodAttendByProjectDetailId(query.getId(), monthFirstDay, monthLastDay);
+            List<Attendance> attendanceList = attendanceMapper.findPeriodAttendByProjectDetailId(query.getId(), begin, end);
             System.out.println(attendanceList);
         }
         System.out.println(detailQueries);
@@ -171,6 +167,5 @@ public class ProjectDetailQueryTest extends BaseTest {
         Integer id = mapper.getIdByProjectCodeAndPersonId("36bj84W235Zgc8O78yuS32510ppMkHfe", 94);
         System.out.println(id);
     }
-
 
 }

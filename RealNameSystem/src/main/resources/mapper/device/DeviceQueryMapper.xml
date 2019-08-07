@@ -73,4 +73,13 @@
           project_code = #{projectCode}
     </select>
 
+    <select id="getFaceDeviceNumber" resultType="integer">
+        select
+          count(device_id)
+        from
+          device
+        where
+          device_type = 3
+    </select>
+
 </mapper>

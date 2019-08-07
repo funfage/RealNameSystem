@@ -63,6 +63,7 @@ public enum ResultError {
     NO_FIND_PROJECT_DETAIL(56, "未查询到该用户项目详情信息"),
     DELETE_FILE_ERROR(57, "删除文件失败"),
     FILE_NOT_EXISTS(58, "文件不存在"),
+    GENERATE_EXCEL_ERROR(59, "生成报表失败"),
     LOGIN_TOKEN_ERROR(98, "登录信息中没有Token"),
     NETWORK_ERROR(99, "网络超时,请重试"),
     DELETE_ERROR(100, "删除失败"),

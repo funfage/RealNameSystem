@@ -2,6 +2,7 @@ package com.real.name.device.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.real.name.common.info.CommConstant;
+import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.utils.CommonUtils;
 import com.real.name.common.utils.HTTPTool;
 import com.real.name.common.utils.JedisService;
@@ -107,8 +108,8 @@ public class CallBackController {
                         //将信息推送到远程
                         String presentInfo = sendToClient(sendInfo, device, time);
                         //设置有效时间为第二天凌晨12点
-                        jedisStrings.set(key, presentInfo, TimeUtil.getTomorrowBegin(), TimeUnit.SECONDS);
-                        logger.warn("在场的key:{}, value:{}, time:{}", device.getProjectCode() + person.getPersonId(), presentInfo, TimeUtil.getTomorrowBegin());
+                        jedisStrings.set(key, presentInfo, TimeUtil.getTomorrowBeginMilliSecond(), TimeUnit.MILLISECONDS);
+                        logger.warn("在场的key:{}, value:{}, time:{}", device.getProjectCode() + person.getPersonId(), presentInfo, TimeUtil.getTomorrowBeginMilliSecond());
                     } else if (device.getDirection() == 2 && jedisKeys.hasKey(key)) {
                         //删除键
                         ProjectDetailQuery sendInfo = projectDetailQueryMapper.getSendInfo(person.getPersonId(), device.getProjectCode());
@@ -142,6 +143,8 @@ public class CallBackController {
         logger.debug("设备心跳信息:{}", result);
         //将设备id存入redis
         jedisStrings.set(deviceKey, routerIP);
+        //设备在线的标识,设置过期时间
+        jedisStrings.set(DeviceConstant.OnlineDevice + deviceKey, true, 90, TimeUnit.SECONDS);
         //判断数据库中是否有设备的信息
         Optional<Device> deviceOptional = deviceService.findByDeviceId(deviceKey);
         if (deviceOptional.isPresent()) {

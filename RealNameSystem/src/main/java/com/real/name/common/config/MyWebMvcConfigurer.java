@@ -26,6 +26,7 @@ public class MyWebMvcConfigurer implements WebMvcConfigurer {
         registry.addResourceHandler("/images/**").addResourceLocations("file:" + PathUtil.getImgBasePath());
         registry.addResourceHandler("/payFile/**").addResourceLocations("file:" + PathUtil.getPayFileBasePath());
         registry.addResourceHandler("/contractFile/**").addResourceLocations("file:" + PathUtil.getContractFilePath());
+        registry.addResourceHandler("/excel/**").addResourceLocations("file:" + PathUtil.getExcelFilePath());
     }
 
     /**

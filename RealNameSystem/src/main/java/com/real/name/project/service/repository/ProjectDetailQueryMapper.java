@@ -17,12 +17,13 @@ public interface ProjectDetailQueryMapper {
     /**
      * 获取其他项目的管理人员信息
      */
-    List<ProjectDetailQuery> findOtherAdmins(String projectCode);
+    List<ProjectDetailQuery> findOtherAdmins(@Param("projectCode") String projectCode,
+                                             @Param("groupCorpCode") String groupCorpCode);
 
     /**
      * 获取未参加项目的建筑工人信息
      */
-    List<ProjectDetailQuery> findOtherWorker();
+    List<ProjectDetailQuery> findOtherWorker(@Param("groupCorpCode") String groupCorpCode);
 
     /**
      * 查询项目下的人员信息和班组信息
@@ -43,11 +44,6 @@ public interface ProjectDetailQueryMapper {
      * 查询某个项目下所有班组的人员个数
      */
     List<GroupPersonNum> getWorkGroupPersonNum(@Param("projectCode") String projectCode);
-
-    /**
-     * 查询某个人员的姓名,身份证,所属单位,班组名,工种 以及每天的工作时长
-     */
-    List<ProjectDetailQuery> findPersonWorkHoursInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
     /**
      * 根据projectCode和personId删除
@@ -92,7 +88,7 @@ public interface ProjectDetailQueryMapper {
     /**
      * 获取某个班组下所有的project_detail_id
      */
-    List<Integer> getProjectIdByGroup(Integer teamSysNo);
+    List<Integer> getProjectDetailIdByGroup(Integer teamSysNo);
 
     /**
      * 获取某个班组下的人数
@@ -103,8 +99,8 @@ public interface ProjectDetailQueryMapper {
      * 查询某个项目下所有人员信息和工作天数等
      */
     List<ProjectDetailQuery> findPersonWorkDayInfoInProject(@Param("projectCode") String projectCode,
-                                                   @Param("startDate") Date startDate,
-                                                   @Param("endDate") Date endDate);
+                                                            @Param("startDate") Date startDate,
+                                                            @Param("endDate") Date endDate);
 
     /**
      * 查询项目下所有project_detail_id和人员信息
@@ -132,5 +128,9 @@ public interface ProjectDetailQueryMapper {
     Integer getIdByProjectCodeAndPersonId(@Param("projectCode") String projectCode,
                                           @Param("personId") Integer personId);
 
+    /**
+     * 通过项目id获取所有project_detail_id
+     */
+    List<Integer> getIdsByProjectCode(@Param("projectCode") String projectCode);
 
 }

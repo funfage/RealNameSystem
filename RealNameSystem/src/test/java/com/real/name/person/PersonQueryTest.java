@@ -98,4 +98,16 @@ public class PersonQueryTest extends BaseTest {
         System.out.println(person);
     }
 
+    @Test
+    public void countPersonNum() {
+        Integer integer = mapper.countPersonNum();
+        System.out.println(integer);
+    }
+
+    @Test
+    public void countTodayPersonNum() {
+        Integer integer = mapper.countTodayPersonNum();
+        System.out.println(integer);
+    }
+
 }

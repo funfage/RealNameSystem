@@ -6,6 +6,7 @@ import com.real.name.person.entity.Person;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -22,8 +23,14 @@ public interface DeviceService {
     void addAccessDevice(Device device);
 
 
+    /**
+     * 更新人脸设备信息
+     */
     void updateFaceDevice(Device device);
 
+    /**
+     * 更新控制器设备信息
+     */
     void updateAccessDevice(Device device);
 
     /**
@@ -112,6 +119,9 @@ public interface DeviceService {
      */
     void updateDeviceIPByProjectCode(String ip, @Param("projectCode") String projectCode);
 
+    /**
+     * 获取项目绑定的所有设备的id
+     */
     List<String> findDeviceIdsByProjectCode(String projectCode);
 
     /**
@@ -124,6 +134,10 @@ public interface DeviceService {
      */
     Set<String> findIPByProjectCode(String projectCode);
 
+    /**
+     * 获取首页数据
+     */
+    Map<String, Object> getMainPageDeviceInfo();
 
 
 }

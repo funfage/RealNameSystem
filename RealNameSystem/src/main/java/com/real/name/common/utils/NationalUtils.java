@@ -29,11 +29,59 @@ import java.util.UUID;
  * @Date 2019/5/12 20:53
  **/
 public class NationalUtils {
+
+
     private static Logger logger = LoggerFactory.getLogger(NationalUtils.class);
+
     /**
-     * @param method
+     * 获取人员的工种
+     */
+    public static String getWorkType(String workType) {
+        switch (workType) {
+            case "010": return "砌砖工";
+            case "020": return "钢筋工";
+            case "030": return "架子工";
+            case "040": return "混凝土工";
+            case "050": return "模板工";
+            case "060": return "机械设备安装工";
+            case "070": return "通风工";
+            case "080": return "安装起重工";
+            case "090": return "安装钳工";
+            case "100": return "电气设备安装调试工";
+            case "110": return "管道工";
+            case "120": return "变电安装工";
+            case "130": return "建筑电工";
+            case "140": return "司泵工";
+            case "150": return "挖掘铲运和桩工机械司机";
+            case "160": return "桩机操作工";
+            case "170": return "起重信号工";
+            case "180": return "建筑起重机安装拆卸工";
+            case "200": return "室内成套设施安装工";
+            case "210": return "建筑门窗幕墙安装工";
+            case "220": return "幕墙制作工";
+            case "230": return "防水工";
+            case "240": return "木工";
+            case "250": return "石工";
+            case "270": return "电焊工";
+            case "280": return "爆破工";
+            case "290": return "除尘工";
+            case "300": return "测量放线工";
+            case "310": return "线路架设工";
+            case "320": return "古建筑传统石工";
+            case "330": return "古建筑传统瓦工";
+            case "340": return "古建筑传统彩画工";
+            case "350": return "古建筑传统木工";
+            case "360": return "古建筑传统油工";
+            case "380": return "金属工";
+            case "900": return "管理人员";
+            case "390": return "杂工";
+            case "1000": return "其他";
+            default: return "";
+        }
+    }
+
+    /**
      * @param data   这个是对象序列化之后的字符串
-     * @return
      */
     public static String postDate(String method, String data) {
         BaseRequest request = new BaseRequest() {

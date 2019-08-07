@@ -12,9 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -60,6 +58,9 @@ public class UserServiceImpl implements UserService {
     public void updateUserByAdmin(User user) {
         //查询用户原本信息
         User selectUser = userMapper.getUserByUserId(user.getUserId());
+        if (selectUser == null) {
+            throw new AttendanceException(ResultError.UPDATE_ERROR);
+        }
         //更新用户角色信息
         if (user.getRoleId() != null) {
             //如果选择的是项目管理员
@@ -133,6 +134,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public int saveUserRole(Integer userId, Integer roleId) {
         return userMapper.saveUserRole(userId, roleId);
+    }
+
+    @Override
+    public Map<String, Object> getUserMainPageinfo() {
+        //获取当日的用户数目
+        Integer todayUserNum = userMapper.countTodayUserNum();
+        //获取总的用户数目
+        Integer userNum = userMapper.countUserNum();
+        Map<String, Object> map = new HashMap<>();
+        map.put("todayUserNum", todayUserNum);
+        map.put("userNum", userNum);
+        return map;
     }
 
 

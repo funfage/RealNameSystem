@@ -76,6 +76,16 @@ public interface UserMapper {
      */
     Set<String> getUserProject(@Param("userId") Integer userId);
 
+    /**
+     * 获取总用户数量
+     */
+    Integer countUserNum();
+
+    /**
+     * 获取当日注册的用户数量
+     */
+    Integer countTodayUserNum();
+
 
 
 }

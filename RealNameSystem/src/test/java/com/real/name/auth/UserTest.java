@@ -107,6 +107,18 @@ public class UserTest extends BaseTest {
         System.out.println(i);
     }
 
+    @Test
+    public void countUserNum() {
+        Integer integer = userMapper.countUserNum();
+        System.out.println(integer);
+    }
+
+    @Test
+    public void countTodayUserNum() {
+        Integer integer = userMapper.countTodayUserNum();
+        System.out.println(integer);
+    }
+
 }
 
 

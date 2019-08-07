@@ -7,6 +7,7 @@ import com.real.name.project.query.GroupPersonNum;
 import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.repository.ProjectDetailQueryMapper;
 import com.real.name.record.entity.Attendance;
+import com.real.name.record.service.repository.AttendanceMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,14 +20,17 @@ public class ProjectDetailQueryServiceImpl implements ProjectDetailQueryService 
     @Autowired
     private ProjectDetailQueryMapper projectDetailQueryMapper;
 
+    @Autowired
+    private AttendanceMapper attendanceMapper;
+
     @Override
-    public List<ProjectDetailQuery> findOtherAdmins(String projectCode) {
-        return projectDetailQueryMapper.findOtherAdmins(projectCode);
+    public List<ProjectDetailQuery> findOtherAdmins(String projectCode, String groupCorpCode) {
+        return projectDetailQueryMapper.findOtherAdmins(projectCode, groupCorpCode);
     }
 
     @Override
-    public List<ProjectDetailQuery> findOtherWorker() {
-        return projectDetailQueryMapper.findOtherWorker();
+    public List<ProjectDetailQuery> findOtherWorker(String groupCorpCode) {
+        return projectDetailQueryMapper.findOtherWorker(groupCorpCode);
     }
 
     @Override
@@ -43,42 +47,6 @@ public class ProjectDetailQueryServiceImpl implements ProjectDetailQueryService 
     @Override
     public List<GroupPersonNum> getWorkGroupPersonNum(String projectCode) {
         return projectDetailQueryMapper.getWorkGroupPersonNum(projectCode);
-    }
-
-    @Override
-    public List<Map<String, Object>> findPersonWorkHoursInfo(Date startDate, Date endDate) {
-        List<ProjectDetailQuery> personWorkHoursInfo = projectDetailQueryMapper.findPersonWorkHoursInfo(startDate, endDate);
-        //整理考勤信息
-        List<Map<String, Object>> attendanceInfo = new ArrayList<>();
-        for (ProjectDetailQuery query : personWorkHoursInfo) {
-            Map<String, Object> map = new HashMap<>();
-            Person person = query.getPerson();
-            WorkerGroup workerGroup = query.getWorkerGroup();
-            List<Attendance> attendanceList = query.getAttendanceList();
-            map.put("personId", person.getPersonId());
-            map.put("personName", person.getPersonName());
-            map.put("idCardNumber", person.getIdCardNumber());
-            map.put("idCardType", person.getIdCardIndex());
-            map.put("workType", person.getWorkType());
-            map.put("workRole", person.getWorkRole());
-            map.put("subordinateCompany", person.getSubordinateCompany());
-            map.put("corpCode", person.getCorpCode());
-            map.put("teamSysNo", workerGroup.getTeamSysNo());
-            map.put("teamName", workerGroup.getTeamName());
-            double allWorkHours = 0.0;
-            int workDays = 0;
-            for (Attendance attendance : attendanceList) {
-                if (attendance.getWorkHours() != null && attendance.getWorkHours() > 0) {
-                    allWorkHours += attendance.getWorkHours();
-                    workDays++;
-                }
-            }
-            map.put("allWorkHours", allWorkHours);
-            map.put("workDays", workDays);
-            map.put("attendanceList", attendanceList);
-            attendanceInfo.add(map);
-        }
-        return attendanceInfo;
     }
 
     @Override
@@ -119,11 +87,6 @@ public class ProjectDetailQueryServiceImpl implements ProjectDetailQueryService 
     @Override
     public List<ProjectDetailQuery> getWorkerGroupInProject(String projectCode) {
         return projectDetailQueryMapper.getWorkerGroupInProject(projectCode);
-    }
-
-    @Override
-    public List<Integer> getProjectIdByGroup(Integer teamSysNo) {
-        return projectDetailQueryMapper.getProjectIdByGroup(teamSysNo);
     }
 
     @Override

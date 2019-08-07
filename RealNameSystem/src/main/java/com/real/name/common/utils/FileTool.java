@@ -43,7 +43,6 @@ public class FileTool {
             try {
                 file.transferTo(dest);
                 logger.info("上传成功后的文件路径：{}", filePath);
-                //将文件名返回
             } catch (IllegalStateException | IOException e) {
                 e.printStackTrace();
                 throw new AttendanceException(ResultError.GENERATE_FILE_ERROR);
@@ -95,16 +94,14 @@ public class FileTool {
             if (!imageFile.delete()) {
                 throw new AttendanceException(ResultError.DELETE_FILE_ERROR);
             }
-        } else {
-            throw new AttendanceException(ResultError.FILE_NOT_EXISTS);
         }
     }
 
     /**
      * 获取下载文件的目录路径
-     * @param 0,人员文件路径
-     *        1,薪资文件路径
-     *        2,合同文件路径
+     * @param downLoadType 0,人员文件路径
+     *                     1,薪资文件路径
+     *                     2,合同文件路径
      */
     public static String getDownLoadFilePath(Integer downLoadType) {
         if (downLoadType == 0) {
@@ -113,6 +110,8 @@ public class FileTool {
             return PathUtil.getPayFileBasePath();
         } else if (downLoadType == 2) {
             return PathUtil.getContractFilePath();
+        } else if (downLoadType == 3) {
+            return PathUtil.getExcelFilePath();
         }
         return null;
     }

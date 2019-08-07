@@ -7,19 +7,18 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 public interface ProjectDetailQueryService {
 
     /**
      * 获取其他项目的管理人员信息
      */
-    List<ProjectDetailQuery> findOtherAdmins(String projectCode);
+    List<ProjectDetailQuery> findOtherAdmins(String projectCode, String groupCorpCode);
 
     /**
      * 获取未参加项目的建筑工人信息
      */
-    List<ProjectDetailQuery> findOtherWorker();
+    List<ProjectDetailQuery> findOtherWorker(String groupCorpCode);
 
     /**
      * 获取项目中的人员信息和班组信息
@@ -33,14 +32,9 @@ public interface ProjectDetailQueryService {
 
 
     /**
-     *获取在某个项目下每个班组的人员数
+     * 获取在某个项目下每个班组的人员数
      */
     List<GroupPersonNum> getWorkGroupPersonNum(String projectCode);
-
-    /**
-     * 查询某个人员的姓名,身份证,所属单位,班组名,工种 以及每天的工作时长
-     */
-    List<Map<String, Object>> findPersonWorkHoursInfo(Date startDate, Date endDate);
 
     /**
      * 将人员从项目中移除
@@ -78,11 +72,6 @@ public interface ProjectDetailQueryService {
      * 查询某个项目下所有的班组信息
      */
     List<ProjectDetailQuery> getWorkerGroupInProject(String projectCode);
-
-    /**
-     * 获取某个班组下所有的project_detail_id
-     */
-    List<Integer> getProjectIdByGroup(Integer teamSysNo);
 
     /**
      * 获取某个班组下的人数

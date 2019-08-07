@@ -45,6 +45,7 @@
         <result property="workType" column="work_type"/>
         <result property="headImage" column="head_image"/>
         <result property="uploadStatus" column="upload_status"/>
+        <result property="createTime" column="create_time"/>
     </resultMap>
 
     <sql id="personInfo">
@@ -54,7 +55,7 @@
         p.issue_card_pic, p.is_team_leader, p.joined_time, p.marital_status, p.nation, p.negative_id_card_image,
         p.pay_roll_bank_card_number, p.pay_roll_bank_name, p.pay_roll_top_bank_code, p.politics_type, p.positive_id_card_image,
         p.specialty, p.start_date, p.suffix_name, p.urgent_link_man, p.urgent_link_man_phone, p.work_date,
-        p.work_role, p.work_type, p.upload_status
+        p.work_role, p.work_type, p.upload_status, p.create_time
     </sql>
 
     <sql id="personInfoWithImage">
@@ -64,7 +65,7 @@
         p.issue_card_pic, p.is_team_leader, p.joined_time, p.marital_status, p.nation, p.negative_id_card_image,
         p.pay_roll_bank_card_number, p.pay_roll_bank_name, p.pay_roll_top_bank_code, p.politics_type, p.positive_id_card_image,
         p.specialty, p.start_date, p.suffix_name, p.urgent_link_man, p.urgent_link_man_phone, p.work_date,
-        p.work_role, p.work_type, p.head_image, p.upload_status
+        p.work_role, p.work_type, p.head_image, p.upload_status, p.create_time
     </sql>
 
     <select id="findAll" resultMap="queryMap">
@@ -289,6 +290,24 @@
                 and gender &lt;= #{personQuery.ageEnd}
             </if>
         </where>
+    </select>
+
+    <select id="countPersonNum" resultType="integer">
+        select
+          count(person_id)
+        from
+          person
+    </select>
+
+    <select id="countTodayPersonNum" resultType="integer">
+        select
+          count(person_id)
+        from
+          person
+        where
+          create_time &gt;= DATE_FORMAT(CURDATE(),'%Y-%m-%d %H:%i:%s')
+        and
+          create_time &lt;= DATE_FORMAT(date_add(CURDATE(),interval 1 day),'%Y-%m-%d %H:%i:%s')
     </select>
 
 

@@ -49,6 +49,7 @@ public class ProjectDetailQueryController {
     @GetMapping("getPersonByWorkRole")
     public ResultVo getPersonByWorkRole(@RequestParam("projectCode") String projectCode,
                                         @RequestParam("isAdminGroup") Integer isAdminGroup,
+                                        @RequestParam("groupCorpCode") String groupCorpCode,
                                         @RequestParam(value = "pageNum", defaultValue = "0") Integer pageNum,
                                         @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
         try {
@@ -57,14 +58,16 @@ public class ProjectDetailQueryController {
             if (project == null) {
                 return ResultVo.failure(ResultError.PROJECT_NOT_EXIST);
             }
-            if (isAdminGroup != null && isAdminGroup == 1) {//查询除这个项目下的其他所有管理员
+            if (isAdminGroup == 1) {
+                //查询除这个项目下的其他所有管理员
                 PageHelper.startPage(pageNum + 1, pageSize);
-                List<ProjectDetailQuery> detailQueries = projectDetailQueryService.findOtherAdmins(projectCode);
+                List<ProjectDetailQuery> detailQueries = projectDetailQueryService.findOtherAdmins(projectCode, groupCorpCode);
                 PageInfo<ProjectDetailQuery> pageInfo = new PageInfo<>(detailQueries);
                 return PageUtils.pageResult(pageInfo, detailQueries);
-            } else {//查询未被分配项目的普通工人信息
+            } else {
+                //查询未被分配项目的普通工人信息
                 PageHelper.startPage(pageNum + 1, pageSize);
-                List<ProjectDetailQuery> detailQueries = projectDetailQueryService.findOtherWorker();
+                List<ProjectDetailQuery> detailQueries = projectDetailQueryService.findOtherWorker(groupCorpCode);
                 PageInfo<ProjectDetailQuery> pageInfo = new PageInfo<>(detailQueries);
                 return PageUtils.pageResult(pageInfo , detailQueries);
             }

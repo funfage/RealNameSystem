@@ -227,6 +227,11 @@ public class Person {
      */
     private Integer uploadStatus;
 
+    /**
+     * 人员创建时间
+     */
+    private Date createTime;
+
     public Person() { }
 
     public Person(Integer personId) {

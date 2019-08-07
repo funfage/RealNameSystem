@@ -26,14 +26,16 @@ public class GroupAttendTest extends BaseTest {
         group.setTeamSysNo(2424);
         groupAttend.setProject(project);
         groupAttend.setWorkerGroup(group);
+        groupAttend.setGroupAttendNum(2);
+        groupAttend.setGroupAttendErrNum(1);
         int i = groupAttendMapper.saveGroupAttend(groupAttend);
         System.out.println(i);
     }
 
     @Test
     public void countGroupHoursInPeriod() {
-        Date begin = new Date(TimeUtil.getTodayBegin() * 1000);
-        Date end = new Date(TimeUtil.getTomorrowBegin() * 1000);
+        Date begin = new Date(TimeUtil.getTodayBeginMilliSecond());
+        Date end = new Date(TimeUtil.getTomorrowBeginMilliSecond());
         double hours = groupAttendMapper.countGroupHoursInPeriod(1562649690, begin, end);
         System.out.println(hours);
     }
@@ -41,9 +43,11 @@ public class GroupAttendTest extends BaseTest {
     @Test
     public void getGroupAttendPeriodInfo() {
         Date begin = TimeUtil.getMonthFirstDay();
-        Date end = TimeUtil.getMonthLastDay();
+        Date end = TimeUtil.getNextMonthFirstDay();
         List<GroupAttend> groupList = groupAttendMapper.getGroupAttendPeriodInfo(1562649690, begin, end);
         System.out.println(groupList);
     }
+
+
 
 }

@@ -46,7 +46,7 @@ public class ContractTest extends BaseTest {
         contractInfo.setContractId(1);
         contractInfo.setContractPeriodType(1);
         contractInfo.setStartDate(TimeUtil.getMonthFirstDay());
-        contractInfo.setEndDate(TimeUtil.getMonthLastDay());
+        contractInfo.setEndDate(TimeUtil.getNextMonthFirstDay());
         contractInfo.setUploadStatus(1);
         int i = contractInfoMapper.updateContractInfoById(contractInfo);
         System.out.println(i);
@@ -72,7 +72,6 @@ public class ContractTest extends BaseTest {
 
     @Test
     public void getAllContractInfo() {
-
         List<ContractInfo> allContractInfo = contractInfoMapper.getAllContractInfo();
         System.out.println(allContractInfo);
     }
@@ -81,9 +80,7 @@ public class ContractTest extends BaseTest {
     public void searchContractInfo() {
         ContractInfoQuery query = new ContractInfoQuery();
         query.setPersonName("陈祺荣");
-            query.setProjectName("新兴");
-//        query.setCorpCode("11");
-        query.setSubordinateCompany("a");
+        query.setProjectName("新兴");
         List<ContractInfo> contractInfos = contractInfoMapper.searchContractInfo(query);
         System.out.println(contractInfos);
     }

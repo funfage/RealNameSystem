@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -136,6 +137,11 @@ public interface PersonService {
      * 搜索人员信息
      */
     List<Person> searchPerson(PersonQuery personQuery);
+
+    /**
+     * 获取人员首页数据
+     */
+    Map<String, Object> getPersonMainPageInfo();
 
 
 

@@ -165,4 +165,60 @@
           project pj
     </select>
 
+    <select id="findProjectCodeAndName" parameterType="list" resultType="map">
+        <if test="projectCodeList != null and projectCodeList.size() != 0">
+            select
+              pj.project_code, pj.name
+            from
+              project pj
+            where
+              pj.project_code
+            in
+            <foreach collection="projectCodeList" item="id" separator="," open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getProjectNumber" resultType="integer">
+        select
+          count(project_code)
+        from
+          project
+    </select>
+
+    <select id="getProjectAttendNumber" resultType="integer">
+        select
+          count(pj.project_code)
+        from
+          project pj
+        where
+          (
+          select count(a.attendance_id) from attendance a where a.project_detail_id in
+            (
+            select pd.id from project_detail pd where pd.project_code = pj.project_code
+            )
+           ) > 0;
+    </select>
+
+    <select id="getProjectYedAttendErrNumber" resultType="integer">
+        select
+          count(pj.project_code)
+        from
+          project pj
+        where
+          (
+          select count(a.attendance_id) from attendance a where a.project_detail_id in
+            (
+            select pd.id from project_detail pd where pd.project_code = pj.project_code
+            )
+          and
+            a.status != 1
+          and
+            a.work_time &gt; #{startTime}
+          and
+            a.work_time &lt; #{endTime}
+           ) > 0;
+    </select>
+
 </mapper>

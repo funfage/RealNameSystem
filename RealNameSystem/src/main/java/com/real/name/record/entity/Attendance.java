@@ -1,6 +1,5 @@
 package com.real.name.record.entity;
 
-import com.real.name.project.entity.ProjectDetailQuery;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -19,6 +18,12 @@ public class Attendance {
     private Double workHours;
 
     private Date workTime;
+
+    private Date startTime;
+
+    private Date endTime;
+
+    private Integer status;
 
 
     public Attendance() {

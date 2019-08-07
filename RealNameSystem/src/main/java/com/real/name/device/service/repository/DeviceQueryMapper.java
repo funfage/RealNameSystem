@@ -13,8 +13,6 @@ public interface DeviceQueryMapper {
 
     /**
      * 搜索设备
-     * @param deviceQuery
-     * @return
      */
     List<Device> searchDevice(@Param("deviceQuery") DeviceQuery deviceQuery);
 
@@ -22,5 +20,10 @@ public interface DeviceQueryMapper {
      * 根据项目id查询设备ip
      */
     Set<String> findIPByProjectCode(@Param("projectCode") String projectCode);
+
+    /**
+     * 获取设备总数量
+     */
+    Integer getFaceDeviceNumber();
 
 }

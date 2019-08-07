@@ -117,5 +117,24 @@ public class ProjectTest extends BaseTest {
         System.out.println(allProjectCodeAndName);
     }
 
+    @Test
+    public void getProjectNumber() {
+        Integer projectNumber = projectQueryMapper.getProjectNumber();
+        Integer projectAttendNumber = projectQueryMapper.getProjectAttendNumber();
+//        Integer projectAttendErrNumber = projectQueryMapper.getProjectAttendErrNumber();
+        System.out.println(projectNumber);
+        System.out.println(projectAttendNumber);
+//        System.out.println(projectAttendErrNumber);
+    }
+
+    @Test
+    public void findProjectCodeAndName() {
+        Set<String> projectCodeList = new HashSet<>();
+        projectCodeList.add("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        projectCodeList.add("44010620190510008");
+        List<Map<String, String>> projectCodeAndName = projectQueryMapper.findProjectCodeAndName(projectCodeList);
+        System.out.println(projectCodeAndName);
+    }
+
 
 }

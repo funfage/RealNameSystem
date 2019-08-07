@@ -294,5 +294,17 @@ public class PersonServiceImpl implements PersonService {
         return personQueryMapper.searchPerson(personQuery);
     }
 
+    @Override
+    public Map<String, Object> getPersonMainPageInfo() {
+        //获取当日新增的人员
+        Integer todayPersonNum = personQueryMapper.countTodayPersonNum();
+        //获取总的人员
+        Integer personNum = personQueryMapper.countPersonNum();
+        Map<String, Object> map = new HashMap<>();
+        map.put("todayPersonNum", todayPersonNum);
+        map.put("personNum", personNum);
+        return map;
+    }
+
 
 }
