@@ -66,30 +66,52 @@
           (#{workerGroup.teamSysNo}, #{project.projectCode}, #{workHours}, #{groupAttendNum}, #{groupAttendErrNum}, #{workTime})
     </insert>
 
+    <update id="updateByTeamSysNo">
+        update
+          group_attend
+        <set>
+            <if test="hours != null">
+                work_hours = work_hours + #{hours},
+            </if>
+            <if test="attendNum != null">
+                group_attend_num = group_attend_num + #{attendNum},
+            </if>
+            <if test="errAttendNum != null">
+                group_attend_err_num = group_attend_err_num + #{errAttendNum},
+            </if>
+        </set>
+        where
+          team_sys_no = #{teamSysNo}
+        and
+          work_time &gt;= #{startTime}
+        and
+          work_time &lt;= #{endTime}
+    </update>
+
     <select id="countGroupHoursInPeriod" resultType="double">
         select
-        sum(work_hours)
+          ifnull(sum(work_hours),0.0)
         from
-        group_attend
+          group_attend
         where
-        work_time &gt; #{begin}
+          work_time &gt; #{begin}
         and
-        work_time &lt; #{end}
+          work_time &lt; #{end}
         and
-        team_sys_no = #{teamSysNo}
+          team_sys_no = #{teamSysNo}
     </select>
 
     <select id="getGroupAttendPeriodInfo" resultMap="queryMap">
         select
-        work_hours, work_time
+          work_hours, work_time
         from
-        group_attend
+          group_attend
         where
-        work_time &gt; #{begin}
+          work_time &gt; #{begin}
         and
-        work_time &lt; #{end}
+          work_time &lt; #{end}
         and
-        team_sys_no = #{teamSysNo}
+          team_sys_no = #{teamSysNo}
     </select>
 
 </mapper>

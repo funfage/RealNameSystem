@@ -1,12 +1,11 @@
 package com.real.name.project.controller;
 
-import com.alibaba.druid.sql.PagerUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.real.name.common.exception.AttendanceException;
-import com.real.name.common.info.CommConstant;
-import com.real.name.common.info.DeviceConstant;
+import com.real.name.common.constant.CommConstant;
+import com.real.name.common.constant.DeviceConstant;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.CommonUtils;
@@ -30,13 +29,10 @@ import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.query.ProjectQuery;
 import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.ProjectDetailService;
-import com.real.name.project.service.ProjectPersonDetailService;
 import com.real.name.project.service.ProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -119,24 +115,6 @@ public class ProjectController {
     @GetMapping("/queryProject")
     public ResultVo queryProject(@RequestParam(value = "pageIndex", defaultValue = "0") Integer pageIndex,
                        @RequestParam(value = "pageSize", defaultValue = "20") Integer pageSize) throws Exception {
-        /*// 从全国对接平台查询项目
-        JSONObject jsonObject = NationalUtils.queryProject(pageIndex, pageSize);
-        //判断是否查询成功
-        if(!jsonObject.getBoolean("error")){
-            JSONObject queryResult = jsonObject.getJSONObject("data");
-            //如果不为空则将项目信息插入数据库
-            if (queryResult != null) {
-                JSONArray rows = queryResult.getJSONArray("rows");
-                List<Project> projects = JSONObject.parseArray(rows.toJSONString(), Project.class);
-                for (Project project : projects) {
-                    try {
-                        projectService.createProject(project);
-                    } catch (Exception e) {
-                        //无需处理
-                    }
-                }
-            }
-        }*/
         //从数据库查询信息
         PageHelper.startPage(pageIndex + 1, pageSize);
         List<Project> queryList = projectService.findAll();

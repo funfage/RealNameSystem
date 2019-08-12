@@ -221,4 +221,15 @@
            ) > 0;
     </select>
 
+    <select id="judgeEmptyByProjectCode" resultType="integer">
+        select
+          1
+        from
+          project
+        where
+          project_code = #{projectCode}
+        limit
+          1
+    </select>
+
 </mapper>

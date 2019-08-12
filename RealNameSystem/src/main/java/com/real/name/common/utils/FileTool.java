@@ -25,6 +25,7 @@ public class FileTool {
 
     /**
      * 生成文件
+     *
      * @param basePath 文件所在的目录路径
      * @param fileName 文件名
      */
@@ -63,7 +64,7 @@ public class FileTool {
         } catch (IOException e) {
             logger.error("将照片转成字节数据失败");
             return null;
-        }finally {
+        } finally {
             try {
                 if (imageStream != null) {
                     imageStream.close();
@@ -86,19 +87,33 @@ public class FileTool {
     /**
      * 删除头像
      */
-    public static void deleteFile(String fileBasePath, String fileName){
-        String imagePath = fileBasePath + fileName;
-        File imageFile = new File(imagePath);
-        if (imageFile.exists()) {
-            logger.info("需要删除的图片路径为:" + imagePath);
-            if (!imageFile.delete()) {
-                throw new AttendanceException(ResultError.DELETE_FILE_ERROR);
+    public static void deleteFile(String fileBasePath, String fileName) {
+        String basePath = fileBasePath + fileName;
+        File file = new File(basePath);
+        if (file.exists()) {
+            if (file.isFile()) {
+                //判断是否为文件，是，则删除
+                if (!file.delete()) {
+                    logger.info("需要删除的图片路径为:" + basePath);
+                    throw new AttendanceException(ResultError.DELETE_FILE_ERROR);
+                }
+            } else { //不为文件，则为文件夹
+                String[] childFilePath = file.list();//获取文件夹下所有文件相对路径
+                if (childFilePath != null) {
+                    for (String path : childFilePath) {
+                        String childFileBasePath = file.getAbsolutePath() + "/";
+                        deleteFile(childFileBasePath, path);//递归，对每个都进行判断
+                    }
+                    file.delete();
+                }
             }
+
         }
     }
 
     /**
      * 获取下载文件的目录路径
+     *
      * @param downLoadType 0,人员文件路径
      *                     1,薪资文件路径
      *                     2,合同文件路径

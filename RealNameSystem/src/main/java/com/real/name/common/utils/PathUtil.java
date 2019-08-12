@@ -7,24 +7,40 @@ import org.springframework.context.annotation.Configuration;
 public class PathUtil {
 	private static String separator = System.getProperty("file.separator");
 
+	/**
+	 * 头像路径
+	 */
 	private static String winImagePath;
 
 	private static String linuxImagePath;
 
+	/**
+	 * 薪资路径
+	 */
 	private static String winPayFilePath;
 
 	private static String linuxPayFilePath;
 
+	/**
+	 * 合同路径
+	 */
 	private static String winContractFilePath;
 
 	private static String linuxContractFilePath;
 
+	/**
+	 * 报表输出路径
+	 */
 	private static String winExcelPath;
 
 	private static String linuxExcelPath;
 
-	private static String os = System.getProperty("os.name");
+	/**
+	 * 系统名
+	 */
+	private final static String os = System.getProperty("os.name");
 
+	private final static String win = "win";
 
 	@Value("${win.image.base.path}")
 	public void setWinPath(String winImagePath) {
@@ -60,6 +76,7 @@ public class PathUtil {
 	public void setWinExcelPath(String winExcelPath) {
 		PathUtil.winExcelPath = winExcelPath;
 	}
+
 	@Value("${linux.excel.path}")
 	public void setLinuxExcelPath(String linuxExcelPath) {
 		PathUtil.linuxExcelPath = linuxExcelPath;
@@ -70,7 +87,7 @@ public class PathUtil {
 
 	public static String getImgBasePath() {
 		String basePath;
-		if (os.toLowerCase().contains("win")) {
+		if (os.toLowerCase().contains(win)) {
 			basePath = winImagePath;
 		} else {
 			basePath = linuxImagePath;
@@ -81,7 +98,7 @@ public class PathUtil {
 
 	public static String getPayFileBasePath() {
 		String basePath;
-		if (os.toLowerCase().contains("win")) {
+		if (os.toLowerCase().contains(win)) {
 			basePath = winPayFilePath;
 		} else {
 			basePath = linuxPayFilePath;
@@ -92,7 +109,7 @@ public class PathUtil {
 
 	public static String getContractFilePath() {
 		String basePath;
-		if (os.toLowerCase().contains("win")) {
+		if (os.toLowerCase().contains(win)) {
 			basePath = winContractFilePath;
 		} else {
 			basePath = linuxContractFilePath;
@@ -103,7 +120,7 @@ public class PathUtil {
 
 	public static String getExcelFilePath() {
 		String basePath;
-		if (os.toLowerCase().contains("win")) {
+		if (os.toLowerCase().contains(win)) {
 			basePath = winExcelPath;
 		} else {
 			basePath = linuxExcelPath;
@@ -111,7 +128,5 @@ public class PathUtil {
 		basePath = basePath.replace("/", separator);
 		return basePath;
 	}
-
-
 
 }

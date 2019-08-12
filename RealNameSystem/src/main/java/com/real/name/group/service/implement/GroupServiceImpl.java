@@ -7,8 +7,9 @@ import com.real.name.group.query.GroupQuery;
 import com.real.name.group.service.GroupService;
 import com.real.name.group.service.repository.GroupQueryMapper;
 import com.real.name.group.service.repository.GroupRepository;
-import com.real.name.project.entity.Project;
-import com.real.name.project.service.ProjectService;
+import com.real.name.person.entity.Person;
+import com.real.name.person.service.PersonService;
+import com.real.name.person.service.repository.PersonQueryMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,19 +24,14 @@ public class GroupServiceImpl implements GroupService {
     private GroupRepository groupRepository;
 
     @Autowired
-    private ProjectService projectService;
+    private GroupQueryMapper groupQueryMapper;
 
     @Autowired
-    private GroupQueryMapper groupQueryMapper;
+    private PersonService personService;
 
     @Transactional
     @Override
     public WorkerGroup create(WorkerGroup group) {
-
-        Project project = projectService.findByProjectCode(group.getProjectCode());
-        if (project == null) {
-            throw new AttendanceException(ResultError.PROJECT_NOT_EXIST);
-        }
         return groupRepository.save(group);
     }
 
@@ -45,18 +41,8 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public Optional<WorkerGroup> findByTeamName(String name) {
-        return groupRepository.findByTeamName(name);
-    }
-
-    @Override
     public List<WorkerGroup> findAll() {
         return groupRepository.findAll();
-    }
-
-    @Override
-    public List<WorkerGroup> findByProjectCode(String projectCode) {
-        return groupRepository.findByProjectCode(projectCode);
     }
 
     @Override
@@ -65,14 +51,47 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public int deleteByTeamSysNo(Integer teamSysNo) {
-        return groupRepository.deleteByTeamSysNo(teamSysNo);
+    public void deleteByTeamSysNo(Integer teamSysNo) {
+        int i = groupQueryMapper.deleteByTeamSysNo(teamSysNo);
+        if (i <= 0) {
+            throw new AttendanceException(ResultError.DELETE_ERROR);
+        }
     }
 
     @Override
-    public Optional<WorkerGroup> findByIsAdminGroupAndProjectCode(Integer status, String projectCode) {
-        return groupRepository.findByIsAdminGroupAndProjectCode(status, projectCode);
+    public void removeGroupInProject(Integer teamSysNo, String projectCode) {
+        //查询该班组下所有的人员
+        List<Person> personList = personService.findRemovePersonInGroup(teamSysNo, projectCode);
+        //将班组下的人员移除项目
+        for (Person person : personList) {
+            personService.removePersonInProject(person, projectCode);
+        }
+        //设置班组移除标识
+        groupQueryMapper.setProGroupRemoveStatus(teamSysNo);
     }
+
+    @Override
+    public List<WorkerGroup> findRemoveGroupInContract(Integer subContractorId) {
+        return groupQueryMapper.findRemoveGroupInContract(subContractorId);
+    }
+
+    @Override
+    public boolean judgeExistByTeamNameAndSubContractor(String teamName, Integer subContractorId) {
+        Integer integer = groupQueryMapper.judgeExistByTeamNameAndSubContractor(teamName, subContractorId);
+        return integer != null && integer >= 0;
+    }
+
+    @Override
+    public List<GroupQuery> findByProjectCode(String projectCode) {
+        return groupQueryMapper.findByProjectCode(projectCode);
+    }
+
+    @Override
+    public boolean judgeExistAdminGroupByProjectCode(String projectCode) {
+        Integer integer = groupQueryMapper.judgeExistAdminGroupByProjectCode(projectCode);
+        return integer != null && integer >= 0;
+    }
+
 
     @Override
     public List<WorkerGroup> searchGroup(GroupQuery groupQuery) {

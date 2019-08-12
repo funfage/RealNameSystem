@@ -7,7 +7,7 @@ import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.service.ProjectDetailService;
 import com.real.name.project.service.repository.ProjectDetailQueryMapper;
 import com.real.name.record.entity.Attendance;
-import com.real.name.record.entity.PersonWorkRecord;
+import com.real.name.record.query.PersonWorkRecord;
 import com.real.name.record.entity.Record;
 import com.real.name.record.service.repository.AttendanceMapper;
 import com.real.name.record.service.repository.RecordMapper;
@@ -42,6 +42,24 @@ public class AttendanceTest extends BaseTest {
         attendance.setStartTime(new Date());
         attendance.setEndTime(new Date());
         attendanceMapper.saveAttendance(attendance);
+    }
+
+    @Test
+    public void findByAttendanceId() {
+        Attendance byAttendanceId = attendanceMapper.findByAttendanceId(477L);
+        System.out.println(byAttendanceId);
+    }
+
+    @Test
+    public void updateAttendanceByProjectDetailId() {
+        Attendance attendance = new Attendance();
+        attendance.setAttendanceId(477L);
+        attendance.setWorkHours(3.2);
+        attendance.setWorkTime(new Date());
+        attendance.setEndTime(new Date());
+        attendance.setStartTime(new Date());
+        int i = attendanceMapper.updateAttendanceByAttendanceId(attendance);
+        System.out.println(i);
     }
 
     @Test

@@ -17,7 +17,7 @@ public final class AesUtils {
 
     private static final String CHARSET_NAME = "UTF-8";
     private static final String AES_NAME = "AES";
-    public static final String ALGORITHM = "AES/CBC/PKCS7Padding";
+    private static final String ALGORITHM = "AES/CBC/PKCS7Padding";
 
     static {
         Security.addProvider(new BouncyCastleProvider());
@@ -62,14 +62,12 @@ public final class AesUtils {
         return "error";
     }
 
-    public static byte[] subBytes(byte[] src) {
+    private static byte[] subBytes(byte[] src) {
         if (src.length < 16) {
             throw new RuntimeException("can not from Key get offset!");
         }
         byte[] bs = new byte[16];
-        for (int i=0; i<16; i++){
-            bs[i] = src[i];
-        }
+        System.arraycopy(src, 0, bs, 0, 16);
         return bs;
     }
 }

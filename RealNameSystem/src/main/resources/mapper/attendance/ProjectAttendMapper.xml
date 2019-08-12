@@ -19,6 +19,19 @@
         <result property="sumProjectAttendErrNum" column="sum_project_attend_err_num"/>
     </resultMap>
 
+    <sql id="foreachProjectCodeSet">
+        <choose>
+            <when test="projectSet != null and projectSet.size() != 0">
+                <foreach collection="projectSet" item="id" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </when>
+            <otherwise>
+                (null)
+            </otherwise>
+        </choose>
+    </sql>
+
     <insert id="saveProjectAttend" parameterType="com.real.name.record.entity.ProjectAttend"
             keyProperty="projectAttend.projectAttendId" keyColumn="project_attend_id" useGeneratedKeys="true">
         insert into
@@ -27,6 +40,28 @@
         values
           (#{projectAttend.projectCode}, #{projectAttend.workHours}, #{projectAttend.projectAttendNum}, #{projectAttend.projectAttendErrNum})
     </insert>
+
+    <update id="updateByProjectCode" parameterType="string">
+        update
+          project_attend
+        <set>
+            <if test="hours != null">
+                work_hours = work_hours + #{hours},
+            </if>
+            <if test="attendNum != null">
+                project_attend_num = project_attend_num + #{attendNum},
+            </if>
+            <if test="errAttendNum != null">
+                project_attend_err_num = project_attend_err_num + #{errAttendNum},
+            </if>
+        </set>
+        where
+          project_code = #{projectCode}
+        and
+          work_time &gt;= #{startTime}
+        and
+          work_time &lt;= #{endTime}
+    </update>
 
     <select id="getPeriodAttendNumAndWorkHours" resultType="map">
         select
@@ -68,9 +103,7 @@
         where
           project_code
         in
-        <foreach collection="projectSet" item="id" separator="," open="(" close=")">
-            #{id}
-        </foreach>
+        <include refid="foreachProjectCodeSet"/>
         <if test="startTime != null">
             and work_time &gt;= #{startTime}
         </if>
@@ -87,9 +120,7 @@
         where
           project_code
         in
-        <foreach collection="projectSet" item="id" separator="," open="(" close=")">
-            #{id}
-        </foreach>
+        <include refid="foreachProjectCodeSet"/>
         <if test="startTime != null">
             and work_time &gt;= #{startTime}
         </if>

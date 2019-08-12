@@ -84,6 +84,30 @@
           p.person_id = #{personId}
     </select>
 
+    <select id="findRemovePerson" resultMap="queryMap">
+        select
+          p.person_id as p_person_id, p.person_name, p.work_role, p.id_card_index, p.suffix_name
+        from
+          person p
+        where
+          p.person_id = #{personId}
+    </select>
+
+    <select id="findRemovePersonInGroup" resultMap="queryMap">
+        select
+          p.person_id as p_person_id, p.person_name, p.work_role, p.id_card_index, p.suffix_name
+        from
+          person p, project_detail pd
+        where
+          pd.person_id = p.person_id
+        and
+          pd.team_sys_no = #{teamSysNo}
+        and
+          pd.project_code = #{projectCode}
+        and
+          pd.person_status = 1
+    </select>
+
     <select id="findAllPersonInProjects" resultMap="queryMap">
         select
           <include refid="personInfo"/>
@@ -210,7 +234,7 @@
 
     <select id="findByIdCardIndex" resultMap="queryMap">
         select
-          p.person_id, p.person_name, p.id_card_number
+          p.person_id as p_person_id, p.person_name, p.id_card_number
         from
           person p
         where

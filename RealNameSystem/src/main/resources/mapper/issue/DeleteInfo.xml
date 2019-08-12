@@ -98,18 +98,25 @@
 
     <delete id="deleteById" parameterType="long">
         delete from
-        delete_info
+          delete_info
         where
-        delete_info_id = #{id}
+          delete_info_id = #{id}
+    </delete>
+
+    <delete id="deleteByPersonId">
+        delete from
+          delete_info
+        where
+          person_id = #{personId}
     </delete>
 
     <delete id="deleteByCondition">
         delete from
-        delete_info
+          delete_info
         where
-        person_id =#{personId}
+          person_id =#{personId}
         and
-        device_id =#{deviceId}
+          device_id =#{deviceId}
     </delete>
 
     

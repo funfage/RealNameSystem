@@ -1,7 +1,7 @@
 package com.real.name.record.service.repository;
 
 import com.real.name.record.entity.Attendance;
-import com.real.name.record.entity.PersonWorkRecord;
+import com.real.name.record.query.PersonWorkRecord;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -17,6 +17,16 @@ public interface AttendanceMapper {
      * 保存考勤记录
      */
     int saveAttendance(Attendance attendance);
+
+    /**
+     * 通过projectDetailId修改考勤
+     */
+    int updateAttendanceByAttendanceId(@Param("attendance") Attendance attendance);
+
+    /**
+     * 根据id查询
+     */
+    Attendance findByAttendanceId(Long attendanceId);
 
     /**
      * 统计工时, 排除异常的考勤

@@ -4,22 +4,16 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.real.name.common.exception.AttendanceException;
-import com.real.name.common.info.DeviceConstant;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.FileTool;
-import com.real.name.common.utils.NationalUtils;
 import com.real.name.common.utils.PathUtil;
-import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
-import com.real.name.issue.entity.IssueFace;
 import com.real.name.issue.service.IssueFaceService;
 import com.real.name.person.entity.Person;
 import com.real.name.person.entity.PersonQuery;
 import com.real.name.person.service.PersonService;
-import com.real.name.project.entity.ProjectPersonDetail;
 import com.real.name.project.service.ProjectDetailQueryService;
-import com.real.name.project.service.ProjectPersonDetailService;
 import com.real.name.project.service.ProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,20 +41,6 @@ public class PersonController {
     @Autowired
     private PersonService personService;
 
-    @Autowired
-    private ProjectPersonDetailService projectPersonDetailService;
-
-    @Autowired
-    private IssueFaceService issueFaceService;
-
-    @Autowired
-    private ProjectService projectService;
-
-    @Autowired
-    private ProjectDetailQueryService projectDetailQueryService;
-
-    @Autowired
-    private DeviceService deviceService;
 
     public PersonController() {
         suffixList.add(".jpg");
@@ -75,7 +55,7 @@ public class PersonController {
     @PostMapping("/savePerson")
     public ResultVo savePerson(@RequestParam("person") String personStr,
                                @RequestParam("imageFile") MultipartFile imageFile) {
-        Person person = null;
+        Person person;
         try {
             person = JSONObject.parseObject(personStr, Person.class);
         } catch (Exception e) {
@@ -127,8 +107,6 @@ public class PersonController {
         personService.deleteDevicesPersonInfo(person);
         //删除头像
         FileTool.deleteFile(PathUtil.getImgBasePath(), personId + suffixName);
-        //删除personDetail中的信息
-        projectPersonDetailService.deleteByPerson(new Person(personId));
         //删除人员信息
         int effectNum = personService.deleteByPersonId(personId);
         if (effectNum <= 0) {
@@ -139,6 +117,17 @@ public class PersonController {
     }
 
     /**
+     * 将人员从项目中移除
+     */
+    @GetMapping("/removePersonInProject")
+    public ResultVo removePersonInProject(@RequestParam("personId") Integer personId,
+                                          @RequestParam("projectCode") String projectCode) {
+        Person person = personService.findRemovePerson(personId);
+        personService.removePersonInProject(person, projectCode);
+        return ResultVo.success();
+    }
+
+    /**
      * 修改员工信息
      * @param personStr 人员的json字符串
      */
@@ -146,7 +135,7 @@ public class PersonController {
     @PostMapping("updatePerson")
     public ResultVo updatePerson(@RequestParam("person") String personStr,
                                  @RequestParam(value = "imageFile", required = false) MultipartFile imageFile){
-        Person person = null;
+        Person person;
         try {
             person = JSONObject.parseObject(personStr, Person.class);
         } catch (Exception e) {
@@ -159,21 +148,7 @@ public class PersonController {
         if (person.getWorkRole() == null) {
             throw AttendanceException.emptyMessage("workRole");
         }
-        //boolean attendProject = true;
-        //查询工人是否参加项目
-        /*Optional<ProjectPersonDetail> projectPerson = projectPersonDetailService.findByPerson(person);
-        //工人没有参加项目
-        if(!projectPerson.isPresent() || projectPerson.get().getPerson() == null){
-            //从数据库中查询工人信息
-            Optional<Person> optionalPerson = personService.findById(person.getPersonId());
-            if(optionalPerson.isPresent()){
-                selectPerson = optionalPerson.get();
-            }
-            //false 标识未参加项目
-            attendProject = false;
-        }else{
-            selectPerson = projectPerson.get().getPerson();
-        }*/
+
         Optional<Person> personOptional = personService.findById(person.getPersonId());
         //人员不存在
         if(!personOptional.isPresent()){
@@ -196,16 +171,6 @@ public class PersonController {
         if (!imageFile.isEmpty()) {
             setImageInfoToPerson(selectPerson, imageFile);
         }
-        /*if(attendProject){
-            ProjectPersonDetail projectPersonDetail = projectPerson.get();
-            //设置修改后的person
-            projectPersonDetail.setPerson(selectPerson);
-            //修改全国项目工人信息
-            JSONObject jsonObject = NationalUtils.updateProjectPerson(projectPersonDetail);
-            if(jsonObject.getBoolean("error")){
-                throw new AttendanceException(ResultError.NATIONAL_ERROR.getCode(), ResultError.NATIONAL_ERROR.getMessage() + jsonObject.getString("message"));
-            }
-        }*/
         //修改本地工人信息
         Person updatePerson = personService.updatePerson(selectPerson);
         if (updatePerson == null) {
@@ -219,6 +184,8 @@ public class PersonController {
         }
         return ResultVo.success();
     }
+
+
 
     /**
      * ========================================以下只与查询有关===============================================
@@ -312,6 +279,9 @@ public class PersonController {
 
     private void setImageInfoToPerson(Person person, MultipartFile imageFile) {
         String suffixName = FileTool.getSuffixName(imageFile);
+        if (!suffixList.contains(suffixName)) {
+            throw new AttendanceException(ResultError.IMAGE_TYPE_ERROR);
+        }
         //设置文件后缀名
         person.setSuffixName(suffixName);
         //判断照片大小是否符合要求

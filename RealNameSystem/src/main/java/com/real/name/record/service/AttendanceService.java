@@ -1,13 +1,20 @@
 package com.real.name.record.service;
 
-import com.real.name.record.entity.PersonWorkRecord;
-import com.real.name.record.query.ProjectAttendQuery;
+import com.real.name.record.query.PersonWorkRecord;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 public interface AttendanceService {
+
+    /**
+     * 超级管理员修改某个人员某个工作日的考勤信息
+     * @param workHours 工时
+     * @param startTime 开始工作时间
+     * @param endTime 结束工作时间
+     */
+    void updateAndRecountAttendByAdmin(Long attendanceId, double workHours, Date startTime, Date endTime, String projectCode, Integer teamSysNo);
 
     /**
      * 查询某个人员的姓名,身份证,所属单位,班组名,工种 以及每天的工作时长

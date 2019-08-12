@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.real.name.common.exception.AttendanceException;
-import com.real.name.common.info.DeviceConstant;
+import com.real.name.common.constant.DeviceConstant;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.device.entity.Device;

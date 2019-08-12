@@ -46,7 +46,7 @@ public class ProjectDetailQueryTest extends BaseTest {
     
     @Test
     public void getProjectIdsByPersonId() {
-        List<String> projectCodes  = mapper.getProjectIdsByPersonId(102);
+        List<String> projectCodes  = mapper.getProjectCodeListByPersonId(102);
         List<String> collect = projectCodes.stream().distinct().collect(Collectors.toList());
         System.out.println(collect);
     }
@@ -73,7 +73,7 @@ public class ProjectDetailQueryTest extends BaseTest {
 
     @Test
     public void findTeamName() {
-        String teamName = mapper.findTeamName("36bj84W235Zgc8O78yuS32510ppMkHfe", 95);
+        String teamName = mapper.findTeamName("36bj84W235Zgc8O78yuS32510ppMkHfe", 136);
         System.out.println(teamName);
     }
 
@@ -167,5 +167,12 @@ public class ProjectDetailQueryTest extends BaseTest {
         Integer id = mapper.getIdByProjectCodeAndPersonId("36bj84W235Zgc8O78yuS32510ppMkHfe", 94);
         System.out.println(id);
     }
+
+    @Test
+    public void setProPersonRemoveStatus() {
+        int i = mapper.setProPersonRemoveStatus(126, "36bj84W235Zgc8O78yuS32510ppMkHfe");
+        System.out.println(i);
+    }
+
 
 }

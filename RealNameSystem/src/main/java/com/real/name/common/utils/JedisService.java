@@ -31,7 +31,6 @@ public class JedisService {
 
         /**
          * 删除key对应的记录
-         * @param key
          */
         public boolean del(String key){
             try {
@@ -45,7 +44,6 @@ public class JedisService {
 
         /**
          * 批量删除一key开头的键值
-         * @param key
          */
         public void delByPrex(String key){
             Set<String> keys = redisTemplate.keys(key + "*");
@@ -56,8 +54,6 @@ public class JedisService {
 
         /**
          * 查询是否存在某个键
-         * @param key
-         * @return
          */
         public boolean hasKey(String key){
             try {
@@ -71,9 +67,6 @@ public class JedisService {
 
         /**
          * 设置key的过期时间
-         * @param key
-         * @param timeOut
-         * @param timeUnit
          */
         public boolean expire(String key, long timeOut, TimeUnit timeUnit){
             return redisTemplate.expire(key, timeOut, timeUnit);
@@ -81,9 +74,6 @@ public class JedisService {
 
         /**
          * 修改key的名称如何存在
-         * @param oldKey
-         * @param newKey
-         * @return
          */
         public boolean renameIfAbsent(String oldKey, String newKey){
             return redisTemplate.renameIfAbsent(oldKey, newKey);
@@ -102,8 +92,6 @@ public class JedisService {
     public class JedisStrings{
         /**
          * 设置key的value
-         * @param key
-         * @param value
          */
         public void set(String key, Object value){
             ValueOperations<String,Object> vo = redisTemplate.opsForValue();
@@ -112,10 +100,6 @@ public class JedisService {
 
         /**
          * 设置key的value以及过期时间
-         * @param key
-         * @param value
-         * @param timeOut
-         * @param timeUnit
          */
         public void set(String key, Object value, long timeOut, TimeUnit timeUnit){
             ValueOperations<String,Object> vo = redisTemplate.opsForValue();
@@ -124,8 +108,6 @@ public class JedisService {
 
         /**
          * 设置key的value, 如果这个key不存在的话
-         * @param key
-         * @param value
          */
         public void setIfAbsent(String key, Object value){
             ValueOperations<String,Object> vo = redisTemplate.opsForValue();
@@ -134,10 +116,6 @@ public class JedisService {
 
         /**
          * 设置key的value以及过期时间, 如果这个key不存在的话
-         * @param key
-         * @param value
-         * @param timeOut
-         * @param timeUnit
          */
         public void setIfAbsent(String key, Object value, long timeOut, TimeUnit timeUnit){
             ValueOperations<String,Object> vo = redisTemplate.opsForValue();
@@ -146,8 +124,6 @@ public class JedisService {
 
         /**
          * 设置key的value, 如果这个key存在的话
-         * @param key
-         * @param value
          */
         public void setIfPresent(String key, Object value){
             ValueOperations<String,Object> vo = redisTemplate.opsForValue();
@@ -156,10 +132,6 @@ public class JedisService {
 
         /**
          * 设置key的value以及过期时间, 如果这个key存在的话
-         * @param key
-         * @param value
-         * @param timeOut
-         * @param timeUnit
          */
         public void setIfPresent(String key, Object value, long timeOut, TimeUnit timeUnit){
             ValueOperations<String,Object> vo = redisTemplate.opsForValue();
@@ -168,7 +140,6 @@ public class JedisService {
 
         /**
          * 获取key的值
-         * @param key
          */
         public Object get(String key){
             ValueOperations<String,Object> vo = redisTemplate.opsForValue();

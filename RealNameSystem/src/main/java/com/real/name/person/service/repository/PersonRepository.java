@@ -1,17 +1,9 @@
 package com.real.name.person.service.repository;
 
 import com.real.name.person.entity.Person;
-import com.real.name.person.entity.Person3;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
 
 public interface PersonRepository extends JpaRepository<Person, Integer> {
 
@@ -33,25 +25,25 @@ public interface PersonRepository extends JpaRepository<Person, Integer> {
     *//**
      * 根据身份证索引号搜索
      *//*
-    @Query("select new com.real.name.person.entity.Person(p.personId, p.personName, p.idCardNumber) from Person p where p.idCardIndex = :idCardIndex")
+    @Query("select new com.real.name.person.query.Person(p.personId, p.personName, p.idCardNumber) from Person p where p.idCardIndex = :idCardIndex")
     Optional<Person> findByIdCardIndex(@Param("idCardIndex") String idCardIndex);//
 
     *//**
      * 查询用户名
      *//*
-    @Query("select new com.real.name.person.entity.Person(p.personId, p.personName) from Person p where p.personId = :personId")
+    @Query("select new com.real.name.person.query.Person(p.personId, p.personName) from Person p where p.personId = :personId")
     Optional<Person> findPersonNameByPersonId(@Param("personId") Integer personId);//
 
     *//**
      * 查询所有人员id
      *//*
-    @Query("select new com.real.name.person.entity.Person(p.personId) from Person p")
+    @Query("select new com.real.name.person.query.Person(p.personId) from Person p")
     List<Integer> findAllPersonId();
 
     *//**
      * 查询所有人员id和workRole
      *//*
-    @Query("select new com.real.name.person.entity.Person(p.personId, p.workRole) from Person p")
+    @Query("select new com.real.name.person.query.Person(p.personId, p.workRole) from Person p")
     List<Person> findAllPersonRole();
 
     *//**
@@ -69,7 +61,7 @@ public interface PersonRepository extends JpaRepository<Person, Integer> {
     *//**
      * 查询下发人员和照片所需要的字段
      *//*
-    @Query(value = "select new com.real.name.person.entity.Person(p.personId, p.personName, p.headImage, p.workRole, p.idCardIndex) from Person p where  p.personId = ?1")
+    @Query(value = "select new com.real.name.person.query.Person(p.personId, p.personName, p.headImage, p.workRole, p.idCardIndex) from Person p where  p.personId = ?1")
     Person findIssuePersonImageInfo(Integer personId);
 
     *//**

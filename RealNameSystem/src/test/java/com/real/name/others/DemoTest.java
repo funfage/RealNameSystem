@@ -1,37 +1,40 @@
+/*
 package com.real.name.others;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.real.name.common.entity.BankInfo;
-import com.real.name.common.entity.CJUnit;
-import com.real.name.common.entity.forNational.*;
-import com.real.name.common.info.BaseInfo;
+import com.real.name.nation.entity.BankInfo;
+import com.real.name.nation.entity.CJUnit;
+import com.real.name.nation.entity.forNational.*;
+import com.real.name.common.constant.NationConstant;
 import com.real.name.common.utils.AesUtils;
-import com.real.name.labor.BaseRequest;
-import com.real.name.labor.EncriptionHelper;
+import com.real.name.nation.utils.BaseRequest;
+import com.real.name.nation.utils.EncryptionHelper;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+*/
 /**
  * @Desc TODO
  * @Author hp
  * @Date 2019/5/6 12:17
- **/
+ **//*
+
 public class DemoTest {
 
     //上传项目参建单位信息
     @Test
     public void uploadUnitInfo() {
         String method = "ProjectSubContractor.Add";
-        String appsecret = BaseInfo.APPSCRECT;
+        String appsecret = NationConstant.APPSCRECT;
 
         CJUnit cj = new CJUnit();
-        cj.setProjectCode(BaseInfo.APPID);
-        cj.setCorpCode(BaseInfo.CORPCODE);
-        cj.setCorpName(BaseInfo.CORPNAME);
+        cj.setProjectCode(NationConstant.APPID);
+        cj.setCorpCode(NationConstant.CORPCODE);
+        cj.setCorpName(NationConstant.CORPNAME);
         cj.setCorpType("009");
         System.out.println(cj.getCorpName());
         String cjStr = JSON.toJSONString(cj);
@@ -39,7 +42,7 @@ public class DemoTest {
         BaseRequest request = new BaseRequest(){};
         Map<String,String> dataMap = getMap(cjStr,method);
 
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         dataMap.put("appsecret",appsecret);
         System.out.println(String.format("调用结果：%s",res));
     }
@@ -50,24 +53,24 @@ public class DemoTest {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         String timestamp = sdf.format(new Date());
 
-        String sortString = "appid=" + BaseInfo.APPID;
+        String sortString = "appid=" + NationConstant.APPID;
         sortString += "&data=" + data;
-        sortString += "&format="+BaseInfo.FORMART;
+        sortString += "&format="+ NationConstant.FORMART;
         sortString += "&method=" + method;
         sortString += "&nonce=" + guid;
         sortString += "&timestamp=" + timestamp;
-        sortString += "&version=" + BaseInfo.VERSION;
-        sortString += "&appsecret=" + BaseInfo.APPSCRECT;
-        String sign = EncriptionHelper.getSHA256StrJava(sortString.toLowerCase());
+        sortString += "&version=" + NationConstant.VERSION;
+        sortString += "&appsecret=" + NationConstant.APPSCRECT;
+        String sign = EncryptionHelper.getSHA256StrJava(sortString.toLowerCase());
 
         Map<String,String> dataMap = new HashMap<>();
-        dataMap.put("appid",BaseInfo.APPID);
+        dataMap.put("appid", NationConstant.APPID);
         dataMap.put("data", data);
-        dataMap.put("format",BaseInfo.FORMART);
+        dataMap.put("format", NationConstant.FORMART);
         dataMap.put("method",method);
         dataMap.put("nonce",guid);
         dataMap.put("timestamp",timestamp);
-        dataMap.put("version",BaseInfo.VERSION);
+        dataMap.put("version", NationConstant.VERSION);
         dataMap.put("sign",sign);
         return dataMap;
     }
@@ -76,17 +79,17 @@ public class DemoTest {
     @Test
     public void editProject() {
         String method = "Project.PartUpdate";
-        String appsecret = BaseInfo.APPSCRECT;
+        String appsecret = NationConstant.APPSCRECT;
         NationalProject pg = new NationalProject();
         pg.setBuildPlanNum(AesUtils.encrypt("1029213748403",appsecret));
         pg.setPrjPlanNum(AesUtils.encrypt("111938473",appsecret));
-        pg.setProjectCode(BaseInfo.APPID);
+        pg.setProjectCode(NationConstant.APPID);
         pg.setPrjStatus("001");
         String str = JSON.toJSONString(pg);
         Map<String,String> dataMap = getMap(str,method);
 
         BaseRequest request = new BaseRequest(){};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(String.format("调用结果：%s",res));
     }
 
@@ -95,12 +98,12 @@ public class DemoTest {
     public void queryProject() {
         String method = "Project.Query";
         SearchProject sp = new SearchProject(0,10);
-        sp.setContractorCorpCode(BaseInfo.CORPCODE);
-        sp.setProjectCode(BaseInfo.APPID);
+        sp.setContractorCorpCode(NationConstant.CORPCODE);
+        sp.setProjectCode(NationConstant.APPID);
         String str = JSON.toJSONString(sp);
         Map<String,String> dataMap = getMap(str,method);
         BaseRequest request = new BaseRequest(){};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
     }
 
@@ -108,7 +111,7 @@ public class DemoTest {
     @Test
     public void editCJProject() {
         String method = "ProjectSubContractor.Update";
-        String appsecret = BaseInfo.APPSCRECT;
+        String appsecret = NationConstant.APPSCRECT;
         CJUnit cj = new CJUnit();
         SimpleDateFormat format =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -118,9 +121,9 @@ public class DemoTest {
         list.add(bankInfo);
 
         cj.setBankInfos(list);
-        cj.setProjectCode(BaseInfo.APPID);
-        cj.setCorpCode(BaseInfo.CORPCODE);
-        cj.setCorpName(BaseInfo.CORPNAME);
+        cj.setProjectCode(NationConstant.APPID);
+        cj.setCorpCode(NationConstant.CORPCODE);
+        cj.setCorpName(NationConstant.CORPNAME);
         cj.setCorpType("009");
 
         cj.setPmIDCardType("01");
@@ -136,7 +139,7 @@ public class DemoTest {
         BaseRequest request = new BaseRequest(){};
         Map<String,String> dataMap = getMap(cjStr,method);
 
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         dataMap.put("appsecret",appsecret);
 //        WriteLogInfo(dataMap);
         System.out.println(String.format("调用结果：%s",res));
@@ -146,15 +149,15 @@ public class DemoTest {
     @Test
     public void searchCJInfo() {
         String method = "ProjectSubContractor.Query";
-        String appsecret = BaseInfo.APPSCRECT;
+        String appsecret = NationConstant.APPSCRECT;
         SearchProject sp = new SearchProject(0,20);
-        sp.setProjectCode(BaseInfo.APPID);
+        sp.setProjectCode(NationConstant.APPID);
 //        sp.setContractorCorpCode("187636953028383");
 //        sp.setProjectCode("102399383829203");
         String str = JSON.toJSONString(sp);
         Map<String,String> dataMap = getMap(str,method);
         BaseRequest request = new BaseRequest(){};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
     }
 
@@ -162,16 +165,16 @@ public class DemoTest {
     @Test
     public void uploadGroup() {
         String method = "Team.Add";
-        String appsecret = BaseInfo.APPSCRECT;
+        String appsecret = NationConstant.APPSCRECT;
         NationalGroup ng = new NationalGroup();
-        ng.setProjectCode(BaseInfo.APPID);
-        ng.setCorpCode(BaseInfo.CORPCODE);
+        ng.setProjectCode(NationConstant.APPID);
+        ng.setCorpCode(NationConstant.CORPCODE);
         ng.setCorpName("筠城建筑科技有限公司");
         ng.setTeamName("羊羊羊");
         String str = JSON.toJSONString(ng);
         Map<String,String> dataMap = getMap(str,method);
         BaseRequest request = new BaseRequest(){};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         JSONObject obj = JSONObject.parseObject(res);
         System.out.println(res);
         obj = obj.getJSONObject("data");
@@ -184,7 +187,7 @@ public class DemoTest {
         ng.setRequestSerialCode(str);
         Map<String,String> dataMap = getMap(JSON.toJSONString(ng),method);
         BaseRequest request = new BaseRequest(){};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
     }
 
@@ -192,7 +195,7 @@ public class DemoTest {
     @Test
     public void editGroup() {
         String method = "Team.Update";
-        String appsecret = BaseInfo.APPSCRECT;
+        String appsecret = NationConstant.APPSCRECT;
         NationalGroup ng = new NationalGroup();
         ng.setTeamSysNo(1500161164);
         ng.setTeamName("狼狼狼");
@@ -200,7 +203,7 @@ public class DemoTest {
         String str = JSON.toJSONString(ng);
         Map<String,String> dataMap = getMap(str,method);
         BaseRequest request = new BaseRequest() {};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
     }
 
@@ -208,13 +211,13 @@ public class DemoTest {
     @Test
     public void queryGroup() {
         String method = "Team.Query";
-        String appsecret = BaseInfo.APPSCRECT;
+        String appsecret = NationConstant.APPSCRECT;
         SearchProject sp = new SearchProject(0,20);
-        sp.setProjectCode(BaseInfo.APPID);
+        sp.setProjectCode(NationConstant.APPID);
         String str = JSON.toJSONString(sp);
         Map<String,String> dataMap = getMap(str,method);
         BaseRequest request = new BaseRequest() {};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
     }
 
@@ -222,12 +225,12 @@ public class DemoTest {
     @Test
     public void updateWorkerInfo() {
         String method = "ProjectWorker.Add";
-        NationalWorkerInfo nwi = new NationalWorkerInfo(BaseInfo.APPID,BaseInfo.CORPCODE,"筠城建筑科技有限公司",1500161164,"狼狼狼");
+        NationalWorkerInfo nwi = new NationalWorkerInfo(NationConstant.APPID, NationConstant.CORPCODE,"筠城建筑科技有限公司",1500161164,"狼狼狼");
         Worker worker = new Worker();
         worker.setWorkerName("何某人");
         worker.setIsTeamLeader(1);
         worker.setIdCardType("01");
-        worker.setIdCardNumber(AesUtils.encrypt("430626199701135715",BaseInfo.APPSCRECT));
+        worker.setIdCardNumber(AesUtils.encrypt("430626199701135715", NationConstant.APPSCRECT));
         worker.setWorkType("010");
         worker.setWorkRole(10);
         worker.setNation("汉");
@@ -246,7 +249,7 @@ public class DemoTest {
         System.out.println(str);
         Map<String,String> dataMap = getMap(str,method);
         BaseRequest request = new BaseRequest() {};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         JSONObject obj = JSONObject.parseObject(res);
         System.out.println(res);
         obj = obj.getJSONObject("data");
@@ -258,11 +261,11 @@ public class DemoTest {
     @Test
     public void editWorkerInfo() {
         String method = "ProjectWorker.Update";
-        String appsecret = BaseInfo.APPSCRECT;
+        String appsecret = NationConstant.APPSCRECT;
         WorkerWrapper wp = new WorkerWrapper();
-        wp.setProjectCode(BaseInfo.APPID);
-        wp.setCorpCode(BaseInfo.CORPCODE);
-        wp.setCorpName(BaseInfo.CORPNAME);
+        wp.setProjectCode(NationConstant.APPID);
+        wp.setCorpCode(NationConstant.CORPCODE);
+        wp.setCorpName(NationConstant.CORPNAME);
         wp.setTeamName("狼狼狼");
         wp.setTeamSysNo(1500161164);
 
@@ -283,7 +286,7 @@ public class DemoTest {
         System.out.println(str);
         Map<String,String> dataMap = getMap(str,method);
         BaseRequest request = new BaseRequest() {};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
     }
 
@@ -291,15 +294,15 @@ public class DemoTest {
     @Test
     public void queryWorkerInfos() {
         String method = "ProjectWorker.Query";
-        String appsecret = BaseInfo.APPSCRECT;
+        String appsecret = NationConstant.APPSCRECT;
 
         SearchProject sp = new SearchProject(0,5);
-        sp.setProjectCode(BaseInfo.APPID);
+        sp.setProjectCode(NationConstant.APPID);
         String str = JSON.toJSONString(sp);
         System.out.println(str);
         Map<String,String> dataMap = getMap(str,method);
         BaseRequest request = new BaseRequest() {};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
     }
 
@@ -307,11 +310,11 @@ public class DemoTest {
     @Test
     public void inoutInfo() {
         String method = "WorkerEntryExit.Add";
-        String appScrect = BaseInfo.APPSCRECT;
+        String appScrect = NationConstant.APPSCRECT;
 
         NationalWorkerInfo nwi = new NationalWorkerInfo();
-        nwi.setProjectCode(BaseInfo.APPID);
-        nwi.setCorpCode(BaseInfo.CORPCODE);
+        nwi.setProjectCode(NationConstant.APPID);
+        nwi.setCorpCode(NationConstant.CORPCODE);
         nwi.setTeamSysNo(1500161164);
         Worker worker = new Worker();
         worker.setIdCardType("01");
@@ -320,13 +323,13 @@ public class DemoTest {
         worker.setDate("2019-03-10");
         worker.setVoucher("");
         nwi.setWorkerList(Arrays.asList(worker));
-        nwi.setCorpName(BaseInfo.CORPNAME);
+        nwi.setCorpName(NationConstant.CORPNAME);
 
         String str = JSON.toJSONString(nwi);
         System.out.println(str);
         Map<String,String> dataMap = getMap(str,method);
         BaseRequest request = new BaseRequest() {};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
     }
 
@@ -334,19 +337,21 @@ public class DemoTest {
     @Test
     public void workerEntryExitQuery() {
         String method = "WorkerEntryExit.Query";
-        String appScrect = BaseInfo.APPSCRECT;
+        String appScrect = NationConstant.APPSCRECT;
         SearchProject sp = new SearchProject(1,20);
         sp.setProjectCode("10203923");
 
-        /**
+        */
+/**
          * 具体查寻参数可根据需要进行设置
-         */
+         *//*
+
 
         String str = JSON.toJSONString(sp);
         System.out.println(str);
         Map<String,String> dataMap = getMap(str,method);
         BaseRequest request = new BaseRequest() {};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
     }
 
@@ -354,10 +359,10 @@ public class DemoTest {
     @Test
     public void workerContractAdd() throws UnsupportedEncodingException {
         String method = "WorkerContract.Add";
-        String appScrect = BaseInfo.APPSCRECT;
+        String appScrect = NationConstant.APPSCRECT;
         Worker worker = new Worker();
-        worker.setCorpCode(BaseInfo.CORPCODE);
-        worker.setCorpName(BaseInfo.CORPNAME);
+        worker.setCorpCode(NationConstant.CORPCODE);
+        worker.setCorpName(NationConstant.CORPNAME);
         worker.setIdCardType("01");
         worker.setIdCardNumber(AesUtils.encrypt("430626199701135715",appScrect));
         worker.setContractPeriodType(0);
@@ -368,13 +373,13 @@ public class DemoTest {
         worker.setAttachments(Arrays.asList(new NationalAttachment("112323","aHR0cHM6Ly9nc3MxLmJkc3RhdGljLmNvbS8tdm8zZFNhZ194STRraEdrcG9XSzFIRjZoaHkvYmFpa2UvcyUzRDIyMC9zaWduPTU3MTEyMmE3YjA3ZWNhODAxNjA1M2VlNWExMjI5NzEyLzhkNTQ5NGVlZjAxZjNhMjljOGY1NTE0YTk5MjViYzMxNWM2MDdjNzEuanBn")));
 
         NationalProject pi = new NationalProject();
-        pi.setProjectCode(BaseInfo.APPID);
+        pi.setProjectCode(NationConstant.APPID);
         pi.setContractList(new ArrayList<>(Arrays.asList(worker)));
         String str = JSON.toJSONString(pi);
         System.out.println(str);
         Map<String,String> dataMap = getMap(str,method);
         BaseRequest request = new BaseRequest() {};
-        String res = request.postData(BaseInfo.URL, null,dataMap);
+        String res = request.postData(NationConstant.URL, null,dataMap);
         System.out.println(res);
     }
 
@@ -382,7 +387,7 @@ public class DemoTest {
     @Test
     public void WorkerContractQuery() {
         String method = "WorkerContract.Query";
-        String appScrect = BaseInfo.APPSCRECT;
+        String appScrect = NationConstant.APPSCRECT;
         SearchProject sp = new SearchProject(0,20);
         sp.setProjectCode("219833");
         sp.setCorpCode("12939193");
@@ -393,7 +398,7 @@ public class DemoTest {
         System.out.println(str);
         Map<String,String> dataMap = getMap(str,method);
         BaseRequest request = new BaseRequest() {};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
     }
 
@@ -402,12 +407,12 @@ public class DemoTest {
     @Test
     public void WorkerAttendanceAdd() {
         NationalProject np =new NationalProject();
-        np.setProjectCode(BaseInfo.APPID);
+        np.setProjectCode(NationConstant.APPID);
         np.setTeamSysNo(1500161164);
 
         Worker worker = new Worker();
         worker.setIdCardType("1");
-        worker.setIdCardNumber(AesUtils.encrypt("430626199701135715",BaseInfo.APPSCRECT));
+        worker.setIdCardNumber(AesUtils.encrypt("430626199701135715", NationConstant.APPSCRECT));
         worker.setDate("2016-01-01 12:12:12");
         worker.setDirection("01");
         worker.setImage("");
@@ -417,7 +422,7 @@ public class DemoTest {
         System.out.println(str);
         Map<String,String> dataMap = getMap(str,"WorkerAttendance.Add");
         BaseRequest request = new BaseRequest() {};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
     }
 
@@ -433,7 +438,7 @@ public class DemoTest {
         System.out.println(str);
         Map<String,String> dataMap = getMap(str,"WorkerAttendance.Query");
         BaseRequest request = new BaseRequest() {};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
     }
 
@@ -441,9 +446,9 @@ public class DemoTest {
     @Test
     public void PayrollAdd() {
         NationalProject np = new NationalProject();
-        np.setProjectCode(BaseInfo.APPID);
-        np.setCorpCode(BaseInfo.CORPCODE);
-        np.setCorpName(BaseInfo.CORPNAME);
+        np.setProjectCode(NationConstant.APPID);
+        np.setCorpCode(NationConstant.CORPCODE);
+        np.setCorpName(NationConstant.CORPNAME);
         np.setTeamSysNo(1500161164);
         np.setPayMonth("2019-01");
         NationalAttachment na = new NationalAttachment("1","1");
@@ -452,13 +457,13 @@ public class DemoTest {
 
         Worker worker = new Worker();
         worker.setIdCardType("01");
-        worker.setIdCardNumber(AesUtils.encrypt("430626199701135715",BaseInfo.APPSCRECT));
+        worker.setIdCardNumber(AesUtils.encrypt("430626199701135715", NationConstant.APPSCRECT));
         worker.setPayRollBankName("广发银行");
         worker.setPayRollTopBankCode("001");
-        worker.setPayRollBankCardNumber(AesUtils.encrypt("0001",BaseInfo.APPSCRECT));
+        worker.setPayRollBankCardNumber(AesUtils.encrypt("0001", NationConstant.APPSCRECT));
         worker.setBalanceDate("2019-01-01");
         worker.setPayBankCode("001");
-        worker.setPayBankCardNumber(AesUtils.encrypt("101111",BaseInfo.APPSCRECT));
+        worker.setPayBankCardNumber(AesUtils.encrypt("101111", NationConstant.APPSCRECT));
         worker.setPayRollBankName("001");
         worker.setPayBankName("1");
         worker.setPayRollBankCode("001");
@@ -472,7 +477,7 @@ public class DemoTest {
         System.out.println(str);
         Map<String,String> dataMap = getMap(str,"Payroll.Add");
         BaseRequest request = new BaseRequest() {};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
     }
 
@@ -480,16 +485,16 @@ public class DemoTest {
     @Test
     public void PayrollQuery() {
         Worker worker = new Worker();
-        worker.setProjectCode(BaseInfo.APPID);
-        worker.setCorpCode(BaseInfo.CORPCODE);
-        worker.setCorpName(BaseInfo.CORPNAME);
+        worker.setProjectCode(NationConstant.APPID);
+        worker.setCorpCode(NationConstant.CORPCODE);
+        worker.setCorpName(NationConstant.CORPNAME);
         worker.setTeamSysNo(1500161144);
         worker.setPayMonth("2019-01");
         String str = JSON.toJSONString(worker);
         System.out.println(str);
         Map<String,String> dataMap = getMap(str,"Payroll.Query");
         BaseRequest request = new BaseRequest() {};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
     }
 
@@ -499,7 +504,7 @@ public class DemoTest {
     @Test
     public void upLoadItemTraining() {
         Training training = new Training();
-        training.setProjectCode(BaseInfo.APPID);
+        training.setProjectCode(NationConstant.APPID);
         training.setTrainingDate("1979-02-01");
         training.setTrainingDuration(1.0);
         training.setTrainingName("恒源祥");
@@ -507,7 +512,7 @@ public class DemoTest {
         String str = JSON.toJSONString(training);
         Map<String,String> dataMap = getMap(str,"ProjectTraining.Add");
         BaseRequest request = new BaseRequest() {};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
     }
 
@@ -515,13 +520,13 @@ public class DemoTest {
     @Test
     public void searchItemTraining() {
         SearchProject sp = new SearchProject(1,20);
-        sp.setProjectCode(BaseInfo.APPID);
+        sp.setProjectCode(NationConstant.APPID);
         sp.setTrainingDate("1979-01-01");
         sp.setTypeCode("01020313");
         String str = JSON.toJSONString(sp);
         Map<String,String> dataMap = getMap(str,"ProjectTraining.Query");
         BaseRequest request = new BaseRequest() {};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
     }
 
@@ -538,7 +543,7 @@ public class DemoTest {
         String str = JSON.toJSONString(sp);
         Map<String,String> dataMap = getMap(str,"CorpBadRecord.Query");
         BaseRequest request = new BaseRequest() {};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
     }
 
@@ -552,7 +557,7 @@ public class DemoTest {
         String str = JSON.toJSONString(sp);
         Map<String,String> dataMap = getMap(str,"CorpGoodRecord.Query");
         BaseRequest request = new BaseRequest() {};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
     }
 
@@ -565,7 +570,7 @@ public class DemoTest {
         String str = JSON.toJSONString(sp);
         Map<String,String> dataMap = getMap(str,"CorpBlackList.Query");
         BaseRequest request = new BaseRequest() {};
-        String res = request.postData(BaseInfo.URL,null,dataMap);
+        String res = request.postData(NationConstant.URL,null,dataMap);
         System.out.println(res);
 
     }
@@ -575,3 +580,4 @@ public class DemoTest {
 
     }
 }
+*/

@@ -1,37 +1,35 @@
 package com.real.name.person.service.implement;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.real.name.auth.entity.User;
 import com.real.name.auth.service.AuthUtils;
+import com.real.name.common.constant.CommConstant;
 import com.real.name.common.exception.AttendanceException;
-import com.real.name.common.info.DeviceConstant;
+import com.real.name.common.constant.DeviceConstant;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
-import com.real.name.common.utils.PageUtils;
+import com.real.name.common.utils.*;
+import com.real.name.common.websocket.WebSocket;
 import com.real.name.device.entity.Device;
 import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.device.service.DeviceService;
+import com.real.name.device.service.repository.DeviceQueryMapper;
 import com.real.name.issue.entity.IssueFace;
-import com.real.name.issue.service.repository.IssueAccessMapper;
 import com.real.name.issue.service.repository.IssueFaceMapper;
 import com.real.name.person.entity.Person;
-import com.real.name.person.entity.Person2;
-import com.real.name.person.entity.Person3;
 import com.real.name.person.entity.PersonQuery;
 import com.real.name.person.service.PersonService;
-import com.real.name.person.service.repository.Person2Rep;
 import com.real.name.person.service.repository.PersonQueryMapper;
 import com.real.name.person.service.repository.PersonRepository;
 import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.ProjectService;
-import com.real.name.project.service.repository.ProjectRepository;
 import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class PersonServiceImpl implements PersonService {
@@ -56,9 +55,6 @@ public class PersonServiceImpl implements PersonService {
     private DeviceService deviceService;
 
     @Autowired
-    private Person2Rep person2Rep;
-
-    @Autowired
     private ProjectDetailQueryService projectDetailQueryService;
 
     @Autowired
@@ -67,7 +63,17 @@ public class PersonServiceImpl implements PersonService {
     @Autowired
     private IssueFaceMapper issueFaceMapper;
 
+    @Autowired
+    private JedisService.JedisStrings jedisStrings;
 
+    @Autowired
+    private JedisService.JedisKeys jedisKeys;
+
+    @Autowired
+    private WebSocket webSocket;
+
+
+    @Transactional
     @Override
     public void deleteDevicesPersonInfo(Person person) {
         if (person.getWorkRole() == 10) {
@@ -77,11 +83,48 @@ public class PersonServiceImpl implements PersonService {
             deviceService.deletePersonInDeviceList(allDeviceList, person);
         } else if (person.getWorkRole() == 20) {
             //查询用户所在的项目
-            List<String> projectCodes = projectDetailQueryService.getProjectIdsByPersonId(person.getPersonId());
+            List<String> projectCodes = projectDetailQueryService.getProjectCodeListByPersonId(person.getPersonId());
             //获取项目绑定的设备
             List<Device> deviceList = deviceService.findByProjectCodeIn(projectCodes);
             deviceService.deletePersonInDeviceList(deviceList, person);
         }
+    }
+
+    @Transactional
+    @Override
+    public void removePersonInProject(Person person, String projectCode) {
+        //查询该项目所绑定的设备
+        List<Device> projectDevices = deviceService.findByProjectCode(projectCode);
+        //删除人员在设备上的信息
+        deviceService.deletePersonInDeviceList(projectDevices, person);
+        //查被删除人员所在的班组，并将出场人数加1
+        String teamName = projectDetailQueryService.findTeamName(projectCode, person.getPersonId());
+        String key = projectCode + CommConstant.ABSENT + teamName;
+        if (jedisKeys.hasKey(key)) {
+            String value = (String) jedisStrings.get(key);
+            int number = Integer.parseInt(value.substring(value.lastIndexOf(",") + 1)) + 1;
+            jedisStrings.set(key, teamName + "," + number, TimeUtil.getTomorrowBeginMilliSecond(), TimeUnit.MILLISECONDS);
+        } else {
+            jedisStrings.set(key, teamName + "," + 1, TimeUtil.getTomorrowBeginMilliSecond(), TimeUnit.MILLISECONDS);
+        }
+        //推送出场消息给前端
+        JSONObject map = new JSONObject();
+        map.put("teamName", teamName);
+        map.put("projectCode", projectCode);
+        map.put("type", CommConstant.ABSENT_TYPE);
+        webSocket.sendMessageToAll(map.toJSONString());
+        //设置移出标识
+        projectDetailQueryService.setProPersonRemoveStatus(person.getPersonId(), projectCode);
+    }
+
+    @Override
+    public Person findRemovePerson(Integer personId) {
+        return personQueryMapper.findRemovePerson(personId);
+    }
+
+    @Override
+    public List<Person> findRemovePersonInGroup(Integer teamSysNo, String projectCode) {
+        return personQueryMapper.findRemovePersonInGroup(teamSysNo, projectCode);
     }
 
     @Override
@@ -92,18 +135,18 @@ public class PersonServiceImpl implements PersonService {
             List<Device> allDevices = deviceService.findAllByDeviceType(DeviceConstant.faceDeviceType);
             deviceService.deletePersonInDeviceList(allDevices, person);
             //查询用户所在的项目
-            List<String> projectCodes = projectDetailQueryService.getProjectIdsByPersonId(person.getPersonId());
+            List<String> projectCodes = projectDetailQueryService.getProjectCodeListByPersonId(person.getPersonId());
             //获取该项目所绑定所有人脸设备
             List<Device> faceDeviceList = deviceService.findByProjectCodeInAndDeviceType(projectCodes, DeviceConstant.faceDeviceType);
             //更新人员信息
             FaceDeviceUtils.updatePersonToDevices(faceDeviceList, person, 3);
         } else if (!person.getPersonName().equals(oldName)) { //如果人员姓名发生了改变
-            if (person.getWorkRole() == 10) {
+            if (person.getWorkRole() == 10) { //如果是管理人员则修改所有设备的信息
                 List<Device> allDevices = deviceService.findAllByDeviceType(DeviceConstant.faceDeviceType);
                 FaceDeviceUtils.updatePersonToDevices(allDevices, person, 3);
-            } else if (person.getWorkRole() == 20) {
+            } else if (person.getWorkRole() == 20) { //否则修改绑定设备的信息
                 //查询用户所在的项目
-                List<String> projectCodes = projectDetailQueryService.getProjectIdsByPersonId(person.getPersonId());
+                List<String> projectCodes = projectDetailQueryService.getProjectCodeListByPersonId(person.getPersonId());
                 //获取该项目所绑定所有人脸设备
                 List<Device> faceDeviceList = deviceService.findByProjectCodeInAndDeviceType(projectCodes, DeviceConstant.faceDeviceType);
                 //更新人员信息
@@ -121,7 +164,7 @@ public class PersonServiceImpl implements PersonService {
             FaceDeviceUtils.updateImageToDevices(allDevices, person, 3);
         } else if (person.getWorkRole() == 20) {//更新给人员所绑定人脸设备的照片信息
             //查询用户所在的项目
-            List<String> projectCodes = projectDetailQueryService.getProjectIdsByPersonId(person.getPersonId());
+            List<String> projectCodes = projectDetailQueryService.getProjectCodeListByPersonId(person.getPersonId());
             //获取该项目所绑定所有人脸设备
             List<Device> faceDeviceList = deviceService.findByProjectCodeInAndDeviceType(projectCodes, DeviceConstant.faceDeviceType);
             //更新照片信息
@@ -201,7 +244,7 @@ public class PersonServiceImpl implements PersonService {
             return personRepository.save(person);
         } else if (containProjectRole) {
             //判断该人员是否属于该项目管理员所在的项目下或者是否是没有参见项目的人员
-            List<String> ids = projectDetailQueryService.getProjectIdsByPersonId(person.getPersonId());
+            List<String> ids = projectDetailQueryService.getProjectCodeListByPersonId(person.getPersonId());
             for (String id : user.getProjectSet()) {
                 if (ids.contains(id)) {
                     return personRepository.save(person);
@@ -237,11 +280,6 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<Person> findPersons(List<Integer> personIds) {
         return personQueryMapper.findByPersonIdIn(personIds);
-    }
-
-    @Override
-    public List<Person2> findPersons2(List<Integer> personIds) {
-        return person2Rep.findByPersonIdIn(personIds);
     }
 
     @Override
@@ -305,6 +343,7 @@ public class PersonServiceImpl implements PersonService {
         map.put("personNum", personNum);
         return map;
     }
+
 
 
 }

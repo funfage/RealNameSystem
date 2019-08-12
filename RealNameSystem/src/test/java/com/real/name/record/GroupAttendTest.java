@@ -9,6 +9,8 @@ import com.real.name.record.service.repository.GroupAttendMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -29,6 +31,16 @@ public class GroupAttendTest extends BaseTest {
         groupAttend.setGroupAttendNum(2);
         groupAttend.setGroupAttendErrNum(1);
         int i = groupAttendMapper.saveGroupAttend(groupAttend);
+        System.out.println(i);
+    }
+
+    @Test
+    public void updateByTeamSysNo() throws ParseException {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date parse = dateFormat.parse("2019-08-07 16:36:00");
+        Date dateBegin = TimeUtil.getDateBegin(parse);
+        Date dateEnd = TimeUtil.getDateEnd(new Date());
+        int i = groupAttendMapper.updateByTeamSysNo(1562649811, 2.3, -1, 1, dateBegin, dateEnd);
         System.out.println(i);
     }
 

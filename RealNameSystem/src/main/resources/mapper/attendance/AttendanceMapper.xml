@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.real.name.record.service.repository.AttendanceMapper">
-    <resultMap id="personWorkRecord" type="com.real.name.record.entity.PersonWorkRecord">
+    <resultMap id="personWorkRecord" type="com.real.name.record.query.PersonWorkRecord">
         <id property="projectDetailId" column="project_detail_id"/>
         <result property="personId" column="p_person_id"/>
         <result property="personName" column="person_name"/>
@@ -39,9 +39,16 @@
     </sql>
 
     <sql id="foreachProjectIds">
-        <foreach collection="projectDetailIds" item="project_detail_id" open="(" close=")" separator=",">
-            #{project_detail_id}
-        </foreach>
+        <choose>
+            <when test="projectDetailIds != null and projectDetailIds.size() != 0">
+                <foreach collection="projectDetailIds" item="project_detail_id" open="(" close=")" separator=",">
+                    #{project_detail_id}
+                </foreach>
+            </when>
+            <otherwise>
+                (null)
+            </otherwise>
+        </choose>
     </sql>
 
     <insert id="saveAttendance" keyColumn="attendance_id"
@@ -61,6 +68,39 @@
         )
     </insert>
 
+    <update id="updateAttendanceByAttendanceId" useGeneratedKeys="true">
+        update
+          attendance
+        <set>
+            <if test="attendance.workHours != null">
+                work_hours = #{attendance.workHours},
+            </if>
+            <if test="attendance.workTime != null">
+                work_time = #{attendance.workTime},
+            </if>
+            <if test="attendance.startTime != null">
+                start_time = #{attendance.startTime},
+            </if>
+            <if test="attendance.endTime != null">
+                end_time = #{attendance.endTime},
+            </if>
+            <if test="attendance.status != null">
+                status = #{attendance.status},
+            </if>
+        </set>
+        where
+          attendance_id = #{attendance.attendanceId}
+    </update>
+
+    <select id="findByAttendanceId" resultType="com.real.name.record.entity.Attendance">
+        select
+          *
+        from
+          attendance
+        where
+          attendance_id = #{attendanceId}
+    </select>
+
     <select id="getPeriodWorkHoursInPIds" resultType="double">
         select
           ifnull(sum(work_hours),0.0)
@@ -68,9 +108,7 @@
           attendance
         where
           project_detail_id in
-        <foreach collection="projectDetailIds" item="project_detail_id" open="(" close=")" separator=",">
-            #{project_detail_id}
-        </foreach>
+        <include refid="foreachProjectIds"/>
         and
           work_time &gt; #{startTime}
         and

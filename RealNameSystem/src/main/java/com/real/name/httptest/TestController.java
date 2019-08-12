@@ -1,12 +1,11 @@
 package com.real.name.httptest;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.real.name.common.annotion.JSON;
 import com.real.name.common.annotion.JSONS;
 import com.real.name.common.filter.CustomerJsonSerializer;
-import com.real.name.common.filter.JacksonJsonFilter;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.schedule.entity.FaceRecordData;
 import com.real.name.common.schedule.entity.Records;
@@ -17,15 +16,13 @@ import com.real.name.device.entity.Device;
 import com.real.name.person.entity.Person;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.service.repository.ProjectDetailQueryMapper;
-import org.omg.CORBA.OBJ_ADAPTER;
+import com.real.name.record.query.PeriodTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.xml.transform.Result;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -95,9 +92,26 @@ public class TestController {
     private WebSocket webSocket;
 
     /**
+     * 测试时间段
+     */
+    @PostMapping("/testPeriodTime")
+    public ResultVo testPeriodTime(@RequestParam("periodTimes") String periodTimesStr) {
+        List<PeriodTime> periodTimes;
+        try {
+            periodTimes = JSONArray.parseArray(periodTimesStr, PeriodTime.class);
+        } catch (Exception e) {
+            return ResultVo.failure();
+        }
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        for (PeriodTime periodTime : periodTimes) {
+            System.out.println(dateFormat.format(new Date(periodTime.getStartTime())));
+            System.out.println(dateFormat.format(new Date(periodTime.getEndTime())));
+        }
+        return ResultVo.success();
+    }
+
+    /**
      * get方法测试
-     *
-     * @return
      */
     @GetMapping("testGet")
     public ResultVo testGet(String name, String password, Integer gender) {

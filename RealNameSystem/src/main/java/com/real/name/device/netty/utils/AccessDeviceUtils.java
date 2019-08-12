@@ -1,7 +1,7 @@
 package com.real.name.device.netty.utils;
 
 import com.alibaba.fastjson.JSONObject;
-import com.real.name.common.info.CommConstant;
+import com.real.name.common.constant.CommConstant;
 import com.real.name.common.utils.JedisService;
 import com.real.name.common.websocket.WebSocket;
 import com.real.name.device.entity.Device;

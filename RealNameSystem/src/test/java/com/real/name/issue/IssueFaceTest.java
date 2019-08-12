@@ -3,7 +3,7 @@ package com.real.name.issue;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.real.name.common.info.DeviceConstant;
+import com.real.name.common.constant.DeviceConstant;
 import com.real.name.device.entity.Device;
 import com.real.name.issue.entity.IssueFace;
 import com.real.name.issue.service.IssueFaceService;
@@ -12,9 +12,7 @@ import com.real.name.others.BaseTest;
 import com.real.name.person.entity.Person;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.notification.Failure;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.config.RepositoryConfigurationUtils;
 
 import java.util.List;
 

@@ -110,4 +110,17 @@ public class PersonQueryTest extends BaseTest {
         System.out.println(integer);
     }
 
+    @Test
+    public void findRemovePerson() {
+        Person removePerson = mapper.findRemovePerson(89);
+        System.out.println(removePerson);
+    }
+
+    @Test
+    public void findRemovePersonInGroup() {
+        List<Person> removePersonInGroup = mapper.findRemovePersonInGroup(1563331590, "36bj84W235Zgc8O78yuS32510ppMkHfe");
+        System.out.println(removePersonInGroup);
+    }
+
+
 }

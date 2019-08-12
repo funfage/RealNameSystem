@@ -1,19 +1,18 @@
 package com.real.name.others;
 
+import com.alibaba.fastjson.JSONObject;
 import com.real.name.auth.entity.Role;
 import com.real.name.auth.entity.User;
-import com.real.name.auth.service.AuthUtils;
-import com.real.name.common.utils.PathUtil;
 import com.real.name.common.utils.TimeUtil;
 import com.real.name.common.utils.XSSFExcelUtils;
 import com.real.name.device.netty.model.AccessResponse;
 import com.real.name.device.netty.utils.ConvertUtils;
-import com.real.name.record.entity.ProjectWorkRecord;
+import com.real.name.project.entity.Project;
+import com.real.name.record.query.ProjectWorkRecord;
+import com.real.name.subcontractor.entity.SubContractor;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.sql.Time;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -23,8 +22,35 @@ public class MyTest {
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public static void main(String[] args) throws Exception {
-        Date monthBefore = TimeUtil.getMonthBefore();
-        System.out.println(dateFormat.format(monthBefore));
+        SubContractor subContractor = new SubContractor();
+        subContractor.setSubContractorId(2);
+        subContractor.setCorpCode("100dfdf");
+        subContractor.setCorpName("dfdf");
+        subContractor.setBankCode("dfd");
+        subContractor.setBankName("bankName");
+        subContractor.setBankLinkNumber("dfdf");
+        subContractor.setBankNumber("dfd");
+        subContractor.setCreateTime(new Date());
+        subContractor.setEntryTime(new Date());
+        subContractor.setExitTime(new Date());
+        subContractor.setPmIdCardNumber("df");
+        subContractor.setPmName("dere");
+        subContractor.setPmPhone("dfd");
+        Project project = new Project();
+        project.setProjectCode("44010620190510008");
+        subContractor.setProject(project);
+        subContractor.setUploadStatus(1);
+        String s = JSONObject.toJSONString(subContractor);
+        System.out.println(s);
+    }
+
+    public static void testdateBeginEnd() throws ParseException {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = dateFormat.parse("2019-08-06 12:23:44");
+        Date dateBegin = TimeUtil.getDateBegin(date);
+        Date dateEnd = TimeUtil.getDateEnd(date);
+        System.out.println(dateFormat.format(dateBegin));
+        System.out.println(dateFormat.format(dateEnd));
     }
 
     public static void exportFileTest() throws ParseException, IOException {

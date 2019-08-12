@@ -2,13 +2,10 @@ package com.real.name.person.service;
 
 import com.real.name.common.result.ResultVo;
 import com.real.name.person.entity.Person;
-import com.real.name.person.entity.Person2;
-import com.real.name.person.entity.Person3;
 import com.real.name.person.entity.PersonQuery;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -21,6 +18,22 @@ public interface PersonService {
      * 删除设备人员信息
      */
     void deleteDevicesPersonInfo(Person person);
+
+    /**
+     * 将人员从项目中移除
+     */
+    void removePersonInProject(Person person, String projectCode);
+
+    /**
+     *查询移除人员的信息
+     */
+    Person findRemovePerson(Integer personId);
+
+    /**
+     * 查询班组下的需要移除的人员信息
+     */
+    List<Person> findRemovePersonInGroup(Integer teamSysNo, String projectCode);
+
 
     /**
      * 更新设备人员信息
@@ -74,12 +87,6 @@ public interface PersonService {
      * @param personIds 人员id
      */
     List<Person> findPersons(List<Integer> personIds);
-
-    /**
-     * 查询项目中的人员
-     * @param personIds 人员id
-     */
-    List<Person2> findPersons2(List<Integer> personIds);
 
     /**
      * 查询人员
@@ -142,6 +149,8 @@ public interface PersonService {
      * 获取人员首页数据
      */
     Map<String, Object> getPersonMainPageInfo();
+
+
 
 
 

@@ -3,8 +3,8 @@ package com.real.name.device.netty.utils;
 
 import com.alibaba.druid.support.json.JSONUtils;
 import com.alibaba.fastjson.JSONObject;
-import com.real.name.common.info.CommConstant;
-import com.real.name.common.info.DeviceConstant;
+import com.real.name.common.constant.CommConstant;
+import com.real.name.common.constant.DeviceConstant;
 import com.real.name.common.schedule.entity.FaceRecordData;
 import com.real.name.common.utils.HTTPTool;
 import com.real.name.common.websocket.WebSocket;

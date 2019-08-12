@@ -45,12 +45,6 @@ public class PersonTest extends BaseTest {
         System.out.println(personPage.getContent());
     }
 
-    @Test
-    public void findPersons2() {
-        List<Integer> personIds = new ArrayList<>();
-        personIds.add(76);
-        personService.findPersons2(personIds);
-    }
 
     @Test
     public void testGetPersonAllByWorkRole(){

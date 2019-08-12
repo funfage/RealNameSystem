@@ -1,9 +1,11 @@
 package com.real.name.common.schedule;
 
-import com.real.name.common.info.CommConstant;
-import com.real.name.common.info.DeviceConstant;
+import com.real.name.common.constant.CommConstant;
+import com.real.name.common.constant.DeviceConstant;
 import com.real.name.common.schedule.entity.FaceRecordData;
 import com.real.name.common.schedule.entity.Records;
+import com.real.name.common.utils.FileTool;
+import com.real.name.common.utils.PathUtil;
 import com.real.name.common.utils.TimeUtil;
 import com.real.name.device.entity.Device;
 import com.real.name.device.netty.utils.FaceDeviceUtils;
@@ -23,16 +25,8 @@ import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.ProjectDetailService;
 import com.real.name.project.service.repository.ProjectDetailQueryMapper;
 import com.real.name.project.service.repository.ProjectQueryMapper;
-import com.real.name.project.service.repository.ProjectRepository;
-import com.real.name.record.entity.Attendance;
-import com.real.name.record.entity.GroupAttend;
-import com.real.name.record.entity.ProjectAttend;
-import com.real.name.record.entity.Record;
-import com.real.name.record.service.AttendanceService;
-import com.real.name.record.service.repository.AttendanceMapper;
-import com.real.name.record.service.repository.GroupAttendMapper;
-import com.real.name.record.service.repository.ProjectAttendMapper;
-import com.real.name.record.service.repository.RecordMapper;
+import com.real.name.record.entity.*;
+import com.real.name.record.service.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +36,6 @@ import org.springframework.stereotype.Component;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 public class ScheduledTasks {
@@ -88,42 +81,44 @@ public class ScheduledTasks {
     @Autowired
     private ProjectQueryMapper projectQueryMapper;
 
+    @Autowired
+    private PersonAttendMapper personAttendMapper;
+
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     /**
-     * 每天凌晨零点的时候触发每隔10分钟执行一次 共执行六次
+     * 每天11点的时候触发每隔5分钟执行一次 共执行6次
      * springboot的cron表达式只值支持6个域的表达式，也就是不能设定年
      * 核对每个员工的考勤情况
      */
-    @Scheduled(cron = "0 0,10,20,30,40,50 0 * * ?")
+    @Scheduled(cron = "0 0,5,10,15,20,25 23 * * ?")
     public void checkFaceAttendance() {
         logger.warn("总召定时任务开始");
-        //获取所有人员
-        List<Person> personList = personService.findAllPersonRole();
-        //获取所有的人脸设备
-        List<Device> allFaceDevice = deviceService.findAllByDeviceType(DeviceConstant.faceDeviceType);
-        for (Person person : personList) {
-            //查询用户所在的项目
-            List<String> projectCodes = projectDetailQueryService.getProjectIdsByPersonId(person.getPersonId());
-            if (person.getWorkRole() == null) {
-                //什么都不做
-                continue;
-            } else if (person.getWorkRole() == 10) {//如果是管理人员则查询所有设备的识别信息
-                queryFaceRecord(allFaceDevice, person);
-            } else if (person.getWorkRole() == 20) {//如果是普通人员则查询项目所绑定的设备的识别信息
-                //获取该项目所绑定所有人脸设备
-                List<Device> faceDeviceList = deviceService.findByProjectCodeInAndDeviceType(projectCodes, DeviceConstant.faceDeviceType);
-                queryFaceRecord(faceDeviceList, person);
+        try {
+            //获取所有人员
+            List<Person> personList = personService.findAllPersonRole();
+            //获取所有的人脸设备
+            List<Device> allFaceDevice = deviceService.findAllByDeviceType(DeviceConstant.faceDeviceType);
+            for (Person person : personList) {
+                //查询用户所在的项目
+                List<String> projectCodes = projectDetailQueryService.getProjectCodeListByPersonId(person.getPersonId());
+                if (person.getWorkRole() == null) {
+                    //什么都不做
+                } else if (person.getWorkRole() == 10) {//如果是管理人员则查询所有设备的识别信息
+                    queryFaceRecord(allFaceDevice, person);
+                } else if (person.getWorkRole() == 20) {//如果是普通人员则查询项目所绑定的设备的识别信息
+                    //获取该项目所绑定所有人脸设备
+                    List<Device> faceDeviceList = deviceService.findByProjectCodeInAndDeviceType(projectCodes, DeviceConstant.faceDeviceType);
+                    queryFaceRecord(faceDeviceList, person);
+                }
             }
+        } catch (Exception e) {
+            logger.warn("定时总召任务出现异常，e{}", e);
         }
         logger.warn("总召定时任务结束");
 
     }
-
-    /**
-     *
-     */
 
     /**
      * 查询指定设备一天内某个人员的识别记录
@@ -149,6 +144,7 @@ public class ScheduledTasks {
                             Person selectPerson = personService.findPersonNameByPersonId(person.getPersonId());
                             if (selectPerson != null) {
                                 //若查询记录为空则将从设备查询的记录插入数据库
+                                logger.warn("保存了一条未添加的考勤识别记录");
                                 recordMapper.saveRecord(new Record(device.getDeviceId(), device.getDeviceType(), selectPerson.getPersonId(),
                                         selectPerson.getPersonName(), faceRecord.getTime(), new Date(faceRecord.getTime()) ,faceRecord.getType(),
                                         faceRecord.getPath(), device.getDirection(), device.getChannel()));
@@ -163,7 +159,7 @@ public class ScheduledTasks {
     /**
      * 从第5秒开始每隔15秒查询控制器下发失败的信息
      */
-    @Scheduled(cron = "0/30 * * * * ?")
+    @Scheduled(cron = "5/60 * * * * ?")
     public void queryFailAccess() {
         List<IssueAccess> issueFailAccess = issueAccessService.findIssueFailAccess();
         for (IssueAccess issueAccess : issueFailAccess) {
@@ -175,9 +171,9 @@ public class ScheduledTasks {
     }
 
     /**
-     * 从第30秒开始每隔30秒重发控制器下发失败的信息
+     * 从第30秒开始每隔60秒重发控制器下发失败的信息
      */
-    @Scheduled(cron = "30/30 * * * * ?")
+    @Scheduled(cron = "30/60 * * * * ?")
     public void resendFailAccess() {
         List<IssueAccess> issueAccessList = issueAccessService.findIssueFailAccess();
         for (IssueAccess issueAccess : issueAccessList) {
@@ -188,9 +184,9 @@ public class ScheduledTasks {
     }
 
     /**
-     * 每天晚上11点统计工人的工时
+     * 每天晚上11点半统计工人的工时
      */
-    @Scheduled(cron = "0 0 23 * * ?")
+    @Scheduled(cron = "0 30 23 * * ?")
     public void countWorkTime() {
         logger.warn("统计工时定时任务开始");
         try {
@@ -228,13 +224,17 @@ public class ScheduledTasks {
                                 while (++i < todayRecord.size() && todayRecord.get(i).getDirection() == 2) {
 
                                 }
+                                long time2;
                                 if (i == todayRecord.size()) {
-                                    long time2 = todayRecord.get(i - 1).getTimeNumber();
+                                    time2 = todayRecord.get(i - 1).getTimeNumber();
                                     totalTime += time2 - time1;
                                 } else {
-                                    long time2 = todayRecord.get(--i).getTimeNumber();
+                                    time2 = todayRecord.get(--i).getTimeNumber();
                                     totalTime += time2 - time1;
                                 }
+                                //保存人员完整的一次进的记录
+                                personAttendMapper.savePersonAttend(new PersonAttend(new Person(personId), new Date(time1), direction1));
+                                personAttendMapper.savePersonAttend(new PersonAttend(new Person(personId), new Date(time2), direction2));
                             }
                         }
                         if (totalTime < 0) { // 算法异常
@@ -254,17 +254,17 @@ public class ScheduledTasks {
                 attendanceMapper.saveAttendance(attendance);
             }
         } catch (Exception e) {
-            logger.error("统计工时出现异常, e:{}", e);
+            logger.warn("统计工时出现异常, e:{}", e);
         }
         logger.warn("统计工时定时任务结束");
     }
 
     /**
-     * 每天晚上11点10分统计班组每日的总工时,考勤次数和异常次数
+     * 每天晚上11点10分统计班组和项目每日的总工时,考勤次数和异常次数
      */
-    @Scheduled(cron = "0 10 23 * * ?")
-    public void countGroupTime() {
-        logger.warn("统计班组工时定时任务开始");
+    @Scheduled(cron = "0 40 23 * * ?")
+    public void countGroupAndProjectAttend() {
+        logger.warn("统计班组和项目每日的总工时定时任务开始");
         try {
             Date todayBegin = TimeUtil.getTodayBegin();
             Date todayEnd = TimeUtil.getTodayEnd();
@@ -272,7 +272,7 @@ public class ScheduledTasks {
             List<String> allProjectCode = projectQueryMapper.findAllProjectCode();
             for (String projectCode : allProjectCode) {
                 //查询该项目下所有班组信息
-                List<ProjectDetailQuery> groupList = projectDetailQueryService.getWorkerGroupInProject(projectCode);
+                List<ProjectDetailQuery> groupList = projectDetailQueryMapper.getWorkerGroupInProject(projectCode);
                 //统计班组相关考勤数据
                 for (ProjectDetailQuery projectDetailQuery : groupList) {
                     WorkerGroup workerGroup = projectDetailQuery.getWorkerGroup();
@@ -309,18 +309,18 @@ public class ScheduledTasks {
                 projectAttendMapper.saveProjectAttend(projectAttend);
             }
         } catch (Exception e) {
-            logger.error("统计班组工时出现异常, e:{}", e);
+            logger.warn("统计班组工时出现异常, e:{}", e);
         }
-        logger.warn("统计班组工时定时任务结束");
+        logger.warn("统计班组和项目每日的总工时定时任务结束");
     }
 
     /**
-     * 每天晚上十点开始执行,每隔10分钟执行一次,共六次
+     * 第一次延迟1小时后执行，之后按fixedRate的规则30分钟执行一次
      * 查询某个人员在某个设备的权限,并删除已有的权限
      */
-    @Scheduled(cron = "0 0,10,20,30,40,50 10 * * ? ")
+    @Scheduled(initialDelay = 1000 * 3600, fixedRate = 1000 * 1800)
     public void confirmDelAuthority() {
-        logger.warn("查询控制器权限定时任务开始");
+        logger.warn("查询权限定时任务开始");
         try {
             List<DeleteInfo> deleteInfoList = deleteInfoMapper.findAll();
             for (DeleteInfo deleteInfo : deleteInfoList) {
@@ -338,13 +338,20 @@ public class ScheduledTasks {
                 }
             }
         } catch (Exception e) {
-            logger.error("控制器权限出现异常, e:{}", e);
+            logger.warn("控制器权限出现异常, e:{}", e);
         }
-        logger.warn("查询控制器权限定时任务结束");
+        logger.warn("查询权限定时任务结束");
     }
 
-
-
+    /**
+     * 凌晨两点定时把生成的报表删除
+     */
+    @Scheduled(cron = "0 0 2 * * ?")
+    public void deleteExcelFiles() {
+        logger.warn("清除报表定时任务开始");
+        FileTool.deleteFile(PathUtil.getExcelFilePath(), "");
+        logger.warn("清除报表定时任务结束");
+    }
 
 }
 

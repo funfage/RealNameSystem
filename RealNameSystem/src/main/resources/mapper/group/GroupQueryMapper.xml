@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.real.name.group.service.repository.GroupQueryMapper">
-    <resultMap id="queryMap" type="com.real.name.group.entity.WorkerGroup">
+    <resultMap id="WorkerGroup" type="com.real.name.group.entity.WorkerGroup">
         <id property="teamSysNo" column="team_sys_no"/>
         <result property="projectCode" column="project_code"/>
+        <result property="subContractorId" column="sub_contractor_id"/>
         <result property="teamName" column="team_name"/>
         <result property="corpCode" column="corp_code"/>
         <result property="corpName" column="corp_name"/>
@@ -18,15 +19,83 @@
         <result property="responsiblePersonIdCardType" column="responsible_person_id_card_type"/>
         <result property="responsiblePersonName" column="responsible_person_name"/>
         <result property="responsiblePersonPhone" column="responsible_person_phone"/>
+        <result property="uploadStatus" column="upload_status"/>
+        <result property="groupStatus" column="group_status"/>
+    </resultMap>
+
+    <resultMap id="GroupQuery" type="com.real.name.group.query.GroupQuery">
+        <id property="teamSysNo" column="team_sys_no"/>
+        <result property="projectCode" column="project_code"/>
+        <result property="subContractorId" column="sub_contractor_id"/>
+        <result property="teamName" column="team_name"/>
+        <result property="corpCode" column="corp_code"/>
+        <result property="corpName" column="corp_name"/>
+        <result property="entryAttachments" column="entry_attachments"/>
+        <result property="entryTime" column="entry_time"/>
+        <result property="exitAttachments" column="exit_attachments"/>
+        <result property="exitTime" column="exit_time"/>
+        <result property="isAdminGroup" column="is_admin_group"/>
+        <result property="remark" column="remark"/>
+        <result property="responsiblePersonIdCardType" column="responsible_person_id_card_type"/>
+        <result property="responsiblePersonIdNumber" column="responsible_person_id_number"/>
+        <result property="responsiblePersonIdCardType" column="responsible_person_id_card_type"/>
+        <result property="responsiblePersonName" column="responsible_person_name"/>
+        <result property="responsiblePersonPhone" column="responsible_person_phone"/>
+        <result property="uploadStatus" column="upload_status"/>
+        <result property="groupStatus" column="group_status"/>
+        <association property="subContractor" javaType="com.real.name.subcontractor.entity.SubContractor">
+            <id property="subContractorId" column="sub_contractor_id"/>
+            <result property="corpName" column="sc_corp_name"/>
+            <result property="corpCode" column="sc_corp_code"/>
+        </association>
     </resultMap>
 
     <sql id="groupSql">
-        wg.team_sys_no, wg.project_code, wg.corp_code, wg.corp_name, wg.team_name, wg.responsible_person_name,
+        wg.team_sys_no, wg.project_code, wg.sub_contractor_id, wg.corp_code, wg.corp_name, wg.team_name, wg.responsible_person_name,
         wg.responsible_person_phone, wg.responsible_person_id_card_type, wg.responsible_person_id_number,
-        wg.remark, wg.entry_time, wg.exit_time, wg.entry_attachments, wg.exit_attachments, wg.is_admin_group
+        wg.remark, wg.entry_time, wg.exit_time, wg.entry_attachments, wg.exit_attachments, wg.is_admin_group,
+        wg.upload_status, wg.group_status
+    </sql>
+    <sql id="subContractorSql">
+        sc.sub_contractor_id, sc.corp_code as sc_corp_code, sc.corp_name as sc_corp_name
     </sql>
 
-    <select id="searchGroup" resultMap="queryMap">
+    <select id="judgeExistByTeamNameAndSubContractor" resultType="integer">
+        select
+          1
+        from
+          worker_group
+        where
+          team_name = #{teamName}
+        and
+          sub_contractor_id = #{subContractorId}
+        limit
+          1
+    </select>
+
+    <select id="findByProjectCode" resultMap="GroupQuery">
+        select
+        <include refid="groupSql"/>,
+        <include refid="subContractorSql"/>
+        from
+          worker_group wg
+        left join sub_contractor sc on wg.sub_contractor_id = sc.sub_contractor_id
+        where
+          wg.project_code = #{projectCode}
+    </select>
+
+    <select id="judgeExistAdminGroupByProjectCode" resultType="integer">
+        select
+          1
+        from
+          worker_group
+        where
+          is_admin_group = 1
+        and
+          project_code = #{projectCode}
+    </select>
+
+    <select id="searchGroup" resultMap="GroupQuery">
         select
         <include refid="groupSql"/>
         from
@@ -39,6 +108,33 @@
                 and wg.project_code = #{groupQuery.projectCode}
             </if>
         </where>
+    </select>
+
+    <delete id="deleteByTeamSysNo" parameterType="integer">
+        delete from
+          worker_group
+        where
+          team_sys_no = #{teamSysNo}
+    </delete>
+
+    <update id="setProGroupRemoveStatus">
+        update
+          worker_group
+        set
+          group_status = 0
+        where
+          team_sys_no = #{teamSysNo}
+    </update>
+
+    <select id="findRemoveGroupInContract" parameterType="integer" resultMap="WorkerGroup">
+        select
+          wg.team_sys_no
+        from
+          worker_group wg
+        where
+          wg.sub_contractor_id = #{subContractorId}
+        and
+          group_status = 1
     </select>
 
 </mapper>

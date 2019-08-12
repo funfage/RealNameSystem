@@ -1,34 +1,13 @@
 package com.real.name.group.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.real.name.common.entity.forNational.Worker;
-import com.real.name.project.entity.Project;
-import com.real.name.project.entity.ProjectPersonDetail;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.util.Date;
-import java.util.List;
-/*
-
-@NamedNativeQuery(
-        name = "test",
-        query = "select team_name, project_code from w worker_group where w.team_sys_no =:teamSysNo",
-        resultSetMapping = "testresult"
-)
-@SqlResultSetMapping(
-        name = "testresult",
-        entities = {
-                @EntityResult(entityClass = WorkerGroup.class,
-                fields = {
-                        @FieldResult(name = "teamSysNo", column = "team_sys_no"),
-                        @FieldResult(name = "projectCode", column = "project_code"),
-                })
-        }
-)
-*/
 
 /**
  * 班组
@@ -36,6 +15,7 @@ import java.util.List;
 @Entity
 @Setter
 @Getter
+@ToString
 public class WorkerGroup {
 
     /**
@@ -48,6 +28,11 @@ public class WorkerGroup {
      * 项目编码
      */
     private String projectCode;
+
+    /**
+     * 参建单位id
+     */
+    private Integer subContractorId;
 
     /**
      * 班组所在企业统一社会信用代码，如果无统一社会信用代码，则用组织机构代码
@@ -89,16 +74,30 @@ public class WorkerGroup {
      */
     private String remark;
 
-    /*@JsonIgnore
-    @OneToMany(mappedBy = "workerGroup", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
-    private List<ProjectPersonDetail> projectPersonDetails;*/
-
     private Date entryTime;
+
     private Date exitTime;
+
     private String entryAttachments;
+
     private String exitAttachments;
+
     //是否是管理员班组
     private Integer isAdminGroup;
+
+    /**
+     * 是否上传到全国平台
+     * 1是
+     * 0否
+     */
+    private Integer uploadStatus;
+
+    /**
+     * 是否已经移除
+     * 1未被移除
+     * 0被移除
+     */
+    private Integer groupStatus;
 
     public WorkerGroup() {
     }
@@ -107,24 +106,4 @@ public class WorkerGroup {
         this.teamSysNo = teamSysNo;
     }
 
-    @Override
-    public String toString() {
-        return "WorkerGroup{" +
-                "teamSysNo=" + teamSysNo +
-                ", projectCode='" + projectCode + '\'' +
-                ", corpCode='" + corpCode + '\'' +
-                ", corpName='" + corpName + '\'' +
-                ", teamName='" + teamName + '\'' +
-                ", responsiblePersonName='" + responsiblePersonName + '\'' +
-                ", responsiblePersonPhone='" + responsiblePersonPhone + '\'' +
-                ", responsiblePersonIdCardType=" + responsiblePersonIdCardType +
-                ", responsiblePersonIdNumber='" + responsiblePersonIdNumber + '\'' +
-                ", remark='" + remark + '\'' +
-                ", entryTime=" + entryTime +
-                ", exitTime=" + exitTime +
-                ", entryAttachments='" + entryAttachments + '\'' +
-                ", exitAttachments='" + exitAttachments + '\'' +
-                ", isAdminGroup=" + isAdminGroup +
-                '}';
-    }
 }

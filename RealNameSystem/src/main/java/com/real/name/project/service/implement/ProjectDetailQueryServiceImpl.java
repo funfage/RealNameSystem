@@ -1,17 +1,16 @@
 package com.real.name.project.service.implement;
 
-import com.real.name.group.entity.WorkerGroup;
 import com.real.name.person.entity.Person;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.query.GroupPersonNum;
 import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.repository.ProjectDetailQueryMapper;
-import com.real.name.record.entity.Attendance;
 import com.real.name.record.service.repository.AttendanceMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,9 +18,6 @@ public class ProjectDetailQueryServiceImpl implements ProjectDetailQueryService 
 
     @Autowired
     private ProjectDetailQueryMapper projectDetailQueryMapper;
-
-    @Autowired
-    private AttendanceMapper attendanceMapper;
 
     @Override
     public List<ProjectDetailQuery> findOtherAdmins(String projectCode, String groupCorpCode) {
@@ -39,8 +35,8 @@ public class ProjectDetailQueryServiceImpl implements ProjectDetailQueryService 
     }
 
     @Override
-    public List<String> getProjectIdsByPersonId(Integer personId) {
-        List<String> projectCodes = projectDetailQueryMapper.getProjectIdsByPersonId(personId);
+    public List<String> getProjectCodeListByPersonId(Integer personId) {
+        List<String> projectCodes = projectDetailQueryMapper.getProjectCodeListByPersonId(personId);
         return projectCodes.stream().distinct().collect(Collectors.toList());
     }
 
@@ -117,10 +113,12 @@ public class ProjectDetailQueryServiceImpl implements ProjectDetailQueryService 
     @Override
     public boolean judgeEmptyById(Integer id) {
         Integer queryId = projectDetailQueryMapper.getIdWhileExists(id);
-        if (queryId != null && queryId >= 0) {
-            return false;
-        }
-        return true;
+        return queryId == null || queryId <= 0;
+    }
+
+    @Override
+    public int setProPersonRemoveStatus(Integer personId, String projectCode) {
+        return projectDetailQueryMapper.setProPersonRemoveStatus(personId, projectCode);
     }
 
 }

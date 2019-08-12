@@ -12,6 +12,13 @@ public interface GroupAttendMapper {
 
     int saveGroupAttend(GroupAttend groupAttend);
 
+    int updateByTeamSysNo(@Param("teamSysNo") Integer teamSysNo,
+                          @Param("hours") double hours,
+                          @Param("attendNum") Integer attendNum,
+                          @Param("errAttendNum") Integer errAttendNum,
+                          @Param("startTime") Date startTime,
+                          @Param("endTime") Date endTime);
+
     Double countGroupHoursInPeriod(@Param("teamSysNo") Integer teamSysNo, @Param("begin") Date begin, @Param("end") Date end);
 
     List<GroupAttend> getGroupAttendPeriodInfo(@Param("teamSysNo") Integer teamSysNo, @Param("begin") Date begin, @Param("end") Date end);

@@ -175,7 +175,7 @@ public class ShiroConfig {
         mySessionManager.setSessionValidationSchedulerEnabled(true);
         //设置session失效的扫描时间 单位毫秒, 清理用户直接关闭浏览器造成的孤立会话 默认为 1个小时, 这里设置为4小时
         //设置该属性 就不需要设置 ExecutorServiceSessionValidationScheduler 底层也是默认自动调用ExecutorServiceSessionValidationScheduler
-        mySessionManager.setSessionValidationInterval(1000 * 3600 * 4);
+        mySessionManager.setSessionValidationInterval(1000 * 3600 * 6);
         return mySessionManager;
     }
 

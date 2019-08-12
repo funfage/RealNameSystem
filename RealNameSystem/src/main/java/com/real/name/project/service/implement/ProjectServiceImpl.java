@@ -126,4 +126,10 @@ public class ProjectServiceImpl implements ProjectService {
         }
     }
 
+    @Override
+    public boolean judgeEmptyByProjectCode(String projectCode) {
+        Integer integer = projectQueryMapper.judgeEmptyByProjectCode(projectCode);
+        return integer == null || integer <= 0;
+    }
+
 }

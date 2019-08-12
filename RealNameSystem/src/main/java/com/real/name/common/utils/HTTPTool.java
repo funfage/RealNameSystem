@@ -1,7 +1,7 @@
 package com.real.name.common.utils;
 
 import com.real.name.common.exception.AttendanceException;
-import com.real.name.common.info.DeviceConstant;
+import com.real.name.common.constant.DeviceConstant;
 import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
@@ -175,7 +175,7 @@ public class HTTPTool {
         headers.setContentType(type);
         try {
             ResponseEntity<String> exchange = httpTool.restTemplate.exchange(baseUrl, HttpMethod.GET, entity, String.class, params);
-            //logger.info("GetRequest Body:{}", exchange.getBody());
+            //logger.constant("GetRequest Body:{}", exchange.getBody());
             return exchange.getBody();
         } catch (RestClientException e) {
             logger.error("postUrlForParam error e:{}", e.getMessage());

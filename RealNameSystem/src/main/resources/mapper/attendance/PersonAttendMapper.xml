@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.real.name.record.service.repository.PersonAttendMapper">
+    <resultMap id="query" type="com.real.name.record.entity.PersonAttend">
+        <id property="personAttendId" column="person_attend_id"/>
+        <result property="entryExitTime" column="entry_exit_time"/>
+        <result property="direction" column="direction"/>
+        <result property="uploadStatus" column="upload_status"/>
+        <association property="person" javaType="com.real.name.person.entity.Person">
+            <result property="idCardNumber" column="id_card_number"/>
+            <result property="idCardType" column="id_card_type"/>
+        </association>
+    </resultMap>
+
+    <insert id="savePersonAttend" keyProperty="personAttend.personAttendId"
+            keyColumn="person_attend_id" useGeneratedKeys="true">
+        insert into
+          person_attend
+          (entry_exit_time, person_id, direction)
+        values
+          (#{personAttend.entryExitTime}, #{personAttend.person.personId}, #{personAttend.direction})
+    </insert>
+
+    <delete id="deletePersonAttendInOneDay">
+        delete from
+          person_attend
+        where
+          person_id = #{personId}
+        and
+          entry_exit_time &gt;= #{dayStart}
+        and
+          entry_exit_time &lt;= #{dayEnd}
+    </delete>
+
+</mapper>

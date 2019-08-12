@@ -1,13 +1,11 @@
 package com.real.name.device.service.implement;
 
-import com.real.name.common.info.DeviceConstant;
+import com.real.name.common.constant.DeviceConstant;
 import com.real.name.common.utils.JedisService;
 import com.real.name.device.entity.Device;
 import com.real.name.issue.service.DeleteInfoService;
 import com.real.name.record.entity.Record;
-import com.real.name.device.netty.UDPClient;
 import com.real.name.device.netty.utils.ConvertUtils;
-import com.real.name.device.service.AccessService;
 import com.real.name.device.service.AccessType;
 import com.real.name.device.service.DeviceService;
 import com.real.name.record.service.RecordService;

@@ -1,36 +1,31 @@
 package com.real.name.record.controller;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
+import com.alibaba.fastjson.JSONArray;
 import com.real.name.common.annotion.JSON;
 import com.real.name.common.annotion.JSONS;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
-import com.real.name.common.utils.PageUtils;
 import com.real.name.common.utils.TimeUtil;
 import com.real.name.common.utils.XSSFExcelUtils;
 import com.real.name.group.entity.WorkerGroup;
-import com.real.name.person.entity.Person;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.ProjectService;
 import com.real.name.record.entity.*;
-import com.real.name.record.query.ProjectAttendQuery;
+import com.real.name.record.query.*;
 import com.real.name.record.service.AttendanceService;
 import com.real.name.record.service.GroupAttendService;
+import com.real.name.record.service.PersonAttendService;
 import com.real.name.record.service.ProjectAttendService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.sql.Time;
 import java.util.*;
 
 @RestController
@@ -53,6 +48,60 @@ public class AttendanceController {
 
     @Autowired
     private ProjectAttendService projectAttendService;
+
+    @Autowired
+    private PersonAttendService personAttendService;
+
+    /**
+     * 修改人员考勤信息，只有超级管理员可以操作
+     */
+    @Transactional
+    @PostMapping("/modifyAttend")
+    public ResultVo modifyAttend(@RequestParam("personId") Integer personId,
+                                 @RequestParam("projectCode") String projectCode,
+                                 @RequestParam("teamSysNo") Integer teamSysNo,
+                                 @RequestParam("workDate") Date workDate,
+                                 @RequestParam("attendanceId") Long attendanceId,
+                                 @RequestParam("periodTimes") String periodTimesStr) {
+        List<PeriodTime> periodTimes;
+        try {
+            periodTimes = JSONArray.parseArray(periodTimesStr, PeriodTime.class);
+        } catch (Exception e) {
+            logger.error("json转换为PeriodTime数组失败");
+            return ResultVo.failure();
+        }
+        //计算工时
+        long totalTime = 0L;
+        Long minTime = Long.MAX_VALUE;
+        Long maxTime = 0L;
+        for (PeriodTime periodTime : periodTimes) {
+            Long startTime = periodTime.getStartTime();
+            Long endTime = periodTime.getEndTime();
+            if (startTime == null || endTime == null) {
+                throw new AttendanceException(ResultError.PERIOD_TIME_NULL);
+            } else if (startTime <= endTime) {
+                totalTime += periodTime.getEndTime() - periodTime.getStartTime();
+            } else {
+                throw new AttendanceException(ResultError.PERIOD_TIME_ERROR);
+            }
+            if (minTime > startTime) {
+                minTime = startTime;
+            }
+            if (maxTime < endTime) {
+                maxTime = endTime;
+            }
+        }
+        //修改人员出勤情况，并重新统计项目和班组当日考勤情况
+        attendanceService.updateAndRecountAttendByAdmin(attendanceId, TimeUtil.getHours(totalTime),
+                new Date(minTime), new Date(maxTime), projectCode, teamSysNo);
+        //删除人员当天的打卡记录
+        Date dateBegin = TimeUtil.getDateBegin(workDate);
+        Date dateEnd = TimeUtil.getDateEnd(workDate);
+        personAttendService.deletePersonAttendInOneDay(personId, dateBegin, dateEnd);
+        //重新生成打卡记录
+        personAttendService.createPersonAttendInOnDay(personId, periodTimes);
+        return ResultVo.success();
+    }
 
     /**
      * 查询某个人员的姓名,身份证,所属单位,班组名,工种 以及每天的工作时长
@@ -105,8 +154,8 @@ public class AttendanceController {
      */
     @GetMapping("/getPersonWorkDay")
     public ResultVo getPersonWorkDay(@RequestParam("projectCode") String projectCode,
-                                     Date startDate,
-                                     Date endDate,
+                                     @RequestParam(value = "startDate", required = false) Date startDate,
+                                     @RequestParam(value = "endDate", required = false) Date endDate,
                                      @RequestParam(value = "pageNum", defaultValue = "0") Integer pageNum,
                                      @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
         if (startDate == null) {
@@ -229,8 +278,8 @@ public class AttendanceController {
      */
     @GetMapping("exportRecords")
     public ResultVo exportRecords(@RequestParam("startDate") Date startDate,
-                                     @RequestParam("endDate") Date endDate,
-                                     @RequestParam("projectCode") String projectCode) {
+                                  @RequestParam("endDate") Date endDate,
+                                  @RequestParam("projectCode") String projectCode) {
         List<PersonWorkRecord> personPeriodWorkInfoInProject = attendanceService.findPersonPeriodWorkInfoInProject(startDate, endDate, projectCode);
         ProjectWorkRecord projectWorkRecord = createProjectWorkRecord(startDate, endDate, projectCode, personPeriodWorkInfoInProject);
         List<String> headList = new ArrayList<>();

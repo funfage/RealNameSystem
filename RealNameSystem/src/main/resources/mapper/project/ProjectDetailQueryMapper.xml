@@ -119,6 +119,16 @@
         p.work_role, p.work_type
     </sql>
 
+    <sql id="personSqlWithImage">
+        p.person_id as p_person_id, p.person_name, p.subordinate_company, p.corp_code as p_corp_code, p.gender, p.address as p_address, p.age, p.bank_link_number, p.card_number,
+        p.cell_phone, p.culture_level_type, p.expiry_date, p.grant_org, p.group_no, p.has_bad_medical_history,
+        p.has_buy_insurance, p.hometown, p.id_card_index, p.id_card_number, p.id_card_type, p.issue_card_date,
+        p.issue_card_pic, p.is_team_leader, p.joined_time, p.marital_status, p.nation, p.negative_id_card_image,
+        p.pay_roll_bank_card_number, p.pay_roll_bank_name, p.pay_roll_top_bank_code, p.politics_type, p.positive_id_card_image,
+        p.specialty, p.start_date as p_start_date, p.suffix_name, p.urgent_link_man, p.urgent_link_man_phone, p.head_image, p.work_date,
+        p.work_role, p.work_type
+    </sql>
+
     <sql id="workerGroupSql">
         wg.team_sys_no as wg_team_sys_no, wg.project_code as wg_project_code, wg.corp_code, wg.corp_name, wg.team_name, wg.responsible_person_name,
         wg.responsible_person_phone, wg.responsible_person_id_card_type, wg.responsible_person_id_number, 
@@ -165,7 +175,7 @@
           pd.project_code = #{projectCode}
     </select>
 
-    <select id="getProjectIdsByPersonId" resultType="string">
+    <select id="getProjectCodeListByPersonId" resultType="string">
         select
         distinct
           project_code
@@ -216,9 +226,10 @@
         select
           wg.team_name
         from
-          project_detail pd
-        left join worker_group wg on pd.team_sys_no = wg.team_sys_no
+          project_detail pd, worker_group wg
         where
+          pd.team_sys_no = wg.team_sys_no
+        and
           pd.project_code = #{projectCode}
         and
           pd.person_id = #{personId}
@@ -284,7 +295,7 @@
           project_detail pd
         left join worker_group wg on wg.team_sys_no = pd.team_sys_no
         where
-          pd.project_code = #{projectCode};
+          pd.project_code = #{projectCode}
     </select>
 
     <select id="getProjectDetailIdByGroup" resultType="integer">
@@ -383,6 +394,17 @@
         where
           project_code = #{projectCode}
     </select>
+
+   <update id="setProPersonRemoveStatus">
+       update
+          project_detail
+        set
+          person_status = 0
+        where
+          person_id = #{personId}
+        and
+          project_code = #{projectCode}
+   </update>
 
 </mapper>
 

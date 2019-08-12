@@ -1,9 +1,8 @@
 package com.real.name.device.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.real.name.common.info.CommConstant;
-import com.real.name.common.info.DeviceConstant;
-import com.real.name.common.utils.CommonUtils;
+import com.real.name.common.constant.CommConstant;
+import com.real.name.common.constant.DeviceConstant;
 import com.real.name.common.utils.HTTPTool;
 import com.real.name.common.utils.JedisService;
 import com.real.name.common.utils.TimeUtil;

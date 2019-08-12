@@ -28,7 +28,7 @@ public interface ProjectDetailQueryService {
     /**
      * 获取所在的所有项目id
      */
-    List<String> getProjectIdsByPersonId(Integer personId);
+    List<String> getProjectCodeListByPersonId(Integer personId);
 
 
     /**
@@ -102,5 +102,10 @@ public interface ProjectDetailQueryService {
      * false 记录存在
      */
     boolean judgeEmptyById(Integer id);
+
+    /**
+     * 设置项目人员移除标识
+     */
+    int setProPersonRemoveStatus(Integer personId, String projectCode);
 
 }

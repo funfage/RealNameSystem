@@ -224,6 +224,9 @@ public class Person {
 
     /**
      * 是否上传到全国平台
+     * 1，上传成功
+     * 0，未上传
+     * -1，修改未上传
      */
     private Integer uploadStatus;
 

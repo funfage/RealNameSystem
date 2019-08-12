@@ -2,13 +2,9 @@ package com.real.name.project.service;
 
 import com.real.name.project.entity.Project;
 import com.real.name.project.query.ProjectQuery;
-import org.apache.ibatis.annotations.Param;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public interface ProjectService {
 
@@ -73,5 +69,9 @@ public interface ProjectService {
      */
     List<Map<String, String>> getProjectCodeAndNameByUserRole();
 
+    /**
+     * 根据项目编码判断项目是否存在
+     */
+    boolean judgeEmptyByProjectCode(String projectCode);
 
 }

@@ -18,6 +18,11 @@ public class DeleteInfoServiceImpl implements DeleteInfoService {
     }
 
     @Override
+    public int deleteByPersonId(Integer personId) {
+        return deleteInfoMapper.deleteByPersonId(personId);
+    }
+
+    @Override
     public int deleteByCondition(Integer personId, String deviceId) {
         return deleteInfoMapper.deleteByCondition(personId, deviceId);
     }

@@ -26,7 +26,7 @@ public interface ProjectRepository extends JpaRepository<Project, String> {
     *//**
      * 查询项目名和公司名
      *//*
-    @Query(value = "select new com.real.name.project.entity.Project(p.name, p.contractorCorpName) from Project p where p.projectCode = ?1")
+    @Query(value = "select new com.real.name.project.query.Project(p.name, p.contractorCorpName) from Project p where p.projectCode = ?1")
     Project findProNameAndCorp(String projectCode);//
 
     *//**

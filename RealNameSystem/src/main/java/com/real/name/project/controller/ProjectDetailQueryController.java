@@ -2,7 +2,7 @@ package com.real.name.project.controller;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.real.name.common.info.CommConstant;
+import com.real.name.common.constant.CommConstant;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.HTTPTool;

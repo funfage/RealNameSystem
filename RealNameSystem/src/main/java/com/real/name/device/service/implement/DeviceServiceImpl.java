@@ -1,7 +1,7 @@
 package com.real.name.device.service.implement;
 
 import com.real.name.common.exception.AttendanceException;
-import com.real.name.common.info.DeviceConstant;
+import com.real.name.common.constant.DeviceConstant;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.utils.JedisService;
 import com.real.name.device.entity.Device;
@@ -22,7 +22,6 @@ import com.real.name.issue.service.IssueFaceService;
 import com.real.name.person.entity.Person;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.service.ProjectDetailQueryService;
-import com.real.name.record.entity.Attendance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -203,6 +202,9 @@ public class DeviceServiceImpl implements DeviceService {
             deleteInfo.setPerson(person);
             deleteInfo.setDevice(device);
             deleteInfo.setStatus(0);
+            //将原先的记录删除
+            deleteInfoService.deleteByCondition(person.getPersonId(), device.getDeviceId());
+            //保存新的记录
             deleteInfoService.saveDeleteInfo(deleteInfo);
             if (device.getDeviceType() == DeviceConstant.faceDeviceType) {
                 //删除人脸设备的人员信息
@@ -215,6 +217,23 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Override
+    public Map<String, Object> getMainPageDeviceInfo() {
+        //获取设备总数量
+        //从redis获取在线设备数量
+        int onDeviceNum = jedisKeys.keys(DeviceConstant.OnlineDevice + "*").size();
+        Integer totalDeviceNum = deviceQueryMapper.getFaceDeviceNumber();
+        Map<String, Object> map = new HashMap<>();
+        map.put("onDeviceNum", onDeviceNum);
+        map.put("totalDeviceNum", totalDeviceNum);
+        return map;
+    }
+
+    @Override
+    public Device save(Device device) {
+        return deviceRepository.save(device);
+    }
+
+    @Override
     public List<Device> findByProjectCode(String projectCode) {
         return deviceRepository.findByProjectCode(projectCode);
     }
@@ -224,29 +243,10 @@ public class DeviceServiceImpl implements DeviceService {
         return deviceRepository.findById(deviceId);
     }
 
-    @Override
-    public Device save(Device device) {
-        return deviceRepository.save(device);
-    }
 
     @Override
     public List<Device> findAll() {
         return deviceRepository.findAll();
-    }
-
-    @Override
-    public List<Device> findAvailableDevice() {
-        return deviceRepository.findByProjectCodeNotNull();
-    }
-
-    @Override
-    public List<Device> findDutouOfmenjin(String projectId, Integer deciceType) {
-        return deviceRepository.findByProjectCodeAndDeviceType(projectId, deciceType);
-    }
-
-    @Override
-    public boolean existsDeviceByDeviceId(String deviceId) {
-        return deviceRepository.existsDeviceByDeviceId(deviceId);
     }
 
     @Override
@@ -255,8 +255,8 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Override
-    public List<Device> findByProjectCodeAndDeviceType(String projectId, Integer deciceType) {
-        return deviceRepository.findByProjectCodeAndDeviceType(projectId, deciceType);
+    public List<Device> findByProjectCodeAndDeviceType(String projectId, Integer deviceType) {
+        return deviceRepository.findByProjectCodeAndDeviceType(projectId, deviceType);
     }
 
     @Override
@@ -299,17 +299,7 @@ public class DeviceServiceImpl implements DeviceService {
         return deviceQueryMapper.findIPByProjectCode(projectCode);
     }
 
-    @Override
-    public Map<String, Object> getMainPageDeviceInfo() {
-        //获取设备总数量
-        //从redis获取在线设备数量
-        int onDeviceNum = jedisKeys.keys(DeviceConstant.OnlineDevice + "*").size();
-        Integer totalDeviceNum = deviceQueryMapper.getFaceDeviceNumber();
-        Map<String, Object> map = new HashMap<>();
-        map.put("onDeviceNum", onDeviceNum);
-        map.put("totalDeviceNum", totalDeviceNum);
-        return map;
-    }
+
 
     /**
      * 判断输入的控制器信息是否合法

@@ -25,7 +25,12 @@ public interface DeleteInfoMapper {
     int deleteById(Long id);
 
     /**
-     *
+     * 根据人员id删除
+     */
+    int deleteByPersonId(@Param("personId") Integer personId);
+
+    /**
+     * 根据人员id和设备id删除
      */
     int deleteByCondition(@Param("personId") Integer personId, @Param("deviceId") String deviceId);
 

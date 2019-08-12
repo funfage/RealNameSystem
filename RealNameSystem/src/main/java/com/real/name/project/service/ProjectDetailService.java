@@ -18,32 +18,24 @@ public interface ProjectDetailService {
     ProjectDetail save(ProjectDetail projectDetail);
 
     /**
-     * 往项目中添加人员
-     * @param projectCode 项目id
+     * 将人员信息下发到人脸设备
      */
     void addPersonToFaceDevice(String projectCode, Person person, List<Device> projectFaceDevices, List<Device> allFaceDevices, String teamName);
 
+    /**
+     * 将人员下发到控制器
+     */
     void addPersonToAccessDevice(String projectCode, Person person, List<Device> projectAccessDevices, List<Device> allAccessDevices, String teamName);
 
-    /**
-     * 获取项目中的人员
-     * @param projectCode 项目id
-     */
-    Map<String, Object> getPersonInProject(String  projectCode, Pageable pageable);
 
     /**
-     * 根据人员id 获取项目信息
-     * @param personId 人员id
-     * @return 项目信息
+     * 根据projectCode和personId和teamSysNo查找
      */
-    Project getProjectFromPersonId(Integer personId);
+    Optional<ProjectDetail> findByProjectCodeAndPersonIdAndTeamSysNo(String projectCode, Integer personId, Integer teamSysNo);
 
-    Optional<ProjectDetail> findByTeamSysNoAndPersonId(Integer teamSysNo, Integer personId);
-
-    Optional<ProjectDetail> findByProjectCodeAndPersonId(String projectId, Integer personId);
-
-    Optional<ProjectDetail> findByProjectCodeAndPersonIdAndTeamSysNo(String projectId, Integer personId, Integer teamSysNo);
-
+    /**
+     * 查询所有
+     */
     List<ProjectDetail> findAll();
 
 

@@ -83,6 +83,9 @@ public interface ProjectQueryMapper {
     Integer getProjectYedAttendErrNumber(@Param("startTime") Date startTime,
                                          @Param("endTime") Date endTime);
 
-
+    /**
+     * 根据项目编码判断项目是否存在
+     */
+    Integer judgeEmptyByProjectCode(@Param("projectCode") String projectCode);
 
 }

@@ -1,7 +1,6 @@
 package com.real.name.project.service.repository;
 
 import com.real.name.person.entity.Person;
-import com.real.name.project.entity.ProjectDetail;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.query.GroupPersonNum;
 import org.apache.ibatis.annotations.Mapper;
@@ -9,7 +8,6 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface ProjectDetailQueryMapper {
@@ -33,7 +31,7 @@ public interface ProjectDetailQueryMapper {
     /**
      * 查询用户所在的项目的所有id
      */
-    List<String> getProjectIdsByPersonId(Integer personId);
+    List<String> getProjectCodeListByPersonId(Integer personId);
 
     /**
      * 获取推送给浏览器的数据
@@ -132,5 +130,11 @@ public interface ProjectDetailQueryMapper {
      * 通过项目id获取所有project_detail_id
      */
     List<Integer> getIdsByProjectCode(@Param("projectCode") String projectCode);
+
+    /**
+     * 设置项目人员移除标识
+     */
+    int setProPersonRemoveStatus(@Param("personId") Integer personId,
+                              @Param("projectCode") String projectCode);
 
 }

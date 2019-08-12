@@ -23,6 +23,18 @@ public interface PersonQueryMapper {
     Person findByPersonId(Integer personId);
 
     /**
+     *查询移除人员的信息
+     */
+    Person findRemovePerson(Integer personId);
+
+    /**
+     * 查询班组下的需要移除的人员信息
+     */
+    List<Person> findRemovePersonInGroup(@Param("teamSysNo") Integer teamSysNo,
+                                         @Param("projectCode") String projectCode);
+
+
+    /**
      * 查询所在项目的人员信息
      */
     List<Person> findAllPersonInProjects(@Param("projectCodeList") Set<String> projectCodeList);

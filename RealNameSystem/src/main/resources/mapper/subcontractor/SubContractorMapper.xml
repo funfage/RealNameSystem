@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.real.name.subcontractor.service.repository.SubContractorMapper">
+    <resultMap id="SubContractor" type="com.real.name.subcontractor.entity.SubContractor">
+        <id property="subContractorId" column="sub_contractor_id"/>
+        <result property="corpCode" column="corp_code"/>
+        <result property="corpName" column="corp_name"/>
+        <result property="corpType" column="corp_type"/>
+        <result property="entryTime" column="entry_time"/>
+        <result property="exitTime" column="exit_time"/>
+        <result property="bankCode" column="bank_code"/>
+        <result property="bankName" column="bank_name"/>
+        <result property="bankNumber" column="bank_number"/>
+        <result property="bankLinkNumber" column="bank_link_number"/>
+        <result property="pmName" column="pm_name"/>
+        <result property="pmIdCardNumber" column="pm_id_card_number"/>
+        <result property="pmPhone" column="pm_phone"/>
+        <result property="createTime" column="create_time"/>
+        <result property="contractorStatus" column="contractor_status"/>
+        <result property="uploadStatus" column="upload_status"/>
+        <association property="project" javaType="com.real.name.project.entity.Project">
+            <id property="projectCode" column="project_code"/>
+            <result property="name" column="name"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="SubContractorQuery" type="com.real.name.subcontractor.query.SubContractorQuery">
+        <id property="subContractorId" column="sub_contractor_id"/>
+        <result property="corpCode" column="corp_code"/>
+        <result property="corpName" column="corp_name"/>
+        <result property="corpType" column="corp_type"/>
+        <result property="entryTime" column="entry_time"/>
+        <result property="exitTime" column="exit_time"/>
+        <result property="bankCode" column="bank_code"/>
+        <result property="bankName" column="bank_name"/>
+        <result property="bankNumber" column="bank_number"/>
+        <result property="bankLinkNumber" column="bank_link_number"/>
+        <result property="pmName" column="pm_name"/>
+        <result property="pmIdCardNumber" column="pm_id_card_number"/>
+        <result property="pmPhone" column="pm_phone"/>
+        <result property="createTime" column="create_time"/>
+        <result property="contractorStatus" column="contractor_status"/>
+        <result property="uploadStatus" column="upload_status"/>
+        <result property="contractSignRate" column="contract_sign_rate"/>
+        <association property="project" javaType="com.real.name.project.entity.Project">
+            <id property="projectCode" column="project_code"/>
+            <result property="name" column="name"/>
+        </association>
+    </resultMap>
+
+    <sql id="subContractorQuerySql">
+        sub_contractor_id, corp_code, corp_name, corp_type, project_code, entry_time, exit_time, bank_code, bank_name, bank_number, bank_link_number,
+        pm_name, pm_id_card_number, pm_phone, contractor_status, upload_status
+    </sql>
+
+    <insert id="saveSubContractor" parameterType="com.real.name.subcontractor.entity.SubContractor"
+            keyColumn="sub_contractor_id" keyProperty="subContractorId" useGeneratedKeys="true">
+        insert into
+          sub_contractor
+          (corp_code, corp_name, corp_type, project_code, entry_time, exit_time, bank_code, bank_name, bank_number, bank_link_number,
+          pm_name, pm_id_card_number, pm_phone)
+        values
+          (#{subContractor.corpCode}, #{subContractor.corpName}, #{subContractor.corpType}, #{subContractor.project.projectCode}, #{subContractor.entryTime},
+          #{subContractor.exitTime}, #{subContractor.bankCode}, #{subContractor.bankName}, #{subContractor.bankNumber}, #{subContractor.bankLinkNumber},
+          #{subContractor.pmName}, #{subContractor.pmIdCardNumber}, #{subContractor.pmPhone})
+    </insert>
+
+    <update id="updateSubContractorById" useGeneratedKeys="true">
+        update
+          sub_contractor
+        <set>
+            <if test="subContractor.corpCode != null">
+                corp_code = #{subContractor.corpCode},
+            </if>
+            <if test="subContractor.corpName != null">
+                corp_name = #{subContractor.corpName},
+            </if>
+            <if test="subContractor.corpType != null">
+                corp_type = #{subContractor.corpType},
+            </if>
+            <if test="subContractor.project != null and subContractor.project.projectCode != null">
+                project_code = #{subContractor.project.projectCode},
+            </if>
+            <if test="subContractor.entryTime != null">
+                entry_time = #{subContractor.entryTime},
+            </if>
+            <if test="subContractor.exitTime != null">
+                exit_time = #{subContractor.exitTime},
+            </if>
+            <if test="subContractor.bankCode != null">
+                bank_code = #{subContractor.bankCode},
+            </if>
+            <if test="subContractor.bankName != null">
+                bank_name = #{subContractor.bankName},
+            </if>
+            <if test="subContractor.bankNumber != null">
+                bank_number = #{subContractor.bankNumber},
+            </if>
+            <if test="subContractor.bankLinkNumber != null">
+                bank_link_number = #{subContractor.bankLinkNumber},
+            </if>
+            <if test="subContractor.pmName != null">
+                pm_name = #{subContractor.pmName},
+            </if>
+            <if test="subContractor.pmIdCardNumber != null">
+                pm_id_card_number = #{subContractor.pmIdCardNumber},
+            </if>
+            <if test="subContractor.pmPhone != null">
+                pm_phone = #{subContractor.pmPhone},
+            </if>
+            <if test="subContractor.uploadStatus != null">
+                upload_status = #{subContractor.uploadStatus},
+            </if>
+        </set>
+        where
+          sub_contractor_id = #{subContractor.subContractorId}
+    </update>
+
+    <select id="findByProjectCode" resultMap="SubContractorQuery">
+        select
+          sub_contractor_id, corp_code, corp_name, corp_type, project_code, entry_time, exit_time, bank_code, bank_name, bank_number, bank_link_number,
+          pm_name, pm_id_card_number, pm_phone, contractor_status, upload_status
+        from
+          sub_contractor
+        where
+          project_code = #{projectCode}
+    </select>
+
+    <select id="findById" resultMap="SubContractorQuery">
+        select
+          <include refid="subContractorQuerySql"/>
+        from
+          sub_contractor
+        where
+          sub_contractor_id = #{subContractorId}
+    </select>
+
+    <select id="judgeEmptyById" resultType="integer">
+        select
+          1
+        from
+          sub_contractor
+        where
+          sub_contractor_id = #{subContractorId}
+        limit
+          1
+    </select>
+
+    <update id="setProSubContractorRemoveStatus">
+        update
+          sub_contractor
+        set
+          contractor_status = 0
+        where
+          sub_contractor_id = #{subContractorId}
+    </update>
+
+</mapper>

@@ -1,5 +1,6 @@
 package com.real.name.record.service.repository;
 
+import com.real.name.record.entity.Attendance;
 import com.real.name.record.entity.ProjectAttend;
 import com.real.name.record.query.ProjectAttendQuery;
 import org.apache.ibatis.annotations.Mapper;
@@ -43,6 +44,16 @@ public interface ProjectAttendMapper {
      * 保存项目考勤信息
      */
     int saveProjectAttend(@Param("projectAttend") ProjectAttend projectAttend);
+
+    /**
+     * 根据projectCode修改项目某日考勤信息
+     */
+    int updateByProjectCode(@Param("projectCode") String projectCode,
+                            @Param("hours") Double hours,
+                            @Param("attendNum") Integer attendNum,
+                            @Param("errAttendNum") Integer errAttendNum,
+                            @Param("startTime") Date startTime,
+                            @Param("endTime") Date endTime);
 
     /**
      * 按照项目总人数升序

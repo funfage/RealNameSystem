@@ -136,5 +136,11 @@ public class ProjectTest extends BaseTest {
         System.out.println(projectCodeAndName);
     }
 
+    @Test
+    public void judgeEmptyByProjectCode() {
+        Integer integer = projectQueryMapper.judgeEmptyByProjectCode("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        System.out.println(integer);
+    }
+
 
 }

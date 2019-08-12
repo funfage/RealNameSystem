@@ -13,15 +13,4 @@ import java.util.Optional;
 
 public interface GroupRepository extends JpaRepository<WorkerGroup, Integer> {
 
-      Optional<WorkerGroup> findByTeamName(String teamName);
-
-      List<WorkerGroup> findByProjectCode(String projectCode);
-
-      Optional<WorkerGroup> findByIsAdminGroup(Integer status);
-
-      Optional<WorkerGroup> findByIsAdminGroupAndProjectCode(Integer status, String projectCode);
-
-      @Modifying
-      @Transactional
-      int deleteByTeamSysNo(Integer teamSysNo);
 }
