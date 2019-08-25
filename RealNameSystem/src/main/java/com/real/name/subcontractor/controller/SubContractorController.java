@@ -1,5 +1,7 @@
 package com.real.name.subcontractor.controller;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.real.name.common.annotion.JSON;
@@ -11,16 +13,23 @@ import com.real.name.common.utils.PageUtils;
 import com.real.name.project.entity.Project;
 import com.real.name.project.service.ProjectService;
 import com.real.name.subcontractor.entity.SubContractor;
+import com.real.name.subcontractor.query.GroupPeople;
+import com.real.name.subcontractor.query.SubContractorQuery;
 import com.real.name.subcontractor.service.SubContractorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.xml.ws.RequestWrapper;
 import java.util.List;
 
 @RestController
 @RequestMapping("subContractor")
 public class SubContractorController {
+
+    private Logger logger = LoggerFactory.getLogger(SubContractor.class);
 
     @Autowired
     private SubContractorService subContractorService;
@@ -60,28 +69,88 @@ public class SubContractorController {
     }
 
     /**
+     * 将参建单位重新加入项目
+     */
+    @PostMapping("/contractorReJoinToProject")
+    public ResultVo contractorReJoinToProject(@RequestParam("projectCode") String projectCode,
+                                              @RequestParam("subContractorId") Integer subContractorId,
+                                              @RequestParam("groupPeopleList") String groupPeopleListStr) {
+        List<GroupPeople> groupPeopleList;
+        try {
+            groupPeopleList = JSONArray.parseArray(groupPeopleListStr, GroupPeople.class);
+        } catch (Exception e) {
+            logger.error("json字符串groupPeopleListStr转换错误");
+            return ResultVo.failure();
+        }
+        subContractorService.contractorReJoinToProject(projectCode, subContractorId, groupPeopleList);
+        return ResultVo.success();
+    }
+
+    /**
+     * 查询参建单位的企业名称
+     * @param status 1为查询所有 否则为查询未被移除的参建单位
+     */
+    @GetMapping("/findCorpName")
+    @JSON(type = SubContractorQuery.class, include = "subContractorId,corpCode,corpName")
+    public ResultVo findCorpName(@RequestParam("projectCode") String projectCode,
+                                 @RequestParam(name = "status", defaultValue = "1") Integer status) {
+        if (status == 1) {
+            List<SubContractorQuery> subContractorList = subContractorService.findCorpName(projectCode, 1);
+            return ResultVo.success(subContractorList);
+        } else {
+            List<SubContractorQuery> subContractorList = subContractorService.findCorpName(projectCode, 0);
+            return ResultVo.success(subContractorList);
+        }
+    }
+
+    /**
      * 查询项目中的参建单位
      * @param status 为1时查询所有 否则为分页查询
      */
     @GetMapping("/findSubContractorInPro")
     @JSONS({
-            @JSON(type = Project.class, include = "projectCode"),
-            @JSON(type = SubContractor.class, filter = "uploadStatus,createTime")
+            @JSON(type = SubContractorQuery.class, filter = "uploadStatus,createTime"),
+            @JSON(type = Project.class, include = "projectCode,name")
     })
     public ResultVo findSubContractor(@RequestParam("projectCode") String  projectCode,
                                       @RequestParam(name = "status", defaultValue = "1") Integer status,
                                       @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
                                       @RequestParam(name = "pageSize", defaultValue = "20") Integer pageSize) {
         if (status == 1) {
-            List<SubContractor> subContractorList = subContractorService.findByProjectCode(projectCode);
+            List<SubContractorQuery> subContractorList = subContractorService.findByProjectCode(projectCode);
             return ResultVo.success(subContractorList);
         } else {
             PageHelper.startPage(pageNum + 1, pageSize);
-            List<SubContractor> subContractorList = subContractorService.findByProjectCode(projectCode);
-            PageInfo<SubContractor> pageInfo = new PageInfo<>(subContractorList);
+            List<SubContractorQuery> subContractorList = subContractorService.findByProjectCode(projectCode);
+            PageInfo<SubContractorQuery> pageInfo = new PageInfo<>(subContractorList);
             return PageUtils.pageResult(pageInfo, subContractorList);
         }
     }
+
+    /**
+     * 查未被移除的参建单位信息
+     * @param status 为1时查询所有，否则为分页查询
+     */
+    @GetMapping("/findUnRmvContractInPro")
+    @JSONS({
+            @JSON(type = SubContractorQuery.class, filter = "uploadStatus,createTime"),
+            @JSON(type = Project.class, include = "projectCode,name")
+    })
+    public ResultVo findUnRmvContractInPro(@RequestParam("projectCode") String projectCode,
+                                           @RequestParam(value = "status", defaultValue = "1") Integer status,
+                                           @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
+                                           @RequestParam(name = "pageSize", defaultValue = "20") Integer pageSize) {
+        if (status == 1) {
+            List<SubContractorQuery> subContractorList = subContractorService.findUnRemoveInProject(projectCode);
+            return ResultVo.success(subContractorList);
+        } else {
+            PageHelper.startPage(pageNum + 1, pageSize);
+            List<SubContractorQuery> subContractorList = subContractorService.findUnRemoveInProject(projectCode);
+            PageInfo<SubContractorQuery> pageInfo = new PageInfo<>(subContractorList);
+            return PageUtils.pageResult(pageInfo, subContractorList);
+        }
+    }
+
 
     private void verify(SubContractor subContractor) {
         if (subContractor.getProject() == null || StringUtils.isEmpty(subContractor.getProject().getProjectCode())) {

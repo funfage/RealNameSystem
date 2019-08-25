@@ -41,7 +41,6 @@
         <result property="createTime" column="create_time"/>
         <result property="contractorStatus" column="contractor_status"/>
         <result property="uploadStatus" column="upload_status"/>
-        <result property="contractSignRate" column="contract_sign_rate"/>
         <association property="project" javaType="com.real.name.project.entity.Project">
             <id property="projectCode" column="project_code"/>
             <result property="name" column="name"/>
@@ -49,8 +48,9 @@
     </resultMap>
 
     <sql id="subContractorQuerySql">
-        sub_contractor_id, corp_code, corp_name, corp_type, project_code, entry_time, exit_time, bank_code, bank_name, bank_number, bank_link_number,
-        pm_name, pm_id_card_number, pm_phone, contractor_status, upload_status
+        sc.sub_contractor_id, sc.corp_code, sc.corp_name, sc.corp_type, sc.project_code, sc.entry_time, sc.exit_time, sc.bank_code,
+        sc.bank_name, sc.bank_number, sc.bank_link_number, sc.pm_name, sc.pm_id_card_number, sc.pm_phone, sc.contractor_status, sc.upload_status,
+        pj.project_code, pj.`name`
     </sql>
 
     <insert id="saveSubContractor" parameterType="com.real.name.subcontractor.entity.SubContractor"
@@ -111,28 +111,91 @@
             <if test="subContractor.uploadStatus != null">
                 upload_status = #{subContractor.uploadStatus},
             </if>
+            <if test="subContractor.contractorStatus != null">
+                contractor_status = #{subContractor.contractorStatus},
+            </if>
         </set>
         where
           sub_contractor_id = #{subContractor.subContractorId}
     </update>
 
-    <select id="findByProjectCode" resultMap="SubContractorQuery">
+    <select id="findCorpName" resultMap="SubContractorQuery">
         select
-          sub_contractor_id, corp_code, corp_name, corp_type, project_code, entry_time, exit_time, bank_code, bank_name, bank_number, bank_link_number,
-          pm_name, pm_id_card_number, pm_phone, contractor_status, upload_status
+          sub_contractor_id, corp_code, corp_name
         from
           sub_contractor
         where
           project_code = #{projectCode}
+        and
+          contractor_status = #{contractorStatus}
+    </select>
+
+    <select id="findByProjectCode" resultMap="SubContractorQuery">
+        select
+          <include refid="subContractorQuerySql"/>
+        from
+          sub_contractor sc, project pj
+        where
+          sc.project_code = #{projectCode}
+        and
+          pj.project_code = sc.project_code
+    </select>
+
+    <select id="findUnRemoveInProject" resultMap="SubContractorQuery">
+        select
+          <include refid="subContractorQuerySql"/>
+        from
+          sub_contractor sc, project pj
+        where
+          sc.project_code = #{projectCode}
+        and
+          pj.project_code = sc.project_code
+        and
+          sc.contractor_status = 1
     </select>
 
     <select id="findById" resultMap="SubContractorQuery">
         select
           <include refid="subContractorQuerySql"/>
         from
-          sub_contractor
+          sub_contractor sc, project pj
         where
-          sub_contractor_id = #{subContractorId}
+          sc.sub_contractor_id = #{subContractorId}
+        and
+          pj.project_code = sc.project_code
+    </select>
+
+    <select id="getPersonNumInContractor" resultType="integer">
+        select
+            count(pd.person_id)
+        from
+          sub_contractor sc,
+	      project_detail pd,
+	      worker_group wg
+        where
+          sc.sub_contractor_id = #{subContractorId}
+        and
+          sc.sub_contractor_id = wg.sub_contractor_id
+        and
+          wg.team_sys_no = pd.team_sys_no
+    </select>
+
+    <select id="getPersonContractSignNum" resultType="integer">
+        select
+          count(distinct(pd.person_id))
+        from
+          sub_contractor sc,
+          project_detail pd,
+          contract_info cf,
+          worker_group wg
+        where
+          sc.sub_contractor_id = #{subContractorId}
+        and
+          sc.sub_contractor_id = wg.sub_contractor_id
+        and
+          wg.team_sys_no = pd.team_sys_no
+        and
+          pd.id = cf.project_detail_id
     </select>
 
     <select id="judgeEmptyById" resultType="integer">
@@ -154,5 +217,7 @@
         where
           sub_contractor_id = #{subContractorId}
     </update>
+
+
 
 </mapper>

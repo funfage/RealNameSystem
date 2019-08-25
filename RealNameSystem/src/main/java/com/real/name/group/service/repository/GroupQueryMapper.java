@@ -12,15 +12,41 @@ import java.util.List;
 public interface GroupQueryMapper {
 
     /**
+     * 保存班组信息
+     */
+    int insertGroup(@Param("workerGroup") WorkerGroup workerGroup);
+
+    /**
+     * 修改班组信息
+     */
+    int updateWorkerGroup(@Param("workerGroup") WorkerGroup workerGroup);
+
+    /**
      * 根据teamName判断班组是否存在
      */
     Integer judgeExistByTeamNameAndSubContractor(@Param("teamName") String teamName,
                                                  @Param("subContractorId") Integer subContractorId);
 
     /**
+     * 查询所有班组信息
+     */
+    List<GroupQuery> findAll();
+
+    /**
+     * 根据id查询
+     */
+    GroupQuery findById(@Param("teamSysNo") Integer teamSysNo);
+
+    /**
      * 根据projectCode查询
      */
     List<GroupQuery> findByProjectCode(@Param("projectCode") String projectCode);
+
+    /**
+     * 根据projectCode和personId查询出对应的班组
+     */
+    WorkerGroup findByProjectCodeAndPersonId(@Param("projectCode") String projectCode,
+                                             @Param("personId") Integer personId);
 
     /**
      * 根据projectCode查询是否存在管理员班组
@@ -43,9 +69,43 @@ public interface GroupQueryMapper {
     int setProGroupRemoveStatus(@Param("teamSysNo") Integer teamSysNo);
 
     /**
+     * 获取某个参见单位下的班组
+     */
+    List<WorkerGroup> getUnRemoveGroupInContractor(@Param("subContractorId") Integer subContractorId);
+
+    /**
      * 查询参建单位下所有未移出项目的班组
      */
     List<WorkerGroup> findRemoveGroupInContract(@Param("subContractorId") Integer subContractorId);
 
+    /**
+     * 根据班组编号查询班组名称
+     */
+    String findTeamNameByTeamSysNo(@Param("teamSysNo") Integer teamSysNo);
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

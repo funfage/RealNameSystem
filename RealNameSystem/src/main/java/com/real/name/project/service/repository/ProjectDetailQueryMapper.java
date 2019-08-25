@@ -1,6 +1,7 @@
 package com.real.name.project.service.repository;
 
 import com.real.name.person.entity.Person;
+import com.real.name.project.entity.ProjectDetail;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.query.GroupPersonNum;
 import org.apache.ibatis.annotations.Mapper;
@@ -11,6 +12,11 @@ import java.util.List;
 
 @Mapper
 public interface ProjectDetailQueryMapper {
+
+    /**
+     * 保存一条人员班组项目绑定记录
+     */
+    int insertProjectDetail(@Param("projectDetailQuery") ProjectDetailQuery projectDetailQuery);
 
     /**
      * 获取其他项目的管理人员信息
@@ -134,7 +140,21 @@ public interface ProjectDetailQueryMapper {
     /**
      * 设置项目人员移除标识
      */
-    int setProPersonRemoveStatus(@Param("personId") Integer personId,
-                              @Param("projectCode") String projectCode);
+    int setProPersonStatus(@Param("personId") Integer personId,
+                           @Param("personStatus") Integer personStatus,
+                           @Param("projectCode") String projectCode);
+
+    /**
+     * 查询人员未被移除的记录
+     */
+    ProjectDetail findUnRemByProAndPersonId(@Param("projectCode") String projectCode,
+                                            @Param("personId") Integer personId);
+
+    /**
+     * 判断人员是否在指定的项目班组中
+     */
+    Integer judgePersonInProGroup(@Param("projectCode") String projectCode,
+                                  @Param("teamSysNo") Integer teamSysNo,
+                                  @Param("personId") Integer personId);
 
 }

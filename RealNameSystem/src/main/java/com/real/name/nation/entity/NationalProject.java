@@ -4,24 +4,28 @@ import lombok.Data;
 
 import java.util.List;
 
-/**
- * @Desc TODO
- * @Author fxy
- * @Date 2019/5/9 10:36
- **/
 @Data
 public class NationalProject {
     private String projectCode;
+    private String contractorCorpCode;
+    private String contractorCorpName;
+    private String name;
     private String description;
+    private String category;
     private String buildCorpName;
     private String buildCorpCode;
-    private String corpCode;
-    private String corpName;
+    //施工许可证。JSON 数组
+    private String builderLicenses;
     private String buildPlanNum;
     private String prjPlanNum;
+    private String areaCode;
     private Double invest;
     private Double buildingArea;
     private Double buildingLength;
+    //开工日期，精确到天，格式：yyyy-MM-dd
+    private String startDate;
+    //竣工日期，精确到天，格式：yyyy-MM-dd
+    private String completeDate;
     private String linkman;
     private String linkPhone;
     private String prjStatus;
@@ -34,10 +38,5 @@ public class NationalProject {
     private String propertyNum;
     private String functionNum;
     private String nationNum;
-    private List<Worker> contractList;
-    private List<Worker> dataList;
-    private Integer teamSysNo;
-    private String payMonth;
-    private List<NationalAttachment> attachments;
-    private List<Worker> detailList;
+
 }

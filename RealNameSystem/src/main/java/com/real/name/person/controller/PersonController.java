@@ -3,18 +3,22 @@ package com.real.name.person.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.real.name.common.annotion.JSON;
+import com.real.name.common.annotion.JSONS;
+import com.real.name.common.constant.DeviceConstant;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
+import com.real.name.common.utils.CommonUtils;
 import com.real.name.common.utils.FileTool;
+import com.real.name.common.utils.PageUtils;
 import com.real.name.common.utils.PathUtil;
+import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
-import com.real.name.issue.service.IssueFaceService;
 import com.real.name.person.entity.Person;
 import com.real.name.person.entity.PersonQuery;
 import com.real.name.person.service.PersonService;
-import com.real.name.project.service.ProjectDetailQueryService;
-import com.real.name.project.service.ProjectService;
+import com.real.name.person.service.repository.PersonQueryMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +44,9 @@ public class PersonController {
 
     @Autowired
     private PersonService personService;
+
+    @Autowired
+    private DeviceService deviceService;
 
 
     public PersonController() {
@@ -71,7 +78,7 @@ public class PersonController {
             throw AttendanceException.emptyMessage("照片");
         }
         //验证输入的参数是否正确
-        verifyPerson(person, imageFile);
+        verifyPerson(person);
         //设置图片信息给人员
         setImageInfoToPerson(person, imageFile);
         //保存人员信息到数据库
@@ -117,17 +124,6 @@ public class PersonController {
     }
 
     /**
-     * 将人员从项目中移除
-     */
-    @GetMapping("/removePersonInProject")
-    public ResultVo removePersonInProject(@RequestParam("personId") Integer personId,
-                                          @RequestParam("projectCode") String projectCode) {
-        Person person = personService.findRemovePerson(personId);
-        personService.removePersonInProject(person, projectCode);
-        return ResultVo.success();
-    }
-
-    /**
      * 修改员工信息
      * @param personStr 人员的json字符串
      */
@@ -148,7 +144,6 @@ public class PersonController {
         if (person.getWorkRole() == null) {
             throw AttendanceException.emptyMessage("workRole");
         }
-
         Optional<Person> personOptional = personService.findById(person.getPersonId());
         //人员不存在
         if(!personOptional.isPresent()){
@@ -166,22 +161,48 @@ public class PersonController {
         //合并信息
         mergePersonInfo(selectPerson, person);
         //校验输入的信息是否正确
-        verifyPerson(selectPerson, imageFile);
+        verifyPerson(selectPerson);
         //如果传入的照片信息不为空则重新保存照片
         if (!imageFile.isEmpty()) {
             setImageInfoToPerson(selectPerson, imageFile);
         }
         //修改本地工人信息
         Person updatePerson = personService.updatePerson(selectPerson);
-        if (updatePerson == null) {
-            throw new AttendanceException(ResultError.UPDATE_ERROR);
-        }
         //判断人员信息是否发生改变, 如果改变则重新下发信息到人脸设备
         personService.updateDevicesPersonInfo(updatePerson, oldName, oldWorkRole);
         //如果传入的照片信息不为空则重新下发照片信息到设备
         if (!imageFile.isEmpty()) {
             personService.updateDevicesImage(updatePerson);
         }
+        return ResultVo.success();
+    }
+
+    /**
+     * 将人员从项目中移除
+     */
+    @GetMapping("/removePersonInProject")
+    public ResultVo removePersonInProject(@RequestParam("personId") Integer personId,
+                                          @RequestParam("projectCode") String projectCode,
+                                          @RequestParam("teamSysNo") Integer teamSysNo) {
+        Person person = personService.findRemovePerson(personId);
+        personService.removePersonInProject(person, projectCode, teamSysNo);
+        return ResultVo.success();
+    }
+
+    /**
+     * 将人员加入项目
+     */
+    @PostMapping("/personJoinInProject")
+    public ResultVo personJoinInProject(@RequestParam("projectCode") String projectCode,
+                                        @RequestParam("teamSysNo") Integer teamSysNo,
+                                        @RequestParam("persons[]") List<Integer> personIds) {
+        //获取所有下发的设备
+        List<Device> allIssueDevice = deviceService.findAllIssueDevice();
+        //获取项目绑定的下发的设备
+        List<Device> allProjectIssueDevice = deviceService.findAllProjectIssueDevice(projectCode);
+        //查询所有人员信息
+        List<Person> personList = personService.findIssuePeopleImagesInfo(personIds);
+        personService.addPeopleToProject(projectCode, teamSysNo, personList, allIssueDevice, allProjectIssueDevice);
         return ResultVo.success();
     }
 
@@ -202,6 +223,42 @@ public class PersonController {
         return personService.findMainPagePerson(personId, pageNum, pageSize, workRole);
     }
 
+    /**
+     * 获取添加到项目的人员
+     * 人员过滤的条件是：1，如果不是管理员班组：与参建单位的CorpCode一致，并且没有参加其它项目（或者被移出项目的人员）的普通人员。
+     *                2，如果是管理员班组：与参建单位的CorpCode一致，并且不在本项目下（或者在该项目下但是已经被移除）的管理人员。
+     * @param isAdminGroup 1是管理员班组 0不是管理员班组
+     */
+    @GetMapping("/getPersonToAttendProject")
+    public ResultVo getPersonToAttendProject(@RequestParam("projectCode") String projectCode,
+                                             @RequestParam("corpCode") String corpCode,
+                                             @RequestParam(value = "isAdminGroup", defaultValue = "0") Integer isAdminGroup,
+                                             @RequestParam(value = "pageNum", defaultValue = "0") Integer pageNum,
+                                             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+        PageHelper.startPage(pageNum + 1, pageSize);
+        List<Person> personList = personService.getPersonToAttendProject(projectCode, corpCode, isAdminGroup);
+        PageInfo<Person> pageInfo = new PageInfo<>(personList);
+        return PageUtils.pageResult(pageInfo, personList);
+    }
+
+    /**
+     * 获取某个班组下未被移除的人员信息
+     * @param status 为1查询未被移除的人员信息 否则查询所有
+     */
+    @GetMapping("/getPersonInGroup")
+    @JSONS({
+            @JSON(type = Person.class, include = "personId,personName,subordinateCompany,corpCode,idCardNumber," +
+                    "isTeamLeader,workType,workRole,age,gender")
+    })
+    public ResultVo getPersonInGroup(@RequestParam("teamSysNo") Integer teamSysNo,
+                                     @RequestParam("projectCode") String projectCode,
+                                     @RequestParam(value = "status", defaultValue = "1") Integer status) {
+        return ResultVo.success(personService.getPersonInGroup(teamSysNo, projectCode, status));
+    }
+
+    /**
+     * 搜索人员信息
+     */
     @PostMapping("/searchPerson")
     public ResultVo searchPerson(PersonQuery personQuery) {
         PageHelper.startPage(personQuery.getPageNum() + 1, personQuery.getPageSize());
@@ -215,6 +272,11 @@ public class PersonController {
         return ResultVo.success(map);
     }
 
+    @GetMapping("/findExistCorpCode")
+    public ResultVo findExistCorpCode() {
+        return ResultVo.success(personService.findExistCorpCode());
+    }
+
     private void mergePersonInfo(Person selectPerson, Person person) {
         //非空值设置
         if(!StringUtils.isEmpty(person.getPersonName())){
@@ -223,6 +285,12 @@ public class PersonController {
         if (!StringUtils.isEmpty(person.getSubordinateCompany())) {
             selectPerson.setSubordinateCompany(person.getSubordinateCompany());
         }
+        if (!StringUtils.isEmpty(person.getCorpCode())) {
+            selectPerson.setCorpCode(person.getCorpCode());
+        }
+        if (person.getIsTeamLeader() != null) {
+            selectPerson.setIsTeamLeader(person.getIsTeamLeader());
+        }
         if(!StringUtils.isEmpty(person.getIdCardNumber())){
             //判断输入的身份证号码是否正确
             if (person.getIdCardNumber().trim().length() != 18) {
@@ -230,9 +298,90 @@ public class PersonController {
             }
             selectPerson.setIdCardNumber(person.getIdCardNumber());
         }
+        if (!StringUtils.isEmpty(person.getIdCardType())) {
+            selectPerson.setIdCardType(person.getIdCardType());
+        }
+        if (!StringUtils.isEmpty(person.getWorkType())) {
+            selectPerson.setWorkType(person.getWorkType());
+        }
+        if (person.getWorkRole() != null) {
+            selectPerson.setWorkRole(person.getWorkRole());
+        }
+        if (person.getIssueCardPic() != null) {
+            selectPerson.setIssueCardPic(person.getIssueCardPic());
+        }
+        if (!StringUtils.isEmpty(person.getCardNumber())) {
+            selectPerson.setCardNumber(person.getCardNumber());
+        }
+        if (!StringUtils.isEmpty(person.getPayRollBankCardNumber())) {
+            selectPerson.setPayRollBankCardNumber(person.getPayRollBankCardNumber());
+        }
+        if (!StringUtils.isEmpty(person.getPayRollBankName())) {
+            selectPerson.setPayRollBankName(person.getPayRollBankName());
+        }
+        if (!StringUtils.isEmpty(person.getBankLinkNumber())) {
+            selectPerson.setBankLinkNumber(person.getBankLinkNumber());
+        }
+        if (person.getPayRollTopBankCode() != null) {
+            selectPerson.setPayRollTopBankCode(person.getPayRollTopBankCode());
+        }
+        if (person.getHasBuyInsurance() != null) {
+            selectPerson.setHasBuyInsurance(person.getHasBuyInsurance());
+        }
+        if(!StringUtils.isEmpty(person.getNation())){
+            selectPerson.setNation(person.getNation());
+        }
+        if (person.getPoliticsType() != null) {
+            selectPerson.setPoliticsType(person.getPoliticsType());
+        }
+        if (person.getJoinedTime() != null) {
+            selectPerson.setJoinedTime(person.getJoinedTime());
+        }
         if(!StringUtils.isEmpty(person.getCellPhone())){
             //判断输入的电话号码是否正确
+            if (!CommonUtils.isRightPhone(person.getCellPhone())) {
+                throw new AttendanceException(ResultError.PHONE_ERROR);
+            }
             selectPerson.setCellPhone(person.getCellPhone());
+        }
+        if (person.getCultureLevelType() != null) {
+            selectPerson.setCultureLevelType(person.getCultureLevelType());
+        }
+        if (!StringUtils.isEmpty(person.getSpecialty())) {
+            selectPerson.setSpecialty(person.getSpecialty());
+        }
+        if(!StringUtils.isEmpty(person.getAge())){
+            selectPerson.setAge(person.getAge());
+        }
+        if (person.getHasBadMedicalHistory() != null) {
+            selectPerson.setHasBadMedicalHistory(person.getHasBadMedicalHistory());
+        }
+        if (!StringUtils.isEmpty(person.getUrgentLinkMan())) {
+            selectPerson.setUrgentLinkMan(person.getUrgentLinkMan());
+        }
+        if (!StringUtils.isEmpty(person.getUrgentLinkManPhone())) {
+            selectPerson.setUrgentLinkManPhone(person.getUrgentLinkManPhone());
+        }
+        if (person.getWorkDate() != null) {
+            selectPerson.setWorkDate(person.getWorkDate());
+        }
+        if (person.getMaritalStatus() != null) {
+            selectPerson.setMaritalStatus(person.getMaritalStatus());
+        }
+        if (person.getMaritalStatus() != null) {
+            selectPerson.setMaritalStatus(person.getMaritalStatus());
+        }
+        if (person.getGrantOrg() != null) {
+            selectPerson.setGrantOrg(person.getGrantOrg());
+        }
+        if (person.getPositiveIdCardImage() != null) {
+            selectPerson.setPositiveIdCardImage(person.getPositiveIdCardImage());
+        }
+        if (person.getStartDate() != null) {
+            selectPerson.setStartDate(person.getStartDate());
+        }
+        if (person.getExpiryDate() != null) {
+            selectPerson.setExpiryDate(person.getExpiryDate());
         }
         if(!StringUtils.isEmpty(person.getGender())){
             //判断输入的性别是否正确
@@ -241,18 +390,21 @@ public class PersonController {
             }
             selectPerson.setGender(person.getGender());
         }
-        if(!StringUtils.isEmpty(person.getAge())){
-            selectPerson.setAge(person.getAge());
-        }
-        if(!StringUtils.isEmpty(person.getNation())){
-            selectPerson.setNation(person.getNation());
+        if (!StringUtils.isEmpty(person.getHometown())) {
+            selectPerson.setHometown(person.getHometown());
         }
         if(!StringUtils.isEmpty(person.getAddress())){
             selectPerson.setAddress(person.getAddress());
         }
+        if (person.getGroupNo() != null) {
+            selectPerson.setGroupNo(person.getGroupNo());
+        }
+        if (person.getUploadStatus() != null) {
+            selectPerson.setUploadStatus(person.getUploadStatus());
+        }
     }
 
-    private void verifyPerson(Person person, MultipartFile imageFile) {
+    private void verifyPerson(Person person) {
         if (person.getIdCardNumber() == null || person.getIdCardNumber().trim().length() != 18) {
             throw new AttendanceException(ResultError.ID_CARD_ERROR);
         } else if (!StringUtils.hasText(person.getPersonName())) {
@@ -288,14 +440,14 @@ public class PersonController {
         if (imageFile.getSize() > imgFileMaxSize) {
             throw new AttendanceException(ResultError.IMAGE_SIZE_ERROR);
         }
-        String imageStr = null;
+        String imageStr;
         try {
             imageStr = FileTool.fileToBase64(imageFile.getInputStream());
         } catch (IOException e) {
             logger.error("照片转换成base64编码失败, e:{}", e.getMessage());
             throw new AttendanceException("照片转换成base64编码失败");
         }
-        if (!StringUtils.hasText(imageStr)) {
+        if (StringUtils.isEmpty(imageStr)) {
             logger.error("照片转换成base64编码为空");
             throw new AttendanceException("照片转换成base64编码为空");
         }

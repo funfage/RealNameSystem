@@ -38,16 +38,9 @@ public class AccessDeviceUtils {
     /**
      * 下发身份证索引号到多台控制器
      */
-    public static void issueIdCardIndexToDevices(List<Device> deviceList, String idCardIndex, String teamName) {
+    public static void issueIdCardIndexToDevices(List<Device> deviceList, String idCardIndex) {
         for (Device device : deviceList) {
             issueIdCardIndexToOneDevice(device, idCardIndex);
-            if (teamName != null) {
-                JSONObject map = new JSONObject();
-                map.put("projectCode", device.getProjectCode());
-                map.put("teamName", teamName);
-                map.put("type", CommConstant.ENTER_TYPE);
-                accessDeviceUtils.webSocket.sendMessageToAll(map.toJSONString());
-            }
         }
     }
 

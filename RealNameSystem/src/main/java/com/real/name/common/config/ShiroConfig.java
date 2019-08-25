@@ -71,8 +71,8 @@ public class ShiroConfig {
         map.put("/attendance", "anon");
         map.put("/heartbeat", "anon");
         map.put("/imgreg", "anon");
-        //common
-        //map.put("/common/downLoadFile", "anon");
+        //测试
+        map.put("/test/**", "anon");
         //用户
         map.put("/user/submitLogin", "anon");
         map.put("/user/userRegister", "anon");

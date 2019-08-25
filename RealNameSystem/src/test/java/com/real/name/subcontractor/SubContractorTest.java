@@ -3,6 +3,7 @@ package com.real.name.subcontractor;
 import com.real.name.others.BaseTest;
 import com.real.name.project.entity.Project;
 import com.real.name.subcontractor.entity.SubContractor;
+import com.real.name.subcontractor.query.SubContractorQuery;
 import com.real.name.subcontractor.service.repository.SubContractorMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +64,7 @@ public class SubContractorTest extends BaseTest {
 
     @Test
     public void findByProjectCode() {
-        List<SubContractor> subContractors = subContractorMapper.findByProjectCode("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        List<SubContractorQuery> subContractors = subContractorMapper.findByProjectCode("36bj84W235Zgc8O78yuS32510ppMkHfe");
         System.out.println(subContractors);
     }
 
@@ -83,6 +84,26 @@ public class SubContractorTest extends BaseTest {
     public void setProSubContractorRemoveStatus() {
         int i = subContractorMapper.setProSubContractorRemoveStatus(1);
         System.out.println(i);
+    }
+
+    @Test
+    public void findUnRemoveInProject() {
+        List<SubContractorQuery> unRemoveInProject = subContractorMapper.findUnRemoveInProject("44010620190510008");
+        System.out.println(unRemoveInProject);
+    }
+
+    @Test
+    public void findCorpName() {
+        List<SubContractorQuery> corpName = subContractorMapper.findCorpName("44010620190510008", 1);
+        System.out.println(corpName);
+    }
+
+    @Test
+    public void getPersonNumInContractor() {
+        Integer personNumInContractor = subContractorMapper.getPersonNumInContractor(1);
+        Integer personContractSignNum = subContractorMapper.getPersonContractSignNum(1);
+        System.out.println(personNumInContractor);
+        System.out.println(personContractSignNum);
     }
 
 

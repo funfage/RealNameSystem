@@ -3,6 +3,7 @@ package com.real.name.Project;
 import com.real.name.common.utils.TimeUtil;
 import com.real.name.others.BaseTest;
 import com.real.name.person.entity.Person;
+import com.real.name.project.entity.ProjectDetail;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.query.GroupPersonNum;
 import com.real.name.project.service.repository.ProjectDetailQueryMapper;
@@ -25,6 +26,16 @@ public class ProjectDetailQueryTest extends BaseTest {
     @Autowired
     private AttendanceMapper attendanceMapper;
 
+    @Test
+    public void insertProjectDetail() {
+        ProjectDetailQuery projectDetailQuery = new ProjectDetailQuery();
+        projectDetailQuery.setProjectCode("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        projectDetailQuery.setTeamSysNo(1562649690);
+        projectDetailQuery.setPersonId(89);
+        int i = mapper.insertProjectDetail(projectDetailQuery);
+        System.out.println(projectDetailQuery);
+        System.out.println(i);
+    }
 
     @Test
     public void findByWorkRoleAndProjectCodeTest() {
@@ -169,10 +180,49 @@ public class ProjectDetailQueryTest extends BaseTest {
     }
 
     @Test
-    public void setProPersonRemoveStatus() {
-        int i = mapper.setProPersonRemoveStatus(126, "36bj84W235Zgc8O78yuS32510ppMkHfe");
+    public void setProGroupPersonUnRemove() {
+        int i = mapper.setProPersonStatus(126, 0, "36bj84W235Zgc8O78yuS32510ppMkHfe");
         System.out.println(i);
+    }
+
+    @Test
+    public void findPersonRemoveInfo() {
+        ProjectDetail personRemoveInfo = mapper.findUnRemByProAndPersonId("36bj84W235Zgc8O78yuS32510ppMkHfe", 94);
+        System.out.println(personRemoveInfo);
+    }
+
+    @Test
+    public void judgePersonInProGroup() {
+        Integer integer = mapper.judgePersonInProGroup("44010620190510008", 1562649690, 213);
+        System.out.println(integer);
     }
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

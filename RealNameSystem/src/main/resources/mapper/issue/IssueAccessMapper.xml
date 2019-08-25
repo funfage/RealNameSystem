@@ -95,6 +95,15 @@
         device_id = #{device.deviceId}
     </update>
 
+    <delete id="deleteStatusByPersonInDevice">
+        delete from
+          issue_access
+        where
+          person_id = #{personId}
+        and
+          device_id = #{deviceId}
+    </delete>
+
     <select id="findIssueFailAccess" resultMap="queryMap">
         select
         a.issue_access_id, a.issue_status,

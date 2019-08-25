@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Mapper
@@ -33,7 +34,6 @@ public interface PersonQueryMapper {
     List<Person> findRemovePersonInGroup(@Param("teamSysNo") Integer teamSysNo,
                                          @Param("projectCode") String projectCode);
 
-
     /**
      * 查询所在项目的人员信息
      */
@@ -43,6 +43,18 @@ public interface PersonQueryMapper {
      * 查询没有参加项目的人员信息
      */
     List<Person> findAllPersonNotAttendProject();
+
+    /**
+     * 获取添加到项目的人员
+     * 人员过滤的条件是：与参建单位的CorpCode一致，并且没有参加其它项目（或者被移出项目的人员）的普通人员。
+     */
+    List<Person> getNormalPersonToAttendProject(@Param("ContractCorpCode") String ContractCorpCode);
+
+    /**
+     * 获取添加到项目的人员
+     * 人员过滤的条件是：与参建单位的CorpCode一致，并且不在本项目下（或者在该项目下但是已经被移除）的管理人员。
+     */
+    List<Person> getAdminPersonToAttendProject(@Param("projectCode") String projectCode, @Param("ContractCorpCode") String ContractCorpCode);
 
     /**
      * 根据人员类型查询
@@ -72,6 +84,11 @@ public interface PersonQueryMapper {
     List<Person> findByPersonIdIn(@Param("personIds") List<Integer> personIds);
 
     /**
+     * 查询需要下发的多个人员信息
+     */
+    List<Person> findIssueInfoByPersonIdIn(@Param("personIds") List<Integer> personIds);
+
+    /**
      * 根据身份证索引号搜索
      */
     Person findByIdCardIndex(@Param("idCardIndex") String idCardIndex);
@@ -79,7 +96,6 @@ public interface PersonQueryMapper {
     /**
      * 查询用户名
      */
-    @Query("select new com.real.name.person.entity.Person(p.personId, p.personName) from Person p where p.personId = :personId")
     Person findPersonNameByPersonId(@Param("personId") Integer personId);
 
     /**
@@ -98,9 +114,21 @@ public interface PersonQueryMapper {
     Person findIssuePersonImageInfo(@Param("personId") Integer personId);
 
     /**
+     * 查询多个人员信息和照片信息
+     */
+    List<Person> findIssuePeopleImagesInfo(@Param("personIds") List<Integer> personIds);
+
+    /**
      * 根据人员查询身份证索引号
      */
     String getIdCardIndexByPersonId(@Param("personId") Integer personId);
+
+    /**
+     * 获取班组下的人员
+     */
+    List<Person> getPersonInGroupByStatus(@Param("teamSysNo") Integer teamSysNo,
+                                  @Param("projectCode") String projectCode,
+                                  @Param("personStatus") Integer personStatus);
 
     /**
      * 搜索人员
@@ -116,6 +144,16 @@ public interface PersonQueryMapper {
      * 获取当日注册的人员数量
      */
     Integer countTodayPersonNum();
+
+    /**
+     * 获取当日新增人员id,后缀名和姓名
+     */
+    List<Map<String, Object>> getTodayPersonInfo();
+
+    /**
+     * 获取已经填写过的CorpCode
+     */
+    List<String> findExistCorpCode();
 
 
 

@@ -1,6 +1,7 @@
 package com.real.name.project.service;
 
 import com.real.name.person.entity.Person;
+import com.real.name.project.entity.ProjectDetail;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.query.GroupPersonNum;
 import org.apache.ibatis.annotations.Param;
@@ -9,6 +10,11 @@ import java.util.Date;
 import java.util.List;
 
 public interface ProjectDetailQueryService {
+
+    /**
+     * 保存一条人员班组项目绑定记录
+     */
+    void insertProjectDetail(ProjectDetailQuery projectDetailQuery);
 
     /**
      * 获取其他项目的管理人员信息
@@ -104,8 +110,24 @@ public interface ProjectDetailQueryService {
     boolean judgeEmptyById(Integer id);
 
     /**
-     * 设置项目人员移除标识
+     * 设置项目下班组下人员移除标识
      */
-    int setProPersonRemoveStatus(Integer personId, String projectCode);
+    int setProGroupPersonRemove(Integer personId, String projectCode, Integer teamSysNo);
+
+    /**
+     * 设置项目下班组下人员未移除标识
+     */
+    int setProGroupPersonUnRemove(Integer personId, String projectCode, Integer teamSysNo);
+
+    /**
+     * 查询人员未被移除的记录
+     */
+    ProjectDetail findUnRemByProAndPersonId(String projectCode, Integer personId);
+
+    /**
+     * 判断人员是否在指定的项目班组中
+     * @return true为存在 false为不存在
+     */
+    boolean judgePersonInProGroup(String projectCode, Integer teamSysNo, Integer personId);
 
 }

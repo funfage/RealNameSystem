@@ -2,6 +2,8 @@ package com.real.name.group.controller;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.real.name.common.annotion.JSON;
+import com.real.name.common.annotion.JSONS;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
@@ -12,6 +14,7 @@ import com.real.name.group.entity.WorkerGroup;
 import com.real.name.group.query.GroupQuery;
 import com.real.name.group.service.GroupService;
 import com.real.name.person.entity.Person;
+import com.real.name.person.service.PersonService;
 import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.ProjectService;
 import com.real.name.subcontractor.entity.SubContractor;
@@ -47,6 +50,9 @@ public class GroupController {
     @Autowired
     private SubContractorService subContractorService;
 
+    @Autowired
+    private PersonService personService;
+
 
     /**
      * 创建班组
@@ -67,6 +73,7 @@ public class GroupController {
         group.setTeamSysNo((int) (System.currentTimeMillis() / 1000));
         group.setCorpCode(subContractor.getCorpCode());
         group.setCorpName(subContractor.getCorpName());
+        group.setGroupStatus(1);
         groupService.create(group);
         return ResultVo.success(group);
     }
@@ -79,11 +86,6 @@ public class GroupController {
         if (workerGroup.getTeamSysNo() == null) {
             throw AttendanceException.emptyMessage("班组编号");
         }
-        //查询该班组是否存在
-        Optional<WorkerGroup> groupOptional = groupService.findById(workerGroup.getTeamSysNo());
-        if (!groupOptional.isPresent()) {
-            throw new AttendanceException(ResultError.GROUP_NOT_EXIST);
-        }
         //判断是否选择的是管理员班组
         if (workerGroup.getIsAdminGroup() != null && workerGroup.getIsAdminGroup() == 1) {
             //从数据库中查询是否存在管理员班组
@@ -91,14 +93,8 @@ public class GroupController {
                 throw new AttendanceException(ResultError.ADMIN_GROUP_ERROR);
             }
         }
-        WorkerGroup selectWorkerGroup = groupOptional.get();
-        //合并信息
-        mergeWorkerGroup(selectWorkerGroup, workerGroup);
         //修改本地班组信息
-        WorkerGroup updateGroup = groupService.updateByTeamSysNo(selectWorkerGroup);
-        if (updateGroup == null) {
-            throw new AttendanceException(ResultError.UPDATE_ERROR);
-        }
+        groupService.updateByTeamSysNo(workerGroup);
         return ResultVo.success();
     }
 
@@ -136,6 +132,25 @@ public class GroupController {
     }
 
     /**
+     * 班组重新加入项目
+     */
+    @PostMapping("/groupReJoinToProject")
+    public ResultVo groupReJoinToProject(@RequestParam("projectCode") String projectCode,
+                                         @RequestParam("subContractorId") Integer subContractorId,
+                                         @RequestParam("teamSysNo") Integer teamSysNo,
+                                         @RequestParam("personIds") List<Integer> personIds) {
+        //获取所有下发的设备信息
+        List<Device> allIssueDevice = deviceService.findAllIssueDevice();
+        //获取项目绑定的下发信息
+        List<Device> allProjectIssueDevice = deviceService.findAllProjectIssueDevice(projectCode);
+        //获取所有下发的人员信息
+        List<Person> personList = personService.findIssueInfoByPersonIdIn(personIds);
+        //班组重新加入项目
+        groupService.groupReJoinToProject(projectCode, subContractorId, teamSysNo, personList, allIssueDevice, allProjectIssueDevice);
+        return ResultVo.success();
+    }
+
+    /**
      * ========================================以下只与查询有关===============================================
      */
 
@@ -143,6 +158,9 @@ public class GroupController {
      * 查询班组
      */
     @GetMapping("find")
+    @JSONS({
+            @JSON(type = SubContractor.class, include = "subContractorId,corpCode,corpName,corpType")
+    })
     public Object find(@RequestParam(name = "teamSysNo", required = false) Integer teamSysNo,
                        @RequestParam(name = "projectCode", required = false) String projectCode) {
         if (teamSysNo == null && projectCode == null) {
@@ -153,6 +171,16 @@ public class GroupController {
             return ResultVo.success(groupService.findByProjectCode(projectCode));
         }
         return ResultVo.failure(ResultError.PARAM_ERROR);
+    }
+
+    /**
+     * 获取某个参建单位下的未被移除的班组
+     */
+    @GetMapping("/getGroupInContractor")
+    @JSON(type = WorkerGroup.class, include = "teamSysNo,teamName")
+    public ResultVo getGroupInContractor(@RequestParam("subContractorId") Integer subContractorId) {
+        List<WorkerGroup> workerGroupList = groupService.getUnRemoveGroupInContractor(subContractorId);
+        return ResultVo.success(workerGroupList);
     }
 
     /**
@@ -201,7 +229,7 @@ public class GroupController {
     private void mergeWorkerGroup(WorkerGroup selectWorkerGroup, WorkerGroup workerGroup) {
         if (workerGroup.getSubContractorId() != null) {
             //判断班组是否已经被移除,如果已经被移除则不能修改参建单位信息
-            if (selectWorkerGroup.getGroupStatus() == 1) {
+            if (selectWorkerGroup.getGroupStatus() == 0) {
                 throw new AttendanceException(ResultError.GROUP_REMOVE_UPDATE_ERROR);
             } else if (subContractorService.judgeEmptyById(workerGroup.getSubContractorId())) {
                 throw AttendanceException.errorMessage("参建单位");

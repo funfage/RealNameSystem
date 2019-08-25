@@ -265,5 +265,4 @@ public class Person {
         this.idCardIndex = idCardIndex;
     }
 
-
 }

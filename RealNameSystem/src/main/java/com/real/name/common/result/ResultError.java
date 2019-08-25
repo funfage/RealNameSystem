@@ -67,6 +67,7 @@ public enum ResultError {
     PERIOD_TIME_ERROR(60, "开始时间不能大于结束时间"),
     PERIOD_TIME_NULL(61, "时间不能为空"),
     GROUP_REMOVE_UPDATE_ERROR(62, "移除后的班组不能修改参建单位"),
+    PERSON_EXISTS_IN_PROJECT(63, "人员已经在该项目中"),
     LOGIN_TOKEN_ERROR(98, "登录信息中没有Token"),
     NETWORK_ERROR(99, "网络超时,请重试"),
     DELETE_ERROR(100, "删除失败"),
@@ -74,6 +75,8 @@ public enum ResultError {
     UPDATE_ERROR(102, "修改失败"),
     QUERY_ERROR(103, "查询失败"),
     QUERY_EMPTY(104, "查询结果为空"),
+    REJOIN_PROJECT_FAILURE(105, "重新加入项目失败"),
+    REMOVE_FROM_PROJECT_FAILURE(106, "从项目中移除失败"),
     USER_UN_LOGIN(400, "请重新登录"),
     USER_UN_AUTHORIZED(401, "用户没有此权限"),
     ;

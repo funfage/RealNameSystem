@@ -19,6 +19,8 @@ public class ProjectDetailQuery {
 
     private Integer teamSysNo;
 
+    private Integer personId;
+
     private Person person;
 
     private Project project;
@@ -29,7 +31,15 @@ public class ProjectDetailQuery {
 
     private List<Attendance> attendanceList;
 
+    private Integer personStatus;
+
     public ProjectDetailQuery(Integer id) {
         this.id = id;
+    }
+
+    public ProjectDetailQuery(String projectCode, Integer teamSysNo, Integer personId) {
+        this.projectCode = projectCode;
+        this.teamSysNo = teamSysNo;
+        this.personId = personId;
     }
 }

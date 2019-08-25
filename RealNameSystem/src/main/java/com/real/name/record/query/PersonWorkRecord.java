@@ -81,6 +81,11 @@ public class PersonWorkRecord {
     private Double workHours;
 
     /**
+     * 人员是否从项目中移除
+     */
+    private Integer personStatus;
+
+    /**
      * 出勤
      */
     private List<Attendance> attendanceList;

@@ -92,6 +92,7 @@ public class ScheduledTasks {
      * springboot的cron表达式只值支持6个域的表达式，也就是不能设定年
      * 核对每个员工的考勤情况
      */
+
     @Scheduled(cron = "0 0,5,10,15,20,25 23 * * ?")
     public void checkFaceAttendance() {
         logger.warn("总召定时任务开始");
@@ -122,9 +123,11 @@ public class ScheduledTasks {
 
     /**
      * 查询指定设备一天内某个人员的识别记录
+     *
      * @param deviceList 设备集合
-     * @param person 人员信息
+     * @param person     人员信息
      */
+
     private void queryFaceRecord(List<Device> deviceList, Person person) {
         Date startTime = new Date(System.currentTimeMillis() - CommConstant.DAY_MILLISECOND);
         Date endTime = new Date(System.currentTimeMillis());
@@ -146,7 +149,7 @@ public class ScheduledTasks {
                                 //若查询记录为空则将从设备查询的记录插入数据库
                                 logger.warn("保存了一条未添加的考勤识别记录");
                                 recordMapper.saveRecord(new Record(device.getDeviceId(), device.getDeviceType(), selectPerson.getPersonId(),
-                                        selectPerson.getPersonName(), faceRecord.getTime(), new Date(faceRecord.getTime()) ,faceRecord.getType(),
+                                        selectPerson.getPersonName(), faceRecord.getTime(), new Date(faceRecord.getTime()), faceRecord.getType(),
                                         faceRecord.getPath(), device.getDirection(), device.getChannel()));
                             }
                         }
@@ -159,6 +162,7 @@ public class ScheduledTasks {
     /**
      * 从第5秒开始每隔15秒查询控制器下发失败的信息
      */
+
     @Scheduled(cron = "5/60 * * * * ?")
     public void queryFailAccess() {
         List<IssueAccess> issueFailAccess = issueAccessService.findIssueFailAccess();
@@ -173,6 +177,7 @@ public class ScheduledTasks {
     /**
      * 从第30秒开始每隔60秒重发控制器下发失败的信息
      */
+
     @Scheduled(cron = "30/60 * * * * ?")
     public void resendFailAccess() {
         List<IssueAccess> issueAccessList = issueAccessService.findIssueFailAccess();
@@ -186,6 +191,7 @@ public class ScheduledTasks {
     /**
      * 每天晚上11点半统计工人的工时
      */
+
     @Scheduled(cron = "0 30 23 * * ?")
     public void countWorkTime() {
         logger.warn("统计工时定时任务开始");
@@ -262,6 +268,7 @@ public class ScheduledTasks {
     /**
      * 每天晚上11点10分统计班组和项目每日的总工时,考勤次数和异常次数
      */
+
     @Scheduled(cron = "0 40 23 * * ?")
     public void countGroupAndProjectAttend() {
         logger.warn("统计班组和项目每日的总工时定时任务开始");
@@ -318,6 +325,7 @@ public class ScheduledTasks {
      * 第一次延迟1小时后执行，之后按fixedRate的规则30分钟执行一次
      * 查询某个人员在某个设备的权限,并删除已有的权限
      */
+
     @Scheduled(initialDelay = 1000 * 3600, fixedRate = 1000 * 1800)
     public void confirmDelAuthority() {
         logger.warn("查询权限定时任务开始");
@@ -330,7 +338,10 @@ public class ScheduledTasks {
                     Boolean isSuccess = FaceDeviceUtils.queryPersonByDeviceId(device, person);
                     if (!isSuccess) {//若查询不到人员信息则说明该设备已将人员信息删除
                         //删除记录
-                        deleteInfoMapper.deleteById(deleteInfo.getDeleteInfoId());
+                        int i = deleteInfoMapper.deleteById(deleteInfo.getDeleteInfoId());
+                        if (i > 0) {
+                            logger.warn("删除了一条设备上的人员信息，设备id：{}，人员id：{}，人员姓名：{}", device.getDeviceId(), person.getPersonId(), person.getPersonName());
+                        }
                     }
                 } else if (device.getDeviceType() == DeviceConstant.AccessDeviceType) {
                     //发送查询报文
@@ -346,6 +357,7 @@ public class ScheduledTasks {
     /**
      * 凌晨两点定时把生成的报表删除
      */
+
     @Scheduled(cron = "0 0 2 * * ?")
     public void deleteExcelFiles() {
         logger.warn("清除报表定时任务开始");

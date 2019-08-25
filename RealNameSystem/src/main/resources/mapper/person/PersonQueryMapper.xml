@@ -49,7 +49,7 @@
     </resultMap>
 
     <sql id="personInfo">
-        p.person_id as p_person_id, p.person_name, p.subordinate_company, p.gender, p.address, p.age, p.bank_link_number, p.card_number,
+        distinct (p.person_id) as p_person_id, p.person_name, p.subordinate_company, p.gender, p.address, p.age, p.bank_link_number, p.card_number,
         p.cell_phone, p.culture_level_type, p.expiry_date, p.grant_org, p.group_no, p.has_bad_medical_history,
         p.has_buy_insurance, p.hometown, p.id_card_index, p.id_card_number, p.id_card_type, p.issue_card_date,
         p.issue_card_pic, p.is_team_leader, p.joined_time, p.marital_status, p.nation, p.negative_id_card_image,
@@ -59,7 +59,7 @@
     </sql>
 
     <sql id="personInfoWithImage">
-         p.person_id as p_person_id, p.person_name, p.subordinate_company, p.corp_code, p.gender, p.address, p.age, p.bank_link_number, p.card_number,
+        p.person_id as p_person_id, p.person_name, p.subordinate_company, p.corp_code, p.gender, p.address, p.age, p.bank_link_number, p.card_number,
         p.cell_phone, p.culture_level_type, p.expiry_date, p.grant_org, p.group_no, p.has_bad_medical_history,
         p.has_buy_insurance, p.hometown, p.id_card_index, p.id_card_number, p.id_card_type, p.issue_card_date,
         p.issue_card_pic, p.is_team_leader, p.joined_time, p.marital_status, p.nation, p.negative_id_card_image,
@@ -139,6 +139,39 @@
         not EXISTS (select pd.person_id from project_detail pd where p.person_id = pd.person_id)
     </select>
 
+    <select id="getNormalPersonToAttendProject" resultMap="queryMap">
+        select
+          <include refid="personInfo"/>
+        from
+          person p
+        where
+          p.corp_code = #{ContractCorpCode}
+        and
+          p.work_role != 10
+        and
+          not exists (select pd.person_id from project_detail pd where p.person_id = pd.person_id and pd.person_status = 1)
+    </select>
+
+    <select id="getAdminPersonToAttendProject" resultMap="queryMap">
+        select
+            <include refid="personInfo"/>
+        from
+            person p
+        where
+            p.corp_code = #{ContractCorpCode}
+        and p.work_role = 10
+        and not exists (
+            select
+                pd.person_id
+            from
+                project_detail pd
+            where
+                pd.project_code = #{projectCode}
+            and p.person_id = pd.person_id
+            and pd.person_status = 1
+        )
+    </select>
+
     <select id="findByWorkRole" resultMap="queryMap">
         select
           <include refid="personInfo"/>
@@ -150,7 +183,7 @@
 
     <select id="findByWorkRoleInProject" resultMap="queryMap">
         select
-        <include refid="personInfo"/>
+          <include refid="personInfo"/>
         from
           person p, project_detail pd
         where
@@ -232,6 +265,19 @@
         </choose>
     </select>
 
+    <select id="findIssueInfoByPersonIdIn" resultMap="queryMap">
+        select
+          p.person_id as p_person_id, p.person_name, p.head_image, p.work_role, p.id_card_index
+        from
+          person p
+        where
+          p.person_id
+        in
+        <foreach collection="personIds" item="personId" separator="," open="(" close=")">
+            #{personId}
+        </foreach>
+    </select>
+
     <select id="findByIdCardIndex" resultMap="queryMap">
         select
           p.person_id as p_person_id, p.person_name, p.id_card_number
@@ -277,6 +323,26 @@
           p.person_id = #{personId}
     </select>
 
+    <select id="findIssuePeopleImagesInfo" resultMap="queryMap">
+         select
+          p.person_id as p_person_id, p.person_name, p.head_image, p.work_role, p.id_card_index
+        from
+          person p
+        where
+          p.person_id
+        in
+        <choose>
+            <when test="personIds != null and personIds.size() != 0">
+                <foreach collection="personIds" item="personId" separator="," open="(" close=")">
+                    #{personId}
+                </foreach>
+            </when>
+            <otherwise>
+                (null)
+            </otherwise>
+        </choose>
+    </select>
+
     <select id="getIdCardIndexByPersonId" resultType="string">
         select
           p.id_card_index
@@ -286,9 +352,28 @@
           p.person_id = #{personId}
     </select>
 
+    <select id="getPersonInGroupByStatus" resultMap="queryMap">
+        select
+          distinct (p.person_id) as p_person_id, p.person_name, p.subordinate_company, p.corp_code,
+          p.id_card_number, p.is_team_leader, p.work_type, p.work_role, p.age, p.gender
+        from
+          person p,
+          project_detail pd
+        where
+          p.person_id = pd.person_id
+        and
+          pd.project_code = #{projectCode}
+        and
+          pd.team_sys_no = #{teamSysNo}
+        <if test="personStatus != null">
+            and
+            pd.person_status = #{personStatus}
+        </if>
+    </select>
+
     <select id="searchPerson" resultMap="queryMap">
         select
-        <include refid="personInfo"/>
+          <include refid="personInfo"/>
         from
         person p
         <where>
@@ -334,5 +419,29 @@
           create_time &lt;= DATE_FORMAT(date_add(CURDATE(),interval 1 day),'%Y-%m-%d %H:%i:%s')
     </select>
 
+    <select id="getTodayPersonInfo" resultType="map">
+        select
+          person_id as personId,
+          ifnull(work_type,"") as workType,
+          ifnull(person_name,"") as personName,
+          ifnull(suffix_name,"") as suffixName
+        from
+          person
+        where
+          create_time &gt;= DATE_FORMAT(CURDATE(),'%Y-%m-%d %H:%i:%s')
+        and
+          create_time &lt;= DATE_FORMAT(date_add(CURDATE(),interval 1 day),'%Y-%m-%d %H:%i:%s')
+    </select>
+
+    <select id="findExistCorpCode" resultType="string">
+        select
+          distinct(corp_code)
+        from
+          person
+        where
+          corp_code is not null
+        and
+          corp_code != '';
+    </select>
 
 </mapper>

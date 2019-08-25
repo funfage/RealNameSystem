@@ -147,10 +147,19 @@
     <insert id="insertInitIssue" parameterType="com.real.name.issue.entity.IssueFace"
             useGeneratedKeys="true" keyProperty="issueFaceId" keyColumn="issue_face_id">
         insert into
-          issue_face (person_id, device_id, issue_person_status, issue_image_status)
+          issue_face (person_id, device_id)
         values
-          (#{person.personId}, #{device.deviceId}, #{issuePersonStatus}, #{issueImageStatus})
+          (#{person.personId}, #{device.deviceId})
     </insert>
+
+    <delete id="deleteStatusByPersonInDevice">
+        delete from
+          issue_face
+        where
+          person_id = #{personId}
+        and
+          device_id = #{deviceId}
+    </delete>
 
     <select id="findAllFailDeviceIds" resultType="string">
        select

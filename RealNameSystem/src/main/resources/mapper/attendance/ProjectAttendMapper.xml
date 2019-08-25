@@ -178,7 +178,7 @@
     <select id="rangeBySumAttendErrNum" resultMap="projectRangeQuery">
         select
           pj.project_code,
-          pj. name,
+          pj.name as project_name,
           ifnull(sum(pa.project_attend_err_num),0) as sum_project_attend_err_num
         from
           project pj

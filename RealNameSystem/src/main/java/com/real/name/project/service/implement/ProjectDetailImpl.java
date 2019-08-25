@@ -29,21 +29,21 @@ public class ProjectDetailImpl implements ProjectDetailService {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void addPersonToFaceDevice(String projectCode, Person person, List<Device> projectFaceDevices, List<Device> allFaceDevices, String teamName) {
+    public void addPersonToFaceDevice(String projectCode, Person person, List<Device> projectFaceDevices, List<Device> allFaceDevices) {
         if (person.getWorkRole() != null && person.getWorkRole() == 10) {//下发管理员信息
-            FaceDeviceUtils.issuePersonToDevices(allFaceDevices, person, 3, teamName);
+            FaceDeviceUtils.issuePersonToDevices(allFaceDevices, person, 3);
         } else {
             //下发人员信息
-            FaceDeviceUtils.issuePersonToDevices(projectFaceDevices, person, 3, teamName);
+            FaceDeviceUtils.issuePersonToDevices(projectFaceDevices, person, 3);
         }
     }
 
     @Override
-    public void addPersonToAccessDevice(String projectCode, Person person, List<Device> projectAccessDevices, List<Device> allAccessDevices, String teamName) {
+    public void addPersonToAccessDevice(String projectCode, Person person, List<Device> projectAccessDevices, List<Device> allAccessDevices) {
         if (person.getWorkRole() != null && person.getWorkRole() == 10) {//下发管理员信息
-            AccessDeviceUtils.issueIdCardIndexToDevices(allAccessDevices, person.getIdCardIndex(), teamName);
+            AccessDeviceUtils.issueIdCardIndexToDevices(allAccessDevices, person.getIdCardIndex());
         } else {//下发人员信息
-            AccessDeviceUtils.issueIdCardIndexToDevices(projectAccessDevices, person.getIdCardIndex(), teamName);
+            AccessDeviceUtils.issueIdCardIndexToDevices(projectAccessDevices, person.getIdCardIndex());
         }
     }
 

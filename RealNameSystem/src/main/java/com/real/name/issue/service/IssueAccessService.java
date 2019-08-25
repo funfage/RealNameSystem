@@ -16,7 +16,12 @@ public interface IssueAccessService {
     /**
      * 插入下发标识
      */
-    int insertIssueAccess(IssueAccess issueAccess);
+    void insertIssueAccess(IssueAccess issueAccess);
+
+    /**
+     * 删除某个设备的下发标识
+     */
+    int deleteStatusByPersonInDevice(Integer personId, String deviceId);
 
     /**
      * 更新下发标识

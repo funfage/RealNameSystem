@@ -60,6 +60,78 @@
         sc.sub_contractor_id, sc.corp_code as sc_corp_code, sc.corp_name as sc_corp_name
     </sql>
 
+    <insert id="insertGroup">
+        insert into
+          worker_group(team_sys_no, project_code, sub_contractor_id, corp_code, corp_name, team_name, responsible_person_name,
+          responsible_person_phone, responsible_person_id_card_type, responsible_person_id_number, remark, entry_time, exit_time, entry_attachments,
+          exit_attachments, is_admin_group)
+        values
+          (#{workerGroup.teamSysNo}, #{workerGroup.projectCode}, #{workerGroup.subContractorId}, #{workerGroup.corpCode}, #{workerGroup.corpName},
+          #{workerGroup.teamName}, #{workerGroup.responsiblePersonName}, #{workerGroup.responsiblePersonPhone}, #{workerGroup.responsiblePersonIdCardType},
+          #{workerGroup.responsiblePersonIdNumber}, #{workerGroup.remark}, #{workerGroup.entryTime}, #{workerGroup.exitTime}, #{workerGroup.entryAttachments},
+          #{workerGroup.exitAttachments}, #{workerGroup.isAdminGroup})
+    </insert>
+
+    <update id="updateWorkerGroup">
+        update
+          worker_group
+        <set>
+            <if test="workerGroup.projectCode != null">
+                project_code = #{workerGroup.projectCode},
+            </if>
+            <if test="workerGroup.subContractorId != null">
+                sub_contractor_id = #{workerGroup.subContractorId},
+            </if>
+            <if test="workerGroup.corpCode != null">
+                corp_code = #{workerGroup.corpCode},
+            </if>
+            <if test="workerGroup.corpName != null">
+                corp_name = #{workerGroup.corpName},
+            </if>
+            <if test="workerGroup.teamName != null">
+                team_name = #{workerGroup.teamName},
+            </if>
+            <if test="workerGroup.responsiblePersonName != null">
+                responsible_person_name = #{workerGroup.responsiblePersonName},
+            </if>
+            <if test="workerGroup.responsiblePersonPhone != null">
+                responsible_person_phone = #{param1.responsiblePersonPhone},
+            </if>
+            <if test="workerGroup.responsiblePersonIdCardType != null">
+                responsible_person_id_card_type = #{workerGroup.responsiblePersonIdCardType},
+            </if>
+            <if test="workerGroup.responsiblePersonIdNumber != null">
+                responsible_person_id_number = #{workerGroup.responsiblePersonIdNumber},
+            </if>
+            <if test="workerGroup.remark != null">
+                remark = #{workerGroup.remark},
+            </if>
+            <if test="workerGroup.entryTime != null">
+                entry_time = #{workerGroup.entryTime},
+            </if>
+            <if test="workerGroup.exitTime != null">
+                exit_time = #{workerGroup.exitTime},
+            </if>
+            <if test="workerGroup.entryAttachments != null">
+                entry_attachments = #{workerGroup.entryAttachments},
+            </if>
+            <if test="workerGroup.exitAttachments != null">
+                exit_attachments = #{workerGroup.exitAttachments},
+            </if>
+            <if test="workerGroup.isAdminGroup != null">
+                is_admin_Group = #{workerGroup.isAdminGroup},
+            </if>
+            <if test="workerGroup.groupStatus != null">
+                group_status = #{workerGroup.groupStatus},
+            </if>
+            <if test="workerGroup.uploadStatus != null">
+                upload_status = #{workerGroup.uploadStatus},
+            </if>
+        </set>
+        where
+          team_sys_no = #{workerGroup.teamSysNo}
+    </update>
+
     <select id="judgeExistByTeamNameAndSubContractor" resultType="integer">
         select
           1
@@ -71,6 +143,40 @@
           sub_contractor_id = #{subContractorId}
         limit
           1
+    </select>
+
+
+    <select id="findByProjectCodeAndPersonId" resultMap="WorkerGroup">
+        select
+          <include refid="groupSql"/>
+        from
+          worker_group wg, project_detail pd
+        where
+          wg.team_sys_no = pd.team_sys_no
+        and
+          pd.person_id = #{personId}
+        and
+          pd.project_code = #{projectCode}
+    </select>
+
+    <select id="findAll" resultMap="GroupQuery">
+        select
+        <include refid="groupSql"/>,
+        <include refid="subContractorSql"/>
+        from
+          worker_group wg
+        left join sub_contractor sc on wg.sub_contractor_id = sc.sub_contractor_id
+    </select>
+
+    <select id="findById" resultMap="GroupQuery">
+        select
+        <include refid="groupSql"/>,
+        <include refid="subContractorSql"/>
+        from
+          worker_group wg
+        left join sub_contractor sc on wg.sub_contractor_id = sc.sub_contractor_id
+        where
+          team_sys_no = #{teamSysNo}
     </select>
 
     <select id="findByProjectCode" resultMap="GroupQuery">
@@ -126,6 +232,19 @@
           team_sys_no = #{teamSysNo}
     </update>
 
+    <select id="getUnRemoveGroupInContractor" resultMap="WorkerGroup">
+        select
+          wg.team_sys_no, wg.team_name
+        from
+          worker_group wg, sub_contractor sc
+        where
+          wg.sub_contractor_id = sc.sub_contractor_id
+        and
+          wg.sub_contractor_id = #{subContractorId}
+        and
+          wg.group_status = 1
+    </select>
+
     <select id="findRemoveGroupInContract" parameterType="integer" resultMap="WorkerGroup">
         select
           wg.team_sys_no
@@ -135,6 +254,15 @@
           wg.sub_contractor_id = #{subContractorId}
         and
           group_status = 1
+    </select>
+
+    <select id="findTeamNameByTeamSysNo" resultType="string">
+        select
+          team_name
+        from
+          worker_group
+        where
+          team_sys_no = #{teamSysNo}
     </select>
 
 </mapper>

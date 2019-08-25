@@ -1,5 +1,7 @@
 package com.real.name.issue.service.implement;
 
+import com.real.name.common.exception.AttendanceException;
+import com.real.name.common.result.ResultError;
 import com.real.name.device.entity.Device;
 import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.issue.entity.IssueFace;
@@ -47,13 +49,16 @@ public class IssueFaceServiceImpl implements IssueFaceService {
     }
 
     @Override
-    public int insertInitIssue(IssueFace issueFace) {
-        try {
-            return mapper.insertInitIssue(issueFace);
-        } catch (Exception e) {
-            logger.error("insertInitIssue error, e:", e.getMessage());
-            return -1;
+    public void insertInitIssue(IssueFace issueFace) {
+        int i = mapper.insertInitIssue(issueFace);
+        if (i <= 0) {
+            throw new AttendanceException(ResultError.INSERT_ERROR);
         }
+    }
+
+    @Override
+    public int deleteStatusByPersonInDevice(Integer personId, String deviceId) {
+        return mapper.deleteStatusByPersonInDevice(personId, deviceId);
     }
 
     @Override

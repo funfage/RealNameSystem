@@ -11,13 +11,7 @@ import java.util.Optional;
 
 public interface ProjectDetailRepository extends JpaRepository<ProjectDetail, Integer> {
 
-    Optional<ProjectDetail> findByProjectCodeAndPersonId(String projectId, Integer personId);
-
-    Optional<ProjectDetail> findByTeamSysNoAndPersonId(Integer teamSysNo, Integer personId);
-
     Page<ProjectDetail> findByProjectCode(String projectId, Pageable pageable);
-
-    Optional<ProjectDetail> findByPersonId(Integer personId);
 
     Optional<ProjectDetail> findByProjectCodeAndPersonIdAndTeamSysNo(String projectId, Integer personId, Integer teamSysNo);
 

@@ -65,16 +65,9 @@ public class FaceDeviceUtils {
      * 下发人员信息到多个设备
      * @param times 表示下发的次数
      */
-    public static void issuePersonToDevices(List<Device> deviceList, Person person, int times, String teamName) {
+    public static void issuePersonToDevices(List<Device> deviceList, Person person, int times) {
         for (Device device : deviceList) {
             issuePersonToOneDevice(device, person, times);
-            if (teamName != null) {
-                JSONObject map = new JSONObject();
-                map.put("projectCode", device.getProjectCode());
-                map.put("teamName", teamName);
-                map.put("type", CommConstant.ENTER_TYPE);
-                deviceUtils.webSocket.sendMessageToAll(map.toJSONString());
-            }
         }
     }
 

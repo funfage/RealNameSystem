@@ -19,8 +19,8 @@ public class AttendanceExceptionHandler {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ResponseBody
     public ResultVo AttendanceExceptionHandler(AttendanceException e) {
-        logger.error("错误信息", e);
-        return ResultVo.failure(e.getCode(), e.getMessage());
+        logger.error("AttendanceException异常，错误信息", e);
+        return ResultVo.failure(e.getMessage());
     }
 
     @ExceptionHandler(NullPointerException.class)
@@ -40,7 +40,7 @@ public class AttendanceExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public ResultVo exceptionHandler(Exception e) {
-        logger.error("出现异常，e:{}", e);
+        logger.error("出现异常", e);
         return ResultVo.failure(e.getMessage());
     }
 }

@@ -36,6 +36,11 @@ public class IssueFace {
         this.issueImageStatus = issueImageStatus;
     }
 
+    public IssueFace(Person person, Device device) {
+        this.person = person;
+        this.device = device;
+    }
+
     @Override
     public String toString() {
         return "IssueFace{" +

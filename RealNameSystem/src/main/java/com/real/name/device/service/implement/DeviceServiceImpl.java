@@ -59,6 +59,19 @@ public class DeviceServiceImpl implements DeviceService {
     @Autowired
     private DeviceQueryMapper deviceQueryMapper;
 
+    @Override
+    public void addPersonToDevices(String projectCode, Person person, List<Device> deviceList) {
+        for (Device device : deviceList) {
+            if (device.getDeviceType() == DeviceConstant.faceDeviceType) {
+                //下发到人脸设备
+                FaceDeviceUtils.issuePersonToOneDevice(device, person, 3);
+            } else if (device.getDeviceType() == DeviceConstant.AccessDeviceType){
+                //下发到控制器
+                AccessDeviceUtils.issueIdCardIndexToOneDevice(device, person.getIdCardIndex());
+            }
+        }
+    }
+
     /**
      * 添加人脸设备
      */
@@ -207,9 +220,13 @@ public class DeviceServiceImpl implements DeviceService {
             //保存新的记录
             deleteInfoService.saveDeleteInfo(deleteInfo);
             if (device.getDeviceType() == DeviceConstant.faceDeviceType) {
+                //删除下发的记录
+                issueFaceService.deleteStatusByPersonInDevice(person.getPersonId(), device.getDeviceId());
                 //删除人脸设备的人员信息
                 FaceDeviceUtils.deleteDevicePersonInfo(device, person.getPersonId());
             } else if (device.getDeviceType() == DeviceConstant.AccessDeviceType) {
+                //删除下发的记录
+                issueAccessService.deleteStatusByPersonInDevice(person.getPersonId(), device.getDeviceId());
                 //删除控制器的人员信息
                 accessService.deleteAuthority(device.getDeviceId(), person.getIdCardIndex(), device.getIp(), device.getOutPort());
             }
@@ -247,6 +264,22 @@ public class DeviceServiceImpl implements DeviceService {
     @Override
     public List<Device> findAll() {
         return deviceRepository.findAll();
+    }
+
+    @Override
+    public List<Device> findAllIssueDevice() {
+        List<Device> allIssueDevice = new ArrayList<>();
+        allIssueDevice.addAll(deviceRepository.findAllByDeviceType(DeviceConstant.faceDeviceType));
+        allIssueDevice.addAll(deviceRepository.findAllByDeviceType(DeviceConstant.AccessDeviceType));
+        return allIssueDevice;
+    }
+
+    @Override
+    public List<Device> findAllProjectIssueDevice(String projectCode) {
+        List<Device> allProjectIssueDevice = new ArrayList<>();
+        allProjectIssueDevice.addAll(deviceRepository.findByProjectCodeAndDeviceType(projectCode, DeviceConstant.faceDeviceType));
+        allProjectIssueDevice.addAll(deviceRepository.findByProjectCodeAndDeviceType(projectCode, DeviceConstant.AccessDeviceType));
+        return allProjectIssueDevice;
     }
 
     @Override

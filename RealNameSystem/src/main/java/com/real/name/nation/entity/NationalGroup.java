@@ -3,21 +3,13 @@ package com.real.name.nation.entity;
 import lombok.Data;
 
 import java.util.List;
-
-/**
- * @Desc TODO
- * @Author hp
- * @Date 2019/5/9 11:57
- **/
 @Data
 public class NationalGroup {
-
-    private Integer teamSysNo;
-    private String requestSerialCode;
 
     private String projectCode;
     private String corpCode;
     private String corpName;
+    private Integer teamSysNo;
     private String teamName;
     private String responsiblePersonName;
     private String responsiblePersonPhone;

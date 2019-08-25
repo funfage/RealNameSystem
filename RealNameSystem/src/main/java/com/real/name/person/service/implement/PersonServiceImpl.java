@@ -16,13 +16,21 @@ import com.real.name.device.entity.Device;
 import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.device.service.DeviceService;
 import com.real.name.device.service.repository.DeviceQueryMapper;
+import com.real.name.group.entity.WorkerGroup;
+import com.real.name.group.service.GroupService;
+import com.real.name.issue.entity.IssueAccess;
 import com.real.name.issue.entity.IssueFace;
+import com.real.name.issue.service.DeleteInfoService;
+import com.real.name.issue.service.IssueAccessService;
+import com.real.name.issue.service.IssueFaceService;
 import com.real.name.issue.service.repository.IssueFaceMapper;
 import com.real.name.person.entity.Person;
 import com.real.name.person.entity.PersonQuery;
 import com.real.name.person.service.PersonService;
 import com.real.name.person.service.repository.PersonQueryMapper;
 import com.real.name.person.service.repository.PersonRepository;
+import com.real.name.project.entity.ProjectDetail;
+import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.ProjectService;
 import org.apache.shiro.SecurityUtils;
@@ -33,11 +41,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -72,6 +78,71 @@ public class PersonServiceImpl implements PersonService {
     @Autowired
     private WebSocket webSocket;
 
+    @Autowired
+    private GroupService groupService;
+
+    @Autowired
+    private IssueFaceService issueFaceService;
+
+    @Autowired
+    private IssueAccessService issueAccessService;
+
+    @Autowired
+    private DeleteInfoService deleteInfoService;
+
+    @Transactional
+    @Override
+    public void addPeopleToProject(String projectCode, Integer teamSysNo, List<Person> personList, List<Device> allIssueDevice, List<Device> allProjectIssueDevice) {
+        for (Person person : personList) {
+            if (!StringUtils.isEmpty(person.getPersonName()) || !StringUtils.isEmpty(person.getHeadImage())) {
+                Integer personId = person.getPersonId();
+                //判断人员是否在这个项目班组中
+                boolean exists = projectDetailQueryService.judgePersonInProGroup(projectCode, teamSysNo, personId);
+                if (!exists) {
+                    //添加项目班组人员信息关联
+                    projectDetailQueryService.insertProjectDetail(new ProjectDetailQuery(projectCode, teamSysNo, personId));
+                } else {
+                    //修改移除标识
+                    projectDetailQueryService.setProGroupPersonUnRemove(personId, projectCode, teamSysNo);
+                }
+                //查询人员所在的班组名
+                String teamName = groupService.findTeamNameByTeamSysNo(teamSysNo);
+                //将人员进场推送到远程
+                if (teamName != null) {
+                    JSONObject map = new JSONObject();
+                    map.put("projectCode", projectCode);
+                    map.put("teamName", teamName);
+                    map.put("type", CommConstant.ENTER_TYPE);
+                    webSocket.sendMessageToAll(map.toJSONString());
+                }
+                if (person.getWorkRole() == 10) { //下发到所有设备
+                    addPersonToDevices(projectCode, person, allIssueDevice);
+                } else {  //下发到项目绑定的设备
+                    addPersonToDevices(projectCode, person, allProjectIssueDevice);
+                }
+            }
+        }
+    }
+
+    private void addPersonToDevices(String projectCode, Person person, List<Device> deviceList) {
+        Integer personId = person.getPersonId();
+        //保存人脸下发标识
+        for (Device device : deviceList) {
+            if (device.getDeviceType() == DeviceConstant.faceDeviceType) {
+                //将该设备下原有的下发标识删除
+                issueFaceService.deleteStatusByPersonInDevice(personId, device.getDeviceId());
+                //保存为下发成功的标识
+                issueFaceService.insertInitIssue(new IssueFace(person, device));
+            } else if(device.getDeviceType() == DeviceConstant.AccessDeviceType) {//保存控制器下发标识
+                issueAccessService.deleteStatusByPersonInDevice(personId, device.getDeviceId());
+                issueAccessService.insertIssueAccess(new IssueAccess(person, device));
+            }
+            //将原有的删除下发记录删除
+            deleteInfoService.deleteByCondition(personId, device.getDeviceId());
+        }
+        //下发人员信息
+        deviceService.addPersonToDevices(projectCode, person, deviceList);
+    }
 
     @Transactional
     @Override
@@ -92,13 +163,20 @@ public class PersonServiceImpl implements PersonService {
 
     @Transactional
     @Override
-    public void removePersonInProject(Person person, String projectCode) {
+    public void removePersonInProject(Person person, String projectCode, Integer teamSysNo) {
+        //设置移出标识
+        int i = projectDetailQueryService.setProGroupPersonRemove(person.getPersonId(), projectCode, teamSysNo);
+        if (i <= 0) {
+            throw new AttendanceException(ResultError.REMOVE_FROM_PROJECT_FAILURE);
+        }
         //查询该项目所绑定的设备
         List<Device> projectDevices = deviceService.findByProjectCode(projectCode);
         //删除人员在设备上的信息
         deviceService.deletePersonInDeviceList(projectDevices, person);
         //查被删除人员所在的班组，并将出场人数加1
-        String teamName = projectDetailQueryService.findTeamName(projectCode, person.getPersonId());
+        String teamName = groupService.findTeamNameByTeamSysNo(teamSysNo);
+        logger.info("出场的人员姓名为：{}", person.getPersonName());
+        logger.info("出场的班组名为：{}", teamName);
         String key = projectCode + CommConstant.ABSENT + teamName;
         if (jedisKeys.hasKey(key)) {
             String value = (String) jedisStrings.get(key);
@@ -113,8 +191,6 @@ public class PersonServiceImpl implements PersonService {
         map.put("projectCode", projectCode);
         map.put("type", CommConstant.ABSENT_TYPE);
         webSocket.sendMessageToAll(map.toJSONString());
-        //设置移出标识
-        projectDetailQueryService.setProPersonRemoveStatus(person.getPersonId(), projectCode);
     }
 
     @Override
@@ -125,6 +201,15 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<Person> findRemovePersonInGroup(Integer teamSysNo, String projectCode) {
         return personQueryMapper.findRemovePersonInGroup(teamSysNo, projectCode);
+    }
+
+    @Override
+    public List<Person> getPersonToAttendProject(String projectCode, String ContractCorpCode, Integer isAdminGroup) {
+        if (isAdminGroup == 1) { // 管理员班组
+            return personQueryMapper.getAdminPersonToAttendProject(projectCode, ContractCorpCode);
+        } else {
+            return personQueryMapper.getNormalPersonToAttendProject(ContractCorpCode);
+        }
     }
 
     @Override
@@ -192,8 +277,11 @@ public class PersonServiceImpl implements PersonService {
     @Transactional
     @Override
     public Person createPerson(Person person) {
-        Person selectPerson = personRepository.save(person);
-        if (selectPerson == null) {
+        Person selectPerson;
+        try {
+            selectPerson = personRepository.save(person);
+        } catch (Exception e) {
+            logger.error("添加人员出现异常", e);
             throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "人员");
         }
         return selectPerson;
@@ -240,18 +328,51 @@ public class PersonServiceImpl implements PersonService {
         User user = (User) SecurityUtils.getSubject().getSession().getAttribute("user");
         boolean containAdminRole = AuthUtils.isContainAdminRole(user);
         boolean containProjectRole = AuthUtils.isContainProjectRole(user);
-        if (containAdminRole) {
-            return personRepository.save(person);
-        } else if (containProjectRole) {
-            //判断该人员是否属于该项目管理员所在的项目下或者是否是没有参见项目的人员
-            List<String> ids = projectDetailQueryService.getProjectCodeListByPersonId(person.getPersonId());
-            for (String id : user.getProjectSet()) {
-                if (ids.contains(id)) {
-                    return personRepository.save(person);
+        Person updatePerson = null;
+        try {
+            if (containAdminRole) {
+                updatePerson = personRepository.save(person);
+            } else if (containProjectRole) {
+                //判断该人员是否属于该项目管理员所在的项目下或者是否是没有参见项目的人员
+                List<String> ids = projectDetailQueryService.getProjectCodeListByPersonId(person.getPersonId());
+                if (ids.size() == 0) { //
+                    updatePerson = personRepository.save(person);
+                } else {
+                    for (String id : user.getProjectSet()) {
+                        if (ids.contains(id)) {
+                            updatePerson = personRepository.save(person);
+                        }
+                    }
                 }
             }
+        } catch (Exception e) {
+            logger.error("修改人员发生异常", e);
+            throw new AttendanceException(ResultError.UPDATE_ERROR);
         }
-        return null;
+        if (updatePerson == null) {
+            throw new AttendanceException(ResultError.USER_UN_AUTHORIZED);
+        }
+        return updatePerson;
+    }
+
+    @Override
+    public Map<String, Object> getPersonMainPageInfo() {
+        //获取当日新增的人员
+        Integer todayPersonNum = personQueryMapper.countTodayPersonNum();
+        //获取总的人员
+        Integer personNum = personQueryMapper.countPersonNum();
+        //获取当日新增人员的姓名和头像地址
+        List<Map<String, Object>> todayPersonInfo = personQueryMapper.getTodayPersonInfo();
+        Map<String, Object> map = new HashMap<>();
+        map.put("todayPersonNum", todayPersonNum);
+        map.put("personNum", personNum);
+        map.put("todayPersonInfo", todayPersonInfo);
+        return map;
+    }
+
+    @Override
+    public List<Person> getPersonInGroup(Integer teamSysNo, String projectCode, Integer status) {
+        return personQueryMapper.getPersonInGroupByStatus(teamSysNo, projectCode, status);
     }
 
     @Override
@@ -267,14 +388,6 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public Optional<Person> findById(Integer personId) {
         return personRepository.findById(personId);
-    }
-
-    @Override
-    public Person saveImgBase64(Integer personId, String img) {
-        Optional<Person> person = findById(personId);
-        if (!person.isPresent()) throw new AttendanceException(ResultError.PERSON_NOT_EXIST);
-        person.get().setHeadImage(img);
-        return personRepository.save(person.get());
     }
 
     @Override
@@ -308,6 +421,16 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
+    public List<Person> findIssueInfoByPersonIdIn(List<Integer> personIds) {
+        return personQueryMapper.findIssueInfoByPersonIdIn(personIds);
+    }
+
+    @Override
+    public List<Person> findIssuePeopleImagesInfo(List<Integer> personIds) {
+        return personQueryMapper.findIssuePeopleImagesInfo(personIds);
+    }
+
+    @Override
     public Person findPersonNameByPersonId(Integer personId) {
         return personQueryMapper.findPersonNameByPersonId(personId);
     }
@@ -323,27 +446,14 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public String getIdCardIndexByPersonId(Integer personId) {
-        return personQueryMapper.getIdCardIndexByPersonId(personId);
-    }
-
-    @Override
     public List<Person> searchPerson(PersonQuery personQuery) {
         return personQueryMapper.searchPerson(personQuery);
     }
 
     @Override
-    public Map<String, Object> getPersonMainPageInfo() {
-        //获取当日新增的人员
-        Integer todayPersonNum = personQueryMapper.countTodayPersonNum();
-        //获取总的人员
-        Integer personNum = personQueryMapper.countPersonNum();
-        Map<String, Object> map = new HashMap<>();
-        map.put("todayPersonNum", todayPersonNum);
-        map.put("personNum", personNum);
-        return map;
+    public List<String> findExistCorpCode() {
+        return personQueryMapper.findExistCorpCode();
     }
-
 
 
 }

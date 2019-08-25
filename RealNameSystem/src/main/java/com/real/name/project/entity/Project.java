@@ -1,7 +1,9 @@
 package com.real.name.project.entity;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -11,6 +13,8 @@ import java.util.Date;
 @Setter
 @Getter
 @Entity
+@ToString
+@NoArgsConstructor
 @DynamicInsert
 @DynamicUpdate
 public class Project {
@@ -169,8 +173,6 @@ public class Project {
     }
 
 
-    public Project() { }
-
     public Project(String projectCode) {
         this.projectCode = projectCode;
     }
@@ -180,38 +182,4 @@ public class Project {
         this.contractorCorpName = contractorCorpName;
     }
 
-    @Override
-    public String toString() {
-        return "Project{" +
-                "projectCode='" + projectCode + '\'' +
-                ", contractorCorpCode='" + contractorCorpCode + '\'' +
-                ", contractorCorpName='" + contractorCorpName + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", category='" + category + '\'' +
-                ", buildCorpName='" + buildCorpName + '\'' +
-                ", buildCorpCode='" + buildCorpCode + '\'' +
-                ", builderLicenses='" + builderLicenses + '\'' +
-                ", buildPlanNum='" + buildPlanNum + '\'' +
-                ", prjPlanNum='" + prjPlanNum + '\'' +
-                ", areaCode='" + areaCode + '\'' +
-                ", invest=" + invest +
-                ", buildingArea=" + buildingArea +
-                ", buildingLength=" + buildingLength +
-                ", startDate=" + startDate +
-                ", completeDate=" + completeDate +
-                ", linkMan='" + linkMan + '\'' +
-                ", linkPhone='" + linkPhone + '\'' +
-                ", prjStatus=" + prjStatus +
-                ", lat=" + lat +
-                ", lng=" + lng +
-                ", address='" + address + '\'' +
-                ", approvalNum='" + approvalNum + '\'' +
-                ", approvalLevelNum=" + approvalLevelNum +
-                ", prjSize='" + prjSize + '\'' +
-                ", propertyNum='" + propertyNum + '\'' +
-                ", functionNum='" + functionNum + '\'' +
-                ", nationNum=" + nationNum +
-                '}';
-    }
 }

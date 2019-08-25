@@ -12,7 +12,8 @@ import com.real.name.group.entity.WorkerGroup;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.ProjectService;
-import com.real.name.record.entity.*;
+import com.real.name.record.entity.Attendance;
+import com.real.name.record.entity.GroupAttend;
 import com.real.name.record.query.*;
 import com.real.name.record.service.AttendanceService;
 import com.real.name.record.service.GroupAttendService;
@@ -210,18 +211,17 @@ public class AttendanceController {
 
     /**
      * 获取项目本月或上个月班组的工时
-     * @param status 0上个月 1本月
      */
     @GetMapping("/getProjectGroupHours")
-    public ResultVo getProjectGroupHours(@RequestParam("projectCode") String projectCode,
-                                         @RequestParam(name = "status", defaultValue = "1") Integer status) {
-        if (status == 0) {
-            Map<String, Object> map = attendanceService.countPeriodGroupWorkHoursInProject(projectCode, TimeUtil.getLastMonthFirstDay(), TimeUtil.getMonthFirstDay());
-            return ResultVo.success(map);
-        } else {
-            Map<String, Object> map = attendanceService.countPeriodGroupWorkHoursInProject(projectCode, TimeUtil.getMonthFirstDay(), TimeUtil.getNextMonthFirstDay());
-            return ResultVo.success(map);
-        }
+    public ResultVo getProjectGroupHours(@RequestParam("projectCode") String projectCode) {
+        Map<String, Object> map = new HashMap<>();
+        //上个月
+        Map<String, Object> lastMonth = attendanceService.countPeriodGroupWorkHoursInProject(projectCode, TimeUtil.getLastMonthFirstDay(), TimeUtil.getMonthFirstDay());
+        //这个月
+        Map<String, Object> thisMonth = attendanceService.countPeriodGroupWorkHoursInProject(projectCode, TimeUtil.getMonthFirstDay(), TimeUtil.getNextMonthFirstDay());
+        map.put("lastMonth", lastMonth);
+        map.put("thisMonth", thisMonth);
+        return ResultVo.success(map);
     }
 
     /**

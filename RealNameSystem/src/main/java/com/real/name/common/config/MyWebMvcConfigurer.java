@@ -2,6 +2,11 @@ package com.real.name.common.config;
 
 import com.real.name.common.handler.JsonReturnHandler;
 import com.real.name.common.utils.PathUtil;
+import com.real.name.group.service.GroupService;
+import com.real.name.group.service.implement.GroupServiceImpl;
+import com.real.name.person.service.PersonService;
+import com.real.name.person.service.implement.PersonServiceImpl;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

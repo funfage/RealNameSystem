@@ -16,6 +16,8 @@ public class NationConstant {
 
     public static String version;
 
+    public static String corpKey;
+
     @Value("${nation.url}")
     public void setUrl(String url) {
         NationConstant.url = url;
@@ -41,6 +43,11 @@ public class NationConstant {
         NationConstant.version = version;
     }
 
+    @Value("${nation.corpKey}")
+    public void setCorpKey(String corpKey) {
+        NationConstant.corpKey = corpKey;
+    }
+
     public NationConstant() {
     }
 
@@ -62,6 +69,10 @@ public class NationConstant {
 
     public static String getVersion() {
         return version;
+    }
+
+    public static String getCorpsign() {
+        return corpKey;
     }
 
     /*public final static String URL = "http://182.148.48.165:8090/open.api";

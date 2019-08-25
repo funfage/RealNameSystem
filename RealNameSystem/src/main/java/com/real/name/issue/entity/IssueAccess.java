@@ -23,11 +23,9 @@ public class IssueAccess {
     public IssueAccess() {
     }
 
-    public IssueAccess(Integer issueAccessId, Person person, Device device, Integer issueStatus) {
-        this.issueAccessId = issueAccessId;
+    public IssueAccess(Person person, Device device) {
         this.person = person;
         this.device = device;
-        this.issueStatus = issueStatus;
     }
 
     public IssueAccess(Person person, Device device, Integer issueStatus) {

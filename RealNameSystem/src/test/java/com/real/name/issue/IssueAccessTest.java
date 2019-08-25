@@ -40,6 +40,11 @@ public class IssueAccessTest extends BaseTest {
         System.out.println(issueFailAccess);
     }
 
+    @Test
+    public void deleteStatusByPersonInDevice() {
+        int i = issueAccessMapper.deleteStatusByPersonInDevice(89, "E0F28CF710E2596CF8");
+        System.out.println(i);
+    }
 }
 
 

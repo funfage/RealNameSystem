@@ -17,11 +17,9 @@ import com.real.name.person.entity.Person;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.service.repository.ProjectDetailQueryMapper;
 import com.real.name.record.query.PeriodTime;
+import com.real.name.subcontractor.query.GroupPeople;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.Serializable;
 import java.text.ParseException;
@@ -32,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequestMapping("test")
 public class TestController {
 
     public class Article implements Serializable {
@@ -90,6 +89,16 @@ public class TestController {
 
     @Autowired
     private WebSocket webSocket;
+
+    @GetMapping("/test1")
+    public ResultVo test(@RequestParam("personIds") List<Integer> personIds) {
+        return ResultVo.success(personIds);
+    }
+
+    @GetMapping("/test2")
+    public ResultVo test2(@RequestBody List<GroupPeople> groupPeopleList) {
+        return ResultVo.success(groupPeopleList);
+    }
 
     /**
      * 测试时间段

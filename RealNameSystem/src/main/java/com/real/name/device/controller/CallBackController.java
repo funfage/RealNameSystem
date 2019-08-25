@@ -86,6 +86,7 @@ public class CallBackController {
             Person person = personService.findPersonNameByPersonId(Integer.valueOf(personId));
             //设置用户名
             if (person != null) {
+                logger.debug("人员id为：{}，姓名为：{}",  person.getPersonId(), person.getPersonName());
                 record.setPersonName(person.getPersonName());
                 record.setPersonId(person.getPersonId());
                 //获取设备信息
@@ -140,19 +141,18 @@ public class CallBackController {
         String routerIP = HTTPTool.getIpAddr(request);
         String result = "ip: " + ip + ", deviceKey: " + deviceKey + ", personCount: " + personCount + ", time: " + time + ", faceCount: " + faceCount + ", version: " + version + ", routerIP: " + routerIP + "\n";
         logger.debug("设备心跳信息:{}", result);
-        //将设备id存入redis
-        jedisStrings.set(deviceKey, routerIP);
-        //设备在线的标识,设置过期时间
-        jedisStrings.set(DeviceConstant.OnlineDevice + deviceKey, true, 90, TimeUnit.SECONDS);
         //判断数据库中是否有设备的信息
         Optional<Device> deviceOptional = deviceService.findByDeviceId(deviceKey);
         if (deviceOptional.isPresent()) {
+            //将设备id存入redis
+            jedisStrings.set(deviceKey, routerIP, 90, TimeUnit.SECONDS);
+            //设备在线的标识,设置过期时间
+            jedisStrings.set(DeviceConstant.OnlineDevice + deviceKey, true, 90, TimeUnit.SECONDS);
             Device device = deviceOptional.get();
+            logger.debug("在线的设备为,deviceKey,{},ip:{},port:{}", deviceKey, device.getIp(), device.getOutPort());
             //如过存在该设备信息则判断设备的ip是否发生改变
             if (device.getIp() == null || !device.getIp().equals(routerIP)) {
                 //如果ip发生改变则修改数据库中的ip值
-                /*device.setIp(routerIP);
-                deviceService.save(device);*/
                 deviceService.updateDeviceIPByProjectCode(routerIP, device.getProjectCode());
             }
         }

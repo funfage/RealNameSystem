@@ -1,5 +1,6 @@
 package com.real.name.person;
 
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.real.name.others.BaseTest;
@@ -9,10 +10,7 @@ import com.real.name.person.service.repository.PersonQueryMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class PersonQueryTest extends BaseTest {
 
@@ -34,7 +32,7 @@ public class PersonQueryTest extends BaseTest {
 
     @Test
     public void findByIdCardNum() {
-        Person person = mapper.findByIdCardNumber("440808199011011111");
+        Person person = mapper.findByIdCardNumber("440808199011111");
         System.out.println(person);
     }
 
@@ -79,7 +77,7 @@ public class PersonQueryTest extends BaseTest {
 
     @Test
     public void findPersonNameByPersonId() {
-        Person personNameByPersonId = mapper.findPersonNameByPersonId(89);
+        Person personNameByPersonId = mapper.findPersonNameByPersonId(Integer.valueOf("89"));
         System.out.println(personNameByPersonId);
     }
 
@@ -94,8 +92,9 @@ public class PersonQueryTest extends BaseTest {
 
     @Test
     public void findByPersonId() {
-        Person person = mapper.findByPersonId(89);
-        System.out.println(person);
+        Person person = mapper.findByPersonId(137);
+        String personstr = JSON.toJSONString(person);
+        System.out.println(personstr);
     }
 
     @Test
@@ -120,6 +119,50 @@ public class PersonQueryTest extends BaseTest {
     public void findRemovePersonInGroup() {
         List<Person> removePersonInGroup = mapper.findRemovePersonInGroup(1563331590, "36bj84W235Zgc8O78yuS32510ppMkHfe");
         System.out.println(removePersonInGroup);
+    }
+
+    @Test
+    public void getAdminPersonToAttendProject() {
+        List<Person> adminPersonToAttendProject = mapper.getAdminPersonToAttendProject("44010620190510008", "100dfdfere");
+        System.out.println(adminPersonToAttendProject);
+    }
+
+    @Test
+    public void getTodayPersonInfo() {
+        List<Map<String, Object>> todayPersonInfo = mapper.getTodayPersonInfo();
+        System.out.println(todayPersonInfo);
+    }
+
+    @Test
+    public void getNormalPersonToAttendProject() {
+        List<Person> normalPersonToAttendProject = mapper.getNormalPersonToAttendProject("100dfdfere");
+        System.out.println(normalPersonToAttendProject);
+    }
+
+    @Test
+    public void findIssuePeopleImagesInfo() {
+        List<Integer> personIds = new ArrayList<>();
+        List<Person> personList = mapper.findIssuePeopleImagesInfo(personIds);
+        System.out.println(personList);
+    }
+
+    @Test
+    public void findIssueInfoByPersonIdIn() {
+        List<Integer> personIds = new ArrayList<>();
+        personIds.add(89);
+        personIds.add(94);
+        List<Person> personList = mapper.findIssueInfoByPersonIdIn(personIds);
+        System.out.println(personList);
+    }
+
+    @Test
+    public void getPersonInGroup() {
+        List<Person> personInGroup = mapper.getPersonInGroupByStatus(1562649690, "36bj84W235Zgc8O78yuS32510ppMkHfe", 0);
+        List<Person> personInGroup1 = mapper.getPersonInGroupByStatus(1562649690, "36bj84W235Zgc8O78yuS32510ppMkHfe", 1);
+        List<Person> personInGroup2 = mapper.getPersonInGroupByStatus(1562649690, "36bj84W235Zgc8O78yuS32510ppMkHfe", null);
+        System.out.println(personInGroup);
+        System.out.println(personInGroup1);
+        System.out.println(personInGroup2);
     }
 
 

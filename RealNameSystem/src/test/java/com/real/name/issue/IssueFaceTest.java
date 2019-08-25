@@ -24,6 +24,9 @@ public class IssueFaceTest extends BaseTest {
     @Autowired
     IssueFaceService issueFaceService;
 
+    @Autowired
+    IssueFaceMapper issueFaceMapper;
+
 
     @Test
     public void findAllFaceIssueImageFailure() {
@@ -72,6 +75,12 @@ public class IssueFaceTest extends BaseTest {
         issueFace.setIssuePersonStatus(1);
         issueFace.setIssueImageStatus(1);
         int i = repository.insertInitIssue(issueFace);
+        System.out.println(i);
+    }
+
+    @Test
+    public void deleteStatusByPersonInDevice() {
+        int i = issueFaceMapper.deleteStatusByPersonInDevice(89, "E0F28CF710E2812AF8");
         System.out.println(i);
     }
 

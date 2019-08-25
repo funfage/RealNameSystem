@@ -1,5 +1,6 @@
 package com.real.name.others;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.real.name.auth.entity.Role;
 import com.real.name.auth.entity.User;
@@ -10,6 +11,7 @@ import com.real.name.device.netty.utils.ConvertUtils;
 import com.real.name.project.entity.Project;
 import com.real.name.record.query.ProjectWorkRecord;
 import com.real.name.subcontractor.entity.SubContractor;
+import com.real.name.subcontractor.query.GroupPeople;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -22,6 +24,28 @@ public class MyTest {
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public static void main(String[] args) throws Exception {
+        getGroupPeopleJSON();
+    }
+
+    private static void getGroupPeopleJSON() {
+        List<GroupPeople> groupPeopleList = new ArrayList<>();
+        GroupPeople groupPeople = new GroupPeople();
+        groupPeople.setTeamSysNo(1562649690);
+        List<Integer> personIds = new ArrayList<>();
+        personIds.add(1234);
+        groupPeople.setPersonIds(personIds);
+        groupPeopleList.add(groupPeople);
+
+        GroupPeople groupPeople1 = new GroupPeople();
+        groupPeople1.setTeamSysNo(1562649811);
+        List<Integer> personIds1 = new ArrayList<>();
+        personIds1.add(1235);
+        groupPeople1.setPersonIds(personIds1);
+        groupPeopleList.add(groupPeople1);
+        System.out.println(JSON.toJSONString(groupPeopleList));
+    }
+
+    public static void contractorTOJSONString() {
         SubContractor subContractor = new SubContractor();
         subContractor.setSubContractorId(2);
         subContractor.setCorpCode("100dfdf");

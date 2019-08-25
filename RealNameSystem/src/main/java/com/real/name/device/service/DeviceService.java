@@ -12,6 +12,12 @@ import java.util.Set;
 
 public interface DeviceService {
 
+
+    /**
+     * 下发人员信息到设备
+     */
+    void addPersonToDevices(String projectCode, Person person, List<Device> deviceList);
+
     /**
      * 添加人脸设备
      */
@@ -21,7 +27,6 @@ public interface DeviceService {
      * 添加控制器设备
      */
     void addAccessDevice(Device device);
-
 
     /**
      * 更新人脸设备信息
@@ -70,6 +75,16 @@ public interface DeviceService {
     List<Device> findAll();
 
     /**
+     * 查询所有需要下发的设备
+     */
+    List<Device> findAllIssueDevice();
+
+    /**
+     * 查询项目绑定的需要下发的设备
+     */
+    List<Device> findAllProjectIssueDevice(String projectCode);
+
+    /**
      * 根据设备类型查询所有与设备
      */
     List<Device> findAllByDeviceType(Integer deviceType);
@@ -77,7 +92,7 @@ public interface DeviceService {
     /**
      * 根据项目id和设备类型查找某个设备
      */
-    List<Device> findByProjectCodeAndDeviceType(String projectId, Integer deciceType);
+    List<Device> findByProjectCodeAndDeviceType(String projectId, Integer deviceType);
 
     /**
      * 获取设备所有的id

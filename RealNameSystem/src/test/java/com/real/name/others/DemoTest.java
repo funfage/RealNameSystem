@@ -226,7 +226,7 @@ public class DemoTest {
     public void updateWorkerInfo() {
         String method = "ProjectWorker.Add";
         NationalWorkerInfo nwi = new NationalWorkerInfo(NationConstant.APPID, NationConstant.CORPCODE,"筠城建筑科技有限公司",1500161164,"狼狼狼");
-        Worker worker = new Worker();
+        NationalPerson worker = new NationalPerson();
         worker.setWorkerName("何某人");
         worker.setIsTeamLeader(1);
         worker.setIdCardType("01");
@@ -242,7 +242,7 @@ public class DemoTest {
         worker.setDate("");
         //图片大小限制为10K
         worker.setHeadImage("https://gss1.bdstatic.com/-vo3dSag_xI4khGkpoWK1HF6hhy/baike/s%3D220/sign=571122a7b07eca8016053ee5a1229712/8d5494eef01f3a29c8f5514a9925bc315c607c71.jpg");
-        List<Worker> list = new LinkedList<>();
+        List<NationalPerson> list = new LinkedList<>();
         list.add(worker);
         nwi.setWorkerList(list);
         String str = JSON.toJSONString(nwi);
@@ -316,7 +316,7 @@ public class DemoTest {
         nwi.setProjectCode(NationConstant.APPID);
         nwi.setCorpCode(NationConstant.CORPCODE);
         nwi.setTeamSysNo(1500161164);
-        Worker worker = new Worker();
+        NationalPerson worker = new NationalPerson();
         worker.setIdCardType("01");
         worker.setIdCardNumber(AesUtils.encrypt("430626199701135715",appScrect));
         worker.setType(1);
@@ -360,7 +360,7 @@ public class DemoTest {
     public void workerContractAdd() throws UnsupportedEncodingException {
         String method = "WorkerContract.Add";
         String appScrect = NationConstant.APPSCRECT;
-        Worker worker = new Worker();
+        NationalPerson worker = new NationalPerson();
         worker.setCorpCode(NationConstant.CORPCODE);
         worker.setCorpName(NationConstant.CORPNAME);
         worker.setIdCardType("01");
@@ -410,7 +410,7 @@ public class DemoTest {
         np.setProjectCode(NationConstant.APPID);
         np.setTeamSysNo(1500161164);
 
-        Worker worker = new Worker();
+        NationalPerson worker = new NationalPerson();
         worker.setIdCardType("1");
         worker.setIdCardNumber(AesUtils.encrypt("430626199701135715", NationConstant.APPSCRECT));
         worker.setDate("2016-01-01 12:12:12");
@@ -455,7 +455,7 @@ public class DemoTest {
         np.setAttachments(Arrays.asList(na));
 
 
-        Worker worker = new Worker();
+        NationalPerson worker = new NationalPerson();
         worker.setIdCardType("01");
         worker.setIdCardNumber(AesUtils.encrypt("430626199701135715", NationConstant.APPSCRECT));
         worker.setPayRollBankName("广发银行");
@@ -484,7 +484,7 @@ public class DemoTest {
     //查询工人工资 //todo
     @Test
     public void PayrollQuery() {
-        Worker worker = new Worker();
+        NationalPerson worker = new NationalPerson();
         worker.setProjectCode(NationConstant.APPID);
         worker.setCorpCode(NationConstant.CORPCODE);
         worker.setCorpName(NationConstant.CORPNAME);

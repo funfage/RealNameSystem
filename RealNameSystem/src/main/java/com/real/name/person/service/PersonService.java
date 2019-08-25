@@ -1,9 +1,9 @@
 package com.real.name.person.service;
 
 import com.real.name.common.result.ResultVo;
+import com.real.name.device.entity.Device;
 import com.real.name.person.entity.Person;
 import com.real.name.person.entity.PersonQuery;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -15,6 +15,11 @@ import java.util.Optional;
 public interface PersonService {
 
     /**
+     * 将人员添加到项目
+     */
+    void addPeopleToProject(String projectCode, Integer teamSysNo, List<Person> personList, List<Device> allIssueDevice, List<Device> allProjectIssueDevice);
+
+    /**
      * 删除设备人员信息
      */
     void deleteDevicesPersonInfo(Person person);
@@ -22,7 +27,7 @@ public interface PersonService {
     /**
      * 将人员从项目中移除
      */
-    void removePersonInProject(Person person, String projectCode);
+    void removePersonInProject(Person person, String projectCode, Integer teamSysNo);
 
     /**
      *查询移除人员的信息
@@ -33,6 +38,12 @@ public interface PersonService {
      * 查询班组下的需要移除的人员信息
      */
     List<Person> findRemovePersonInGroup(Integer teamSysNo, String projectCode);
+
+    /**
+     * 获取添加到项目的人员
+     * 人员过滤的条件是：与参建单位的CorpCode一致并且没有参见其它项目的人员（或者被移出项目的人员）。
+     */
+    List<Person> getPersonToAttendProject(String projectCode, String ContractCorpCode, Integer isAdminGroup);
 
 
     /**
@@ -76,13 +87,6 @@ public interface PersonService {
     Optional<Person> findById(Integer personId);
 
     /**
-     * 给人员添加照片
-     * @param personId 人员id
-     * @param img 照片的base64编码
-     */
-    Person saveImgBase64(Integer personId, String img);
-
-    /**
      * 查询项目中的人员
      * @param personIds 人员id
      */
@@ -121,6 +125,16 @@ public interface PersonService {
     Person findIssuePersonImageInfo(Integer personId);
 
     /**
+     * 查询需要下发的多个人员信息
+     */
+    List<Person> findIssueInfoByPersonIdIn(List<Integer> personIds);
+
+    /**
+     * 查询多个人员信息和照片信息
+     */
+    List<Person> findIssuePeopleImagesInfo(List<Integer> personIds);
+
+    /**
      * 查询用户名
      */
     Person findPersonNameByPersonId(Integer personId);
@@ -136,11 +150,6 @@ public interface PersonService {
     List<Person> findAllPersonRole();
 
     /**
-     * 查询人员的身份证索引号
-     */
-    String getIdCardIndexByPersonId(Integer personId);
-
-    /**
      * 搜索人员信息
      */
     List<Person> searchPerson(PersonQuery personQuery);
@@ -150,8 +159,16 @@ public interface PersonService {
      */
     Map<String, Object> getPersonMainPageInfo();
 
+    /**
+     * 获取班组下的人员
+     */
+    List<Person> getPersonInGroup(Integer teamSysNo, String projectCode, Integer status);
 
 
+    /**
+     * 获取已经填写过的CorpCode
+     */
+    List<String> findExistCorpCode();
 
 
 }

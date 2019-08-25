@@ -2,7 +2,6 @@ package com.real.name.issue.service;
 
 import com.real.name.device.entity.Device;
 import com.real.name.issue.entity.IssueFace;
-import com.real.name.issue.entity.IssuePersonStatus;
 import com.real.name.person.entity.Person;
 
 import java.util.List;
@@ -22,7 +21,12 @@ public interface IssueFaceService {
     /**
      * 插入下发信息
      */
-    int insertInitIssue(IssueFace issueFace);
+    void insertInitIssue(IssueFace issueFace);
+
+    /**
+     * 将人员在某个设备的下发标识删除
+     */
+    int deleteStatusByPersonInDevice(Integer personId, String deviceId);
 
     /**
      * 查询所有下发失败设备的id值

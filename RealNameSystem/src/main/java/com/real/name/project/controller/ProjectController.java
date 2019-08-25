@@ -16,6 +16,7 @@ import com.real.name.common.websocket.WebSocket;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import com.real.name.group.entity.WorkerGroup;
+import com.real.name.group.query.GroupQuery;
 import com.real.name.group.service.GroupService;
 import com.real.name.issue.entity.IssueAccess;
 import com.real.name.issue.entity.IssueFace;
@@ -199,8 +200,8 @@ public class ProjectController {
             throw new AttendanceException(ResultError.PROJECT_NOT_EXIST);
         }
         // 判断是否存在该班组
-        Optional<WorkerGroup> group = groupService.findById(teamSysNo);
-        if (!group.isPresent()) {
+        GroupQuery group = groupService.findById(teamSysNo);
+        if (group == null) {
             throw new AttendanceException(ResultError.GROUP_NOT_EXIST);
         }
         //查询所有人脸设备
@@ -219,53 +220,51 @@ public class ProjectController {
         for (Integer personId : persons) {
             //判断是否有该人员
             Person personImageInfo = personService.findIssuePersonImageInfo(personId);
-            if (personImageInfo == null || !StringUtils.hasText(personImageInfo.getPersonName()) || !StringUtils.hasText(personImageInfo.getPersonName())) {
+            if (personImageInfo == null || StringUtils.isEmpty(personImageInfo.getPersonName()) || StringUtils.isEmpty(personImageInfo.getHeadImage())) {
                 //若人员不存在则跳过
                 continue;
             }
-            Optional<ProjectDetail> detailOptional = projectDetailService.findByProjectCodeAndPersonIdAndTeamSysNo(projectCode, personId, teamSysNo);
-            //如果为空则添加项目人员信息关联
-            if (!detailOptional.isPresent()) {
-                ProjectDetail save = projectDetailService.save(new ProjectDetail(projectCode, personId, teamSysNo));
-                if (save == null) {
-                    throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "添加人员到项目");
-                }
-            }
+            //添加项目班组人员信息关联
+            projectDetailService.save(new ProjectDetail(projectCode, personId, teamSysNo));
             //若果是管理工人则下发到该项目绑定的设备
             if (personImageInfo.getWorkRole() == 10) {
                 //为管理工人创建所有下发设备的标识
                 for (Device device : allFaceDevices) {
-                    int effect = issueFaceService.insertInitIssue(new IssueFace(personImageInfo, device, 0, 0));
-                    if (effect <= 0) {
-                        throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "添加人员到项目");
-                    }
+                    //将该设备下原有的下发标识删除
+                    issueFaceService.deleteStatusByPersonInDevice(personId, device.getDeviceId());
+                    //保存为下发成功的标识
+                    issueFaceService.insertInitIssue(new IssueFace(personImageInfo, device));
                 }
                 for (Device device : allAccessDevices) {
-                    int effect = issueAccessService.insertIssueAccess(new IssueAccess(personImageInfo, device, 0));
-                    if (effect <= 0) {
-                        throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "添加人员到项目");
-                    }
+                    //将该设备下原有的下发标识删除
+                    issueAccessService.deleteStatusByPersonInDevice(personId, device.getDeviceId());
+                    //保存为下发成功的标识
+                    issueAccessService.insertIssueAccess(new IssueAccess(personImageInfo, device));
                 }
             } else if (personImageInfo.getWorkRole() == 20) {//如果是普通工人则下发到所有设备
                 //为普通工人添加一条项目绑定设备的标识
                 for (Device device : projectFaceDevices) {
-                    int effectNum = issueFaceService.insertInitIssue(new IssueFace(personImageInfo, device, 0, 0));
-                    if (effectNum <= 0) {
-                        throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "添加人员到项目");
-                    }
+                    issueFaceService.deleteStatusByPersonInDevice(personId, device.getDeviceId());
+                    issueFaceService.insertInitIssue(new IssueFace(personImageInfo, device));
                 }
                 for (Device device : projectAccessDevices) {
-                    int effectNum = issueAccessService.insertIssueAccess(new IssueAccess(personImageInfo, device, 0));
-                    if (effectNum <= 0) {
-                        throw AttendanceException.errorMessage(ResultError.INSERT_ERROR, "添加人员到项目");
-                    }
+                    issueAccessService.deleteStatusByPersonInDevice(personId, device.getDeviceId());
+                    issueAccessService.insertIssueAccess(new IssueAccess(personImageInfo, device));
                 }
             }
+            //将人员进场推送到远程
+            if (group.getTeamName() != null) {
+                JSONObject map = new JSONObject();
+                map.put("projectCode", projectCode);
+                map.put("teamName", group.getTeamName());
+                map.put("type", CommConstant.ENTER_TYPE);
+                webSocket.sendMessageToAll(map.toJSONString());
+            }
             //下发人员信息到人脸设备
-            projectDetailService.addPersonToFaceDevice(projectCode, personImageInfo, projectFaceDevices, allFaceDevices, group.get().getTeamName());
+            projectDetailService.addPersonToFaceDevice(projectCode, personImageInfo, projectFaceDevices, allFaceDevices);
             //下发信息到控制器
             personImageInfo.setHeadImage(null);
-            projectDetailService.addPersonToAccessDevice(projectCode, personImageInfo, projectAccessDevices, allAccessDevices, group.get().getTeamName());
+            projectDetailService.addPersonToAccessDevice(projectCode, personImageInfo, projectAccessDevices, allAccessDevices);
         }
         return ResultVo.success();
     }
@@ -291,6 +290,8 @@ public class ProjectController {
         }
         //查被删除人员所在的班组
         String teamName = projectDetailQueryService.findTeamName(projectCode, personId);
+        logger.info("出场的人员姓名为：{}", person.getPersonName());
+        logger.info("出场的班组名为：", teamName);
         String key = projectCode + CommConstant.ABSENT + teamName;
         if (jedisKeys.hasKey(key)) {
             String value = (String) jedisStrings.get(key);
@@ -312,7 +313,6 @@ public class ProjectController {
         webSocket.sendMessageToAll(map.toJSONString());
         return ResultVo.success();
     }
-
 
 
     /**

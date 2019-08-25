@@ -20,12 +20,12 @@ public interface ProjectDetailService {
     /**
      * 将人员信息下发到人脸设备
      */
-    void addPersonToFaceDevice(String projectCode, Person person, List<Device> projectFaceDevices, List<Device> allFaceDevices, String teamName);
+    void addPersonToFaceDevice(String projectCode, Person person, List<Device> projectFaceDevices, List<Device> allFaceDevices);
 
     /**
      * 将人员下发到控制器
      */
-    void addPersonToAccessDevice(String projectCode, Person person, List<Device> projectAccessDevices, List<Device> allAccessDevices, String teamName);
+    void addPersonToAccessDevice(String projectCode, Person person, List<Device> projectAccessDevices, List<Device> allAccessDevices);
 
 
     /**

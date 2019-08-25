@@ -51,6 +51,8 @@ public class SubContractor {
 
     private Integer uploadStatus;
 
+
+
 }
 
 

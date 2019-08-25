@@ -114,7 +114,10 @@ public class AccessTypeImpl implements AccessType {
                 issueAccessService.updateIssueAccess(issueAccess);
             } else {
                 //否则没有权限,删除标识删除失败的记录
-                deleteInfoService.deleteByCondition(person.getPersonId(), deviceId + "");
+                int i = deleteInfoService.deleteByCondition(person.getPersonId(), deviceId + "");
+                if (i > 0) {
+                    logger.warn("删除了一条设备上的人员信息，设备id：{}，人员id：{}，人员姓名：{}", deviceId, person.getPersonId(), person.getPersonName());
+                }
             }
         }
     }

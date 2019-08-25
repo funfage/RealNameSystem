@@ -1,11 +1,11 @@
 package com.real.name.project.service.implement;
 
 import com.real.name.person.entity.Person;
+import com.real.name.project.entity.ProjectDetail;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.query.GroupPersonNum;
 import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.repository.ProjectDetailQueryMapper;
-import com.real.name.record.service.repository.AttendanceMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +18,11 @@ public class ProjectDetailQueryServiceImpl implements ProjectDetailQueryService 
 
     @Autowired
     private ProjectDetailQueryMapper projectDetailQueryMapper;
+
+    @Override
+    public void insertProjectDetail(ProjectDetailQuery projectDetailQuery) {
+        projectDetailQueryMapper.insertProjectDetail(projectDetailQuery);
+    }
 
     @Override
     public List<ProjectDetailQuery> findOtherAdmins(String projectCode, String groupCorpCode) {
@@ -117,9 +122,26 @@ public class ProjectDetailQueryServiceImpl implements ProjectDetailQueryService 
     }
 
     @Override
-    public int setProPersonRemoveStatus(Integer personId, String projectCode) {
-        return projectDetailQueryMapper.setProPersonRemoveStatus(personId, projectCode);
+    public int setProGroupPersonRemove(Integer personId, String projectCode, Integer teamSysNo) {
+        return projectDetailQueryMapper.setProPersonStatus(personId, 0, projectCode);
     }
+
+    @Override
+    public int setProGroupPersonUnRemove(Integer personId, String projectCode, Integer teamSysNo) {
+        return projectDetailQueryMapper.setProPersonStatus(personId, 1, projectCode);
+    }
+
+    @Override
+    public ProjectDetail findUnRemByProAndPersonId(String projectCode, Integer personId) {
+        return projectDetailQueryMapper.findUnRemByProAndPersonId(projectCode, personId);
+    }
+
+    @Override
+    public boolean judgePersonInProGroup(String projectCode, Integer teamSysNo, Integer personId) {
+        Integer integer = projectDetailQueryMapper.judgePersonInProGroup(projectCode, teamSysNo, personId);
+        return integer != null && integer > 0;
+    }
+
 
 }
 
