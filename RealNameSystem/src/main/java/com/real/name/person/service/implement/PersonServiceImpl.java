@@ -451,8 +451,13 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public List<String> findExistCorpCode() {
+    public List<Person> findExistCorpCode() {
         return personQueryMapper.findExistCorpCode();
+    }
+
+    @Override
+    public List<ProjectDetailQuery> searchPersonInPro(PersonQuery personQuery) {
+        return personQueryMapper.searchPersonInPro(personQuery);
     }
 
 

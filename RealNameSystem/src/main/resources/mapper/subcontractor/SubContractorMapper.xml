@@ -218,6 +218,25 @@
           sub_contractor_id = #{subContractorId}
     </update>
 
+    <select id="searchContractorInPro" resultMap="SubContractorQuery">
+        select
+          <include refid="subContractorQuerySql"/>
+        from
+          sub_contractor sc, project pj
+        where
+          sc.project_code = #{subContractorQuery.projectCode}
+        and
+          pj.project_code = sc.project_code
+        <if test="subContractorQuery.corpName != null and subContractorQuery.corpName != ''">
+            and
+            sc.corp_name like '%${subContractorQuery.corpName}%'
+        </if>
+        <if test="subContractorQuery.corpCode != null and subContractorQuery.corpCode != ''">
+            and
+            sc.corp_code = #{subContractorQuery.corpCode}
+        </if>
+    </select>
+
 
 
 </mapper>

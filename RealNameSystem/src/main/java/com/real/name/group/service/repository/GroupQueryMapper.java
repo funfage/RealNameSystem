@@ -83,6 +83,11 @@ public interface GroupQueryMapper {
      */
     String findTeamNameByTeamSysNo(@Param("teamSysNo") Integer teamSysNo);
 
+    /**
+     * 搜索项目中的班组
+     */
+    List<GroupQuery> searchGroupInPro(@Param("groupQuery") GroupQuery groupQuery);
+
 }
 
 

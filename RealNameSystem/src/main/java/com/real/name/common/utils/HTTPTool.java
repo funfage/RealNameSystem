@@ -1,5 +1,6 @@
 package com.real.name.common.utils;
 
+import com.real.name.common.constant.WeatherConstant;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.constant.DeviceConstant;
 import com.real.name.device.netty.utils.FaceDeviceUtils;
@@ -114,12 +115,13 @@ public class HTTPTool {
 
     /**
      * 获取天气信息
-     * @return
      */
     public static String getWeather() {
-        String url = "https://www.tianqiapi.com/api/?version={version}";
+        String url = "https://www.tianqiapi.com/api/?version={version}&appid={appid}&appsecret={appsecret}";
         Map<String, Object> map = new HashMap<>();
         map.put("version", "v6");
+        map.put("appid", WeatherConstant.getAppid());
+        map.put("appsecret", WeatherConstant.getAppsecret());
         return getUrlForParam(url, map);
     }
 

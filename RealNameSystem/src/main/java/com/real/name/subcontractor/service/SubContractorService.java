@@ -58,6 +58,11 @@ public interface SubContractorService {
      */
     boolean judgeEmptyById(Integer subContractorId);
 
+    /**
+     * 搜索项目中的参建单位
+     */
+    List<SubContractorQuery> searchContractorInPro(SubContractorQuery subContractorQuery);
+
 
 
 }

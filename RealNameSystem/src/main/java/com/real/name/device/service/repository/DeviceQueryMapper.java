@@ -17,6 +17,11 @@ public interface DeviceQueryMapper {
     List<Device> searchDevice(@Param("deviceQuery") DeviceQuery deviceQuery);
 
     /**
+     * 搜索项目中的设备
+     */
+    List<Device> searchDeviceInPro(@Param("deviceQuery") DeviceQuery deviceQuery);
+
+    /**
      * 根据项目id查询设备ip
      */
     Set<String> findIPByProjectCode(@Param("projectCode") String projectCode);

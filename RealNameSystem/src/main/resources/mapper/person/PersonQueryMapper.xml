@@ -49,7 +49,7 @@
     </resultMap>
 
     <sql id="personInfo">
-        distinct (p.person_id) as p_person_id, p.person_name, p.subordinate_company, p.gender, p.address, p.age, p.bank_link_number, p.card_number,
+        distinct (p.person_id) as p_person_id, p.person_name, p.subordinate_company, p.corp_code, p.gender, p.address, p.age, p.bank_link_number, p.card_number,
         p.cell_phone, p.culture_level_type, p.expiry_date, p.grant_org, p.group_no, p.has_bad_medical_history,
         p.has_buy_insurance, p.hometown, p.id_card_index, p.id_card_number, p.id_card_type, p.issue_card_date,
         p.issue_card_pic, p.is_team_leader, p.joined_time, p.marital_status, p.nation, p.negative_id_card_image,
@@ -433,15 +433,52 @@
           create_time &lt;= DATE_FORMAT(date_add(CURDATE(),interval 1 day),'%Y-%m-%d %H:%i:%s')
     </select>
 
-    <select id="findExistCorpCode" resultType="string">
-        select
-          distinct(corp_code)
+    <select id="findExistCorpCode" resultMap="queryMap">
+        select distinct
+            subordinate_company,
+            corp_code
         from
-          person
+            person
         where
-          corp_code is not null
-        and
-          corp_code != '';
+            corp_code is not null
+        and corp_code != ''
+        and subordinate_company is not null
+        and subordinate_company != ''
     </select>
 
+    <select id="searchPersonInPro" resultMap="com.real.name.project.service.repository.ProjectDetailQueryMapper.queryAllMap">
+        select
+          id,
+          <include refid="com.real.name.project.service.repository.ProjectDetailQueryMapper.personSql"/>,
+          <include refid="com.real.name.project.service.repository.ProjectDetailQueryMapper.workerGroupSql"/>,
+          pd.person_status
+        from
+          person p
+        inner join project_detail pd on p.person_id = pd.person_id and pd.project_code = #{personQuery.projectCode}
+        inner join worker_group wg on wg.team_sys_no = pd.team_sys_no
+        <if test="personQuery.subContractorId != null">
+            inner join sub_contractor sc on sc.sub_contractor_id = wg.sub_contractor_id and sc.sub_contractor_id = #{personQuery.subContractorId}
+        </if>
+        <if test="personQuery.hasContract != null">
+            <choose>
+                <when test="personQuery.hasContract == 1">
+                    and exists
+                    (select cf.contract_id from contract_info cf where cf.project_detail_id = pd.id)
+                </when>
+                <otherwise>
+                    and not exists
+                    (select cf.contract_id from contract_info cf where cf.project_detail_id = pd.id)
+                </otherwise>
+            </choose>
+        </if>
+        <if test="personQuery.personName != null">
+            and p.person_name like '%${personQuery.personName}%'
+        </if>
+        <if test="personQuery.workRole != null">
+            and p.work_role = #{personQuery.workRole}
+        </if>
+        <if test="personQuery.workType != null and personQuery.workType != ''">
+            and p.work_type = #{personQuery.workType}
+        </if>
+    </select>
 </mapper>

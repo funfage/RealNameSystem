@@ -134,6 +134,20 @@ public class GroupTest extends BaseTest {
         System.out.println(teamNameByTeamSysNo);
     }
 
+    @Test
+    public void searchGroupInPro() {
+        GroupQuery groupQuery = new GroupQuery();
+        groupQuery.setProjectCode("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        List<GroupQuery> groupQueries = groupQueryMapper.searchGroupInPro(groupQuery);
+        System.out.println(groupQueries);
+        groupQuery.setCorpName("设有");
+        List<GroupQuery> groupQueries1 = groupQueryMapper.searchGroupInPro(groupQuery);
+        System.out.println(groupQueries1);
+        groupQuery.setTeamSysNo(1562649811);
+        List<GroupQuery> groupQueries2 = groupQueryMapper.searchGroupInPro(groupQuery);
+        System.out.println(groupQueries2);
+    }
+
 
 }
 

@@ -137,5 +137,18 @@ public class SubContractorServiceImpl implements SubContractorService {
         return integer == null || integer <= 0;
     }
 
+    @Override
+    public List<SubContractorQuery> searchContractorInPro(SubContractorQuery subContractorQuery) {
+        List<SubContractorQuery> subContractorQueryList = subContractorMapper.searchContractorInPro(subContractorQuery);
+        return setContractorInfoList(subContractorQueryList);
+    }
+
+    private List<SubContractorQuery> setContractorInfoList(List<SubContractorQuery> subContractorQueryList) {
+        for (SubContractorQuery subContractorQuery : subContractorQueryList) {
+            setContractInfo(subContractorQuery);
+        }
+        return subContractorQueryList;
+    }
+
 
 }

@@ -153,4 +153,9 @@ public class GroupServiceImpl implements GroupService {
         return groupQueryMapper.findTeamNameByTeamSysNo(teamSysNo);
     }
 
+    @Override
+    public List<GroupQuery> searchGroupInPro(GroupQuery groupQuery) {
+        return groupQueryMapper.searchGroupInPro(groupQuery);
+    }
+
 }

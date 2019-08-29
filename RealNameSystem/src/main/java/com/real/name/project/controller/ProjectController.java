@@ -3,6 +3,8 @@ package com.real.name.project.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.real.name.common.annotion.JSON;
+import com.real.name.common.annotion.JSONS;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.constant.CommConstant;
 import com.real.name.common.constant.DeviceConstant;
@@ -319,6 +321,9 @@ public class ProjectController {
      * 获取项目中的人员
      */
     @GetMapping("/personInProject")
+    @JSONS({
+            @JSON(type = ProjectDetailQuery.class, filter = "projectCode,teamSysNo,personId,project,createTime,attendanceList")
+    })
     public ResultVo personInProject(@RequestParam("projectCode") String  projectCode,
                                     @RequestParam(name = "pageIndex", defaultValue = "0") Integer page,
                                     @RequestParam(name = "pageSize", defaultValue = "20") Integer size) {

@@ -61,6 +61,11 @@ public interface SubContractorMapper {
      */
     int setProSubContractorRemoveStatus(Integer subContractorId);
 
+    /**
+     * 搜索项目中的参建单位
+     */
+    List<SubContractorQuery> searchContractorInPro(@Param("subContractorQuery") SubContractorQuery subContractorQuery);
+
 
 
 }

@@ -19,6 +19,7 @@ import com.real.name.person.entity.Person;
 import com.real.name.person.entity.PersonQuery;
 import com.real.name.person.service.PersonService;
 import com.real.name.person.service.repository.PersonQueryMapper;
+import com.real.name.project.entity.ProjectDetailQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -272,7 +273,24 @@ public class PersonController {
         return ResultVo.success(map);
     }
 
+    @GetMapping("searchPersonInPro")
+    @JSONS({
+            @JSON(type = ProjectDetailQuery.class, filter = "projectCode,teamSysNo,personId,project,createTime,attendanceList")
+    })
+    public ResultVo searchPersonInPro(PersonQuery personQuery) {
+        if (StringUtils.isEmpty(personQuery.getProjectCode())) {
+            throw AttendanceException.emptyMessage("项目编码");
+        }
+        PageHelper.startPage(personQuery.getPageNum() + 1, personQuery.getPageSize());
+        List<ProjectDetailQuery> projectDetailQueryList = personService.searchPersonInPro(personQuery);
+        PageInfo<ProjectDetailQuery> pageInfo = new PageInfo<>(projectDetailQueryList);
+        return PageUtils.pageResult(pageInfo, projectDetailQueryList);
+    }
+
     @GetMapping("/findExistCorpCode")
+    @JSONS({
+            @JSON(type = Person.class, include = "subordinateCompany,corpCode")
+    })
     public ResultVo findExistCorpCode() {
         return ResultVo.success(personService.findExistCorpCode());
     }

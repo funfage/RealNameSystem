@@ -7,7 +7,6 @@ import com.real.name.person.entity.Person;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface GroupService {
 
@@ -89,5 +88,10 @@ public interface GroupService {
      * 根据班组编号查询班组名称
      */
     String findTeamNameByTeamSysNo(Integer teamSysNo);
+
+    /**
+     * 搜索项目中的班组
+     */
+    List<GroupQuery> searchGroupInPro(GroupQuery groupQuery);
 
 }

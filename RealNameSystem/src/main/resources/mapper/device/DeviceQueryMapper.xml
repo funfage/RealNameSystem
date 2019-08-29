@@ -54,14 +54,27 @@
 
     <select id="searchDevice" resultMap="queryMap">
         select
-        <include refid="deviceSql"/>
+          <include refid="deviceSql"/>
         from
-        device
+          device
         <where>
             <if test="deviceQuery.deviceId != null">
                 and device_id like '%${deviceQuery.deviceId}%'
             </if>
         </where>
+    </select>
+
+    <select id="searchDeviceInPro" resultMap="queryMap">
+        select
+          <include refid="deviceSql"/>
+        from
+          device
+        where
+          project_code = #{deviceQuery.projectCode}
+        <if test="deviceQuery.deviceId != null and deviceQuery.deviceId != ''">
+            and
+            device_id like '%${deviceQuery.deviceId}%'
+        </if>
     </select>
 
     <select id="findIPByProjectCode" resultType="string" parameterType="string">

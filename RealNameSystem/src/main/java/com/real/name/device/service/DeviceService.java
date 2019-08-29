@@ -130,6 +130,11 @@ public interface DeviceService {
     List<Device> searchDevice(DeviceQuery deviceQuery);
 
     /**
+     * 搜索项目中的设备
+     */
+    List<Device> searchDeviceInPro(DeviceQuery deviceQuery);
+
+    /**
      * 根据项目id查询设备ip
      */
     Set<String> findIPByProjectCode(String projectCode);

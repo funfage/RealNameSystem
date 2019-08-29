@@ -4,6 +4,7 @@ import com.real.name.common.result.ResultVo;
 import com.real.name.device.entity.Device;
 import com.real.name.person.entity.Person;
 import com.real.name.person.entity.PersonQuery;
+import com.real.name.project.entity.ProjectDetailQuery;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -168,7 +169,11 @@ public interface PersonService {
     /**
      * 获取已经填写过的CorpCode
      */
-    List<String> findExistCorpCode();
+    List<Person> findExistCorpCode();
 
+    /**
+     * 搜索项目中的人员
+     */
+    List<ProjectDetailQuery> searchPersonInPro(PersonQuery personQuery);
 
 }

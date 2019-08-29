@@ -6,6 +6,7 @@ import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.CommonUtils;
+import com.real.name.common.utils.PageUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.query.DeviceQuery;
 import com.real.name.device.service.DeviceService;
@@ -234,6 +235,7 @@ public class DeviceController {
      */
     @PostMapping("/searchDevice")
     public ResultVo searchDevice(DeviceQuery deviceQuery) {
+
         PageHelper.startPage(deviceQuery.getPageNum() + 1, deviceQuery.getPageSize());
         List<Device> devices = deviceService.searchDevice(deviceQuery);
         PageInfo<Device> pageInfo = new PageInfo<>(devices);
@@ -243,6 +245,20 @@ public class DeviceController {
         map.put("pageSize", pageInfo.getPageSize());
         map.put("total", pageInfo.getTotal());
         return ResultVo.success(map);
+    }
+
+    /**
+     * 搜索项目下设备信息
+     */
+    @GetMapping("searchDeviceInPro")
+    public ResultVo searchDeviceInPro(DeviceQuery deviceQuery) {
+        if (StringUtils.isEmpty(deviceQuery.getProjectCode())) {
+            throw AttendanceException.emptyMessage("项目编码");
+        }
+        PageHelper.startPage(deviceQuery.getPageNum() + 1, deviceQuery.getPageSize());
+        List<Device> deviceList = deviceService.searchDeviceInPro(deviceQuery);
+        PageInfo<Device> pageInfo = new PageInfo<>(deviceList);
+        return PageUtils.pageResult(pageInfo, deviceList);
     }
 
     /**

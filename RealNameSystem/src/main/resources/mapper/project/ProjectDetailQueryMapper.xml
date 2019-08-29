@@ -48,6 +48,8 @@
             <result property="workDate" column="work_date"/>
             <result property="workRole" column="work_role"/>
             <result property="workType" column="work_type"/>
+            <result property="createTime" column="p_create_time"/>
+            <result property="uploadStatus" column="p_upload_status"/>
         </association>
         <association property="project" javaType="com.real.name.project.entity.Project">
             <id property="projectCode" column="project_code"/>
@@ -87,6 +89,7 @@
             <result property="teamName" column="team_name"/>
             <result property="corpCode" column="corp_code"/>
             <result property="corpName" column="corp_name"/>
+            <result property="subContractorId" column="sub_contractor_id"/>
             <result property="entryAttachments" column="entry_attachments"/>
             <result property="entryTime" column="entry_time"/>
             <result property="exitAttachments" column="exit_attachments"/>
@@ -98,6 +101,8 @@
             <result property="responsiblePersonIdCardType" column="responsible_person_id_card_type"/>
             <result property="responsiblePersonName" column="responsible_person_name"/>
             <result property="responsiblePersonPhone" column="responsible_person_phone"/>
+            <result property="groupStatus" column="group_status"/>
+            <result property="uploadStatus" column="wg_upload_status"/>
         </association>
         <collection property="attendanceList" ofType="com.real.name.record.entity.Attendance">
             <id property="attendanceId" column="attendance_id"/>
@@ -117,7 +122,7 @@
         p.issue_card_pic, p.is_team_leader, p.joined_time, p.marital_status, p.nation, p.negative_id_card_image,
         p.pay_roll_bank_card_number, p.pay_roll_bank_name, p.pay_roll_top_bank_code, p.politics_type, p.positive_id_card_image,
         p.specialty, p.start_date as p_start_date, p.suffix_name, p.urgent_link_man, p.urgent_link_man_phone, p.work_date,
-        p.work_role, p.work_type
+        p.work_role, p.work_type, p.create_time as p_create_time, p.upload_status as p_upload_status
     </sql>
 
     <sql id="personSqlWithImage">
@@ -131,9 +136,9 @@
     </sql>
 
     <sql id="workerGroupSql">
-        wg.team_sys_no as wg_team_sys_no, wg.project_code as wg_project_code, wg.corp_code, wg.corp_name, wg.team_name, wg.responsible_person_name,
+        wg.team_sys_no as wg_team_sys_no, wg.project_code as wg_project_code, wg.corp_code, wg.corp_name, wg.sub_contractor_id, wg.team_name, wg.responsible_person_name,
         wg.responsible_person_phone, wg.responsible_person_id_card_type, wg.responsible_person_id_number, 
-        wg.remark, wg.entry_time, wg.exit_time, wg.entry_attachments, wg.exit_attachments, wg.is_admin_group
+        wg.remark, wg.entry_time, wg.exit_time, wg.entry_attachments, wg.exit_attachments, wg.is_admin_group, wg.group_status, wg.upload_status as wg_upload_status
     </sql>
 
     <insert id="insertProjectDetail" parameterType="com.real.name.project.entity.ProjectDetailQuery"
@@ -173,7 +178,10 @@
 
     <select id="getPersonAndWorkerGroupInfo" resultMap="queryAllMap">
         select
-          id, <include refid="personSql"/>, <include refid="workerGroupSql"/>
+          id,
+          <include refid="personSql"/>,
+          <include refid="workerGroupSql"/>,
+          pd.person_status
         from
           project_detail pd, worker_group wg, person p
         where

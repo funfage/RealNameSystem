@@ -151,6 +151,23 @@ public class SubContractorController {
         }
     }
 
+    /**
+     * 搜索项目下的参建单位
+     */
+    @JSONS({
+            @JSON(type = SubContractorQuery.class, filter = "uploadStatus,createTime"),
+            @JSON(type = Project.class, include = "projectCode,name")
+    })
+    @GetMapping("/searchContractorInPro")
+    public ResultVo searchContractorInPro(SubContractorQuery subContractorQuery) {
+        if (StringUtils.isEmpty(subContractorQuery.getProjectCode())) {
+            throw AttendanceException.emptyMessage("项目编码");
+        }
+        PageHelper.startPage(subContractorQuery.getPageNum() + 1, subContractorQuery.getPageSize());
+        List<SubContractorQuery> subContractorQueryList = subContractorService.searchContractorInPro(subContractorQuery);
+        PageInfo<SubContractorQuery> pageInfo = new PageInfo<>(subContractorQueryList);
+        return PageUtils.pageResult(pageInfo, subContractorQueryList);
+    }
 
     private void verify(SubContractor subContractor) {
         if (subContractor.getProject() == null || StringUtils.isEmpty(subContractor.getProject().getProjectCode())) {

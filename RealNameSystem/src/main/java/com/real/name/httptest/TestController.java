@@ -186,7 +186,7 @@ public class TestController {
     }
 
 
-    @GetMapping("webSocketTest")
+    /*@GetMapping("webSocketTest")
     public void webSocketTest() {
         ProjectDetailQuery sendInfo = mapper.getSendInfo(1131, "067R9HQR0dmw178890C4BKubNU2d9gG7");
         JSONObject map = new JSONObject();
@@ -198,7 +198,7 @@ public class TestController {
         map.put("direction", 2);
         map.put("time", 123456);
         webSocket.sendMessageToAll(map.toJSONString());
-    }
+    }*/
 
     @GetMapping("jsonTest")
     public ResultVo jsonTest() throws JsonProcessingException {

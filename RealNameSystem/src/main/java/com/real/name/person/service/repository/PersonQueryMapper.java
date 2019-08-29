@@ -2,6 +2,7 @@ package com.real.name.person.service.repository;
 
 import com.real.name.person.entity.Person;
 import com.real.name.person.entity.PersonQuery;
+import com.real.name.project.entity.ProjectDetailQuery;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.data.jpa.repository.Query;
@@ -153,8 +154,11 @@ public interface PersonQueryMapper {
     /**
      * 获取已经填写过的CorpCode
      */
-    List<String> findExistCorpCode();
+    List<Person> findExistCorpCode();
 
-
+    /**
+     * 搜索项目中的人员
+     */
+    List<ProjectDetailQuery> searchPersonInPro(@Param("personQuery") PersonQuery personQuery);
 
 }

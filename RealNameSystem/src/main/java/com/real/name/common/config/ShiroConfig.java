@@ -71,6 +71,8 @@ public class ShiroConfig {
         map.put("/attendance", "anon");
         map.put("/heartbeat", "anon");
         map.put("/imgreg", "anon");
+        //webSocket
+        map.put("/webSocket", "anon");
         //测试
         map.put("/test/**", "anon");
         //用户

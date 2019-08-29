@@ -328,6 +328,11 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Override
+    public List<Device> searchDeviceInPro(DeviceQuery deviceQuery) {
+        return deviceQueryMapper.searchDeviceInPro(deviceQuery);
+    }
+
+    @Override
     public Set<String> findIPByProjectCode(String projectCode) {
         return deviceQueryMapper.findIPByProjectCode(projectCode);
     }

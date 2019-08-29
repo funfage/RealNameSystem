@@ -8,6 +8,7 @@ import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.CommonUtils;
+import com.real.name.common.utils.PageUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import com.real.name.group.entity.WorkerGroup;
@@ -197,6 +198,23 @@ public class GroupController {
         map.put("pageSize", pageInfo.getPageSize());
         map.put("total", pageInfo.getTotal());
         return ResultVo.success(map);
+    }
+
+    /**
+     * 搜索项目中的班组
+     */
+    @GetMapping("/searchGroupInPro")
+    @JSONS({
+            @JSON(type = SubContractor.class, include = "subContractorId,corpCode,corpName,corpType")
+    })
+    public ResultVo searchGroupInPro(GroupQuery groupQuery) {
+        if (StringUtils.isEmpty(groupQuery.getProjectCode())) {
+            throw AttendanceException.emptyMessage("项目编号");
+        }
+        PageHelper.startPage(groupQuery.getPageNum() + 1, groupQuery.getPageSize());
+        List<GroupQuery> groupQueryList = groupService.searchGroupInPro(groupQuery);
+        PageInfo<GroupQuery> pageInfo = new PageInfo<>(groupQueryList);
+        return PageUtils.pageResult(pageInfo, groupQueryList);
     }
 
     /**

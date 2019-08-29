@@ -16,9 +16,6 @@ public class WebSocketTest {
     /**
      * 收到客户端消息后调用的方法
      * @param message 从前端收到的数据
-     * @param session
-     * @throws IOException
-     * @throws InterruptedException
      */
     @OnMessage
     public void onMessage(String message, Session session) throws IOException, InterruptedException {

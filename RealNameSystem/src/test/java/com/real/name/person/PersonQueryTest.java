@@ -7,6 +7,7 @@ import com.real.name.others.BaseTest;
 import com.real.name.person.entity.Person;
 import com.real.name.person.entity.PersonQuery;
 import com.real.name.person.service.repository.PersonQueryMapper;
+import com.real.name.project.entity.ProjectDetailQuery;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -163,6 +164,29 @@ public class PersonQueryTest extends BaseTest {
         System.out.println(personInGroup);
         System.out.println(personInGroup1);
         System.out.println(personInGroup2);
+    }
+
+    @Test
+    public void searchPersonInPro() {
+        PersonQuery personQuery = new PersonQuery();
+        personQuery.setProjectCode("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        List<ProjectDetailQuery> people = mapper.searchPersonInPro(personQuery);
+        System.out.println(people);
+        personQuery.setWorkRole(10);
+        List<ProjectDetailQuery> people1 = mapper.searchPersonInPro(personQuery);
+        System.out.println(people1);
+        personQuery.setWorkType("900");
+        List<ProjectDetailQuery> people2 = mapper.searchPersonInPro(personQuery);
+        System.out.println(people2);
+        personQuery.setPersonName("yu");
+        List<ProjectDetailQuery> people3 = mapper.searchPersonInPro(personQuery);
+        System.out.println(people3);
+        personQuery.setSubContractorId(2);
+        List<ProjectDetailQuery> people4 = mapper.searchPersonInPro(personQuery);
+        System.out.println(people4);
+        personQuery.setHasContract(1);
+        List<ProjectDetailQuery> people5 = mapper.searchPersonInPro(personQuery);
+        System.out.println(people5);
     }
 
 

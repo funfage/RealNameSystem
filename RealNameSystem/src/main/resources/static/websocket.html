@@ -10,7 +10,7 @@
 <div id="messages"></div>
 <script type="text/javascript">
     var webSocket =
-        new WebSocket('ws://localhost:9901/attendance/websocketTest');
+        new WebSocket('ws://localhost:9901/attendance/webSocket');
     webSocket.onerror = function(event) {
         onError(event)
     };
@@ -26,7 +26,7 @@
 
     function onMessage(event) {
         document.getElementById('messages').innerHTML
-            += '<br />' + event.data;
+            += '<br />'  +event.data;
     }
 
     function onOpen(event) {

@@ -265,4 +265,23 @@
           team_sys_no = #{teamSysNo}
     </select>
 
+    <select id="searchGroupInPro" resultMap="GroupQuery">
+        select
+          <include refid="groupSql"/>,
+          <include refid="subContractorSql"/>
+        from
+          worker_group wg
+        left join sub_contractor sc on wg.sub_contractor_id = sc.sub_contractor_id
+        where
+          wg.project_code = #{groupQuery.projectCode}
+        <if test="groupQuery.corpName != null and groupQuery.corpName != ''">
+            and
+            wg.corp_name like '%${groupQuery.corpName}%'
+        </if>
+        <if test="groupQuery.teamSysNo != null">
+            and
+            wg.team_sys_no = #{groupQuery.teamSysNo}
+        </if>
+    </select>
+
 </mapper>

@@ -106,6 +106,20 @@ public class SubContractorTest extends BaseTest {
         System.out.println(personContractSignNum);
     }
 
+    @Test
+    public void searchContractorInPro() {
+        SubContractorQuery query = new SubContractorQuery();
+        query.setProjectCode("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        List<SubContractorQuery> subContractorQueries = subContractorMapper.searchContractorInPro(query);
+        System.out.println(subContractorQueries);
+        query.setCorpName("re");
+        List<SubContractorQuery> subContractorQueries1 = subContractorMapper.searchContractorInPro(query);
+        System.out.println(subContractorQueries1);
+        query.setCorpCode("100dfdf");
+        List<SubContractorQuery> subContractorQueries2 = subContractorMapper.searchContractorInPro(query);
+        System.out.println(subContractorQueries2);
+    }
+
 
 }
 

@@ -5,6 +5,7 @@ import com.real.name.device.service.repository.DeviceQueryMapper;
 import com.real.name.others.BaseTest;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.repository.DeviceRepository;
+import com.real.name.project.entity.Project;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -98,6 +99,20 @@ public class DeviceTest extends BaseTest {
     public void getDeviceNumber() {
         Integer deviceNumber = deviceQueryMapper.getFaceDeviceNumber();
         System.out.println(deviceNumber);
+    }
+
+    @Test
+    public void searchDeviceInPro() {
+        DeviceQuery deviceQuery = new DeviceQuery();
+        deviceQuery.setProjectCode("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        List<Device> devices1 = deviceQueryMapper.searchDeviceInPro(deviceQuery);
+        System.out.println(devices1);
+        deviceQuery.setDeviceId("E0F28CF710E2");
+        List<Device> devices2 = deviceQueryMapper.searchDeviceInPro(deviceQuery);
+        System.out.println(devices2);
+        deviceQuery.setDeviceId("E0F28CF710E2596CF8");
+        List<Device> devices3 = deviceQueryMapper.searchDeviceInPro(deviceQuery);
+        System.out.println(devices3);
     }
 
 }
