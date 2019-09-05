@@ -37,18 +37,16 @@ public class PayInfoController {
     @Autowired
     private PayInfoService payInfoService;
 
-    @Autowired
-    private ProjectDetailQueryService projectDetailQueryService;
-
     /**
      * 保存工资信息
      */
     @PostMapping("/savePayInfo")
     public ResultVo savePayInfo(@RequestParam("payInfo") String payInfoStr,
                                 @RequestParam("projectCode") String projectCode,
+                                @RequestParam("teamSysNo") Integer teamSysNo,
                                 @RequestParam("personId") Integer personId,
                                 @RequestParam("payFile") MultipartFile payFile) {
-        PayInfo payInfo = null;
+        PayInfo payInfo;
         try {
             payInfo = JSONObject.parseObject(payInfoStr, PayInfo.class);
         } catch (Exception e) {
@@ -62,7 +60,7 @@ public class PayInfoController {
         //校验薪资信息是否正确
         verifyPayInfo(payInfo, payFile);
         //将薪资信息保存
-        payInfoService.savePayInfo(payInfo, projectCode, personId);
+        payInfoService.savePayInfo(payInfo, projectCode, teamSysNo, personId);
         //保存文件信息
         FileTool.generateFile(payFile, PathUtil.getPayFileBasePath(), payInfo.getPayId() + payInfo.getSuffixName());
         return ResultVo.success();
@@ -74,7 +72,7 @@ public class PayInfoController {
     @PostMapping("/updatePayInfo")
     public ResultVo updatePayInfo(@RequestParam("payInfo") String payInfoStr,
                                   @RequestParam(name = "payFile", required = false) MultipartFile payFile) {
-        PayInfo payInfo = null;
+        PayInfo payInfo;
         try {
             payInfo = JSONObject.parseObject(payInfoStr, PayInfo.class);
         } catch (Exception e) {

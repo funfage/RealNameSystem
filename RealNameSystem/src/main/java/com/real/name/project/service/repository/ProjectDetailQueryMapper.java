@@ -129,7 +129,8 @@ public interface ProjectDetailQueryMapper {
     /**
      * 通过projectCode和personId查询id
      */
-    Integer getIdByProjectCodeAndPersonId(@Param("projectCode") String projectCode,
+    Integer getProjectPersonDetailId(@Param("projectCode") String projectCode,
+                                          @Param("teamSysNo") Integer teamSysNo,
                                           @Param("personId") Integer personId);
 
     /**
@@ -156,5 +157,18 @@ public interface ProjectDetailQueryMapper {
     Integer judgePersonInProGroup(@Param("projectCode") String projectCode,
                                   @Param("teamSysNo") Integer teamSysNo,
                                   @Param("personId") Integer personId);
+
+    /**
+     * 查询人员是否在这个项目班组中
+     */
+    Integer findPersonStatusByCondition(@Param("projectCode") String projectCode,
+                                        @Param("teamSysNo") Integer teamSysNo,
+                                        @Param("personId") Integer personId);
+
+    /**
+     * 根据id查询人员是否在这个项目班组中
+     */
+    Integer findPersonStatusById(@Param("projectDetailId") Integer projectDetailId);
+
 
 }

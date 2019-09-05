@@ -1,5 +1,6 @@
 package com.real.name.common.utils;
 
+import com.real.name.common.constant.CommConstant;
 import com.real.name.nation.utils.NationalUtils;
 import com.real.name.record.entity.Attendance;
 import com.real.name.record.query.PersonWorkRecord;
@@ -206,12 +207,12 @@ public class XSSFExcelUtils {
                     if (dayBetween.get(h).equals(mdFormat)) {
                         XSSFCell rowiCellj = rowi.createCell(8 + h);
                         if (attendance.getStatus() == -2) {
-                            rowiCellj.setCellValue("统计异常!");
+                            rowiCellj.setCellValue("统计异常!" + lineSeparator + "?-?");
                             rowiCellj.setCellStyle(errorCellStyle);
-                        } else if (attendance.getStatus() == -1) {
+                        } else if (attendance.getStatus() == CommConstant.ONLY_EXIT) { //只出不进
                             rowiCellj.setCellValue("异常!" + lineSeparator + "?-" + endFormat);
                             rowiCellj.setCellStyle(errorCellStyle);
-                        } else if (attendance.getStatus() == 0) {
+                        } else if (attendance.getStatus() == CommConstant.ONLY_ENTER) { //只进不出
                             rowiCellj.setCellValue("异常!" + lineSeparator + startFormat + "-?");
                             rowiCellj.setCellStyle(errorCellStyle);
                         } else {

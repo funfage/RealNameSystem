@@ -1,8 +1,9 @@
 package com.real.name.subcontractor.service;
 
 import com.real.name.subcontractor.entity.SubContractor;
-import com.real.name.subcontractor.query.GroupPeople;
-import com.real.name.subcontractor.query.SubContractorQuery;
+import com.real.name.subcontractor.entity.query.GroupPeople;
+import com.real.name.subcontractor.entity.query.SubContractorQuery;
+import com.real.name.subcontractor.entity.search.SubContractorSearchInPro;
 
 import java.util.List;
 
@@ -26,7 +27,7 @@ public interface SubContractorService {
     /**
      * 将参建单位重新加入项目
      */
-    void contractorReJoinToProject(String projectCode, Integer subContractorId, List<GroupPeople> groupPeopleList);
+    List<String> contractorReJoinToProject(String projectCode, Integer subContractorId, List<GroupPeople> groupPeopleList);
 
     /**
      * 查询参建单位的名字
@@ -37,6 +38,11 @@ public interface SubContractorService {
      * 查询项目下的参建单位
      */
     List<SubContractorQuery> findByProjectCode(String projectCode);
+
+    /**
+     * 查询项目下未被移除的参建单位
+     */
+    List<SubContractorQuery> findContractCorpNameInPro(String projectCode, Integer status);
 
     /**
      * 查询项目下未被移除的参建单位信息
@@ -61,8 +67,17 @@ public interface SubContractorService {
     /**
      * 搜索项目中的参建单位
      */
-    List<SubContractorQuery> searchContractorInPro(SubContractorQuery subContractorQuery);
+    List<SubContractorQuery> searchContractorInPro(SubContractorSearchInPro subContractorSearchInPro);
 
 
+    /**
+     * 查询参建单位的上传标识
+     */
+    Integer findUploadStatusById(Integer subContractorId);
+
+    /**
+     * 根据id集合查询
+     */
+    List<SubContractorQuery> findByIdList(List<Integer> subContractorIdList);
 
 }

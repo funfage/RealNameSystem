@@ -5,6 +5,7 @@ import com.real.name.project.query.ProjectQuery;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface ProjectService {
 
@@ -17,6 +18,11 @@ public interface ProjectService {
      * 分页查询
      */
     List<Project> findAll();
+
+    /**
+     * 查询在projectCodeList中所有项目的信息
+     */
+    List<Project> findAllInProjectCode(Set<String> projectCodeList);
 
     /**
      * 查找项目
@@ -73,5 +79,15 @@ public interface ProjectService {
      * 根据项目编码判断项目是否存在
      */
     boolean judgeEmptyByProjectCode(String projectCode);
+
+    /**
+     * 查询项目上传状态
+     */
+    Integer findUploadStatusByProjectCode(String projectCode);
+
+    /**
+     * 修改项目编码
+     */
+    Integer updateProjectCode(String oldProjectCode, String newProjectCode);
 
 }

@@ -32,4 +32,20 @@ public class CommConstant {
      */
     public final static Integer DAY_MILLISECOND = 86400000;
 
+    /**
+     * 只进不出
+     */
+    public final static Integer ONLY_ENTER = -1;
+
+    /**
+     * 只出不进
+     */
+    public final static Integer ONLY_EXIT = 0;
+
+    /**
+     * 统计异常
+     */
+    public final static Integer COUNT_ERROR = -2;
+
+
 }

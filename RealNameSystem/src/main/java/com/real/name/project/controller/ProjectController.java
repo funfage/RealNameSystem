@@ -5,9 +5,9 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.real.name.common.annotion.JSON;
 import com.real.name.common.annotion.JSONS;
-import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.constant.CommConstant;
 import com.real.name.common.constant.DeviceConstant;
+import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.CommonUtils;
@@ -17,8 +17,7 @@ import com.real.name.common.utils.TimeUtil;
 import com.real.name.common.websocket.WebSocket;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
-import com.real.name.group.entity.WorkerGroup;
-import com.real.name.group.query.GroupQuery;
+import com.real.name.group.entity.query.GroupQuery;
 import com.real.name.group.service.GroupService;
 import com.real.name.issue.entity.IssueAccess;
 import com.real.name.issue.entity.IssueFace;
@@ -143,6 +142,11 @@ public class ProjectController {
         }
         //信息的合并
         mergeProject(selectProject, project);
+        Integer status = projectService.findUploadStatusByProjectCode(selectProject.getProjectCode());
+        if (status != null && status == 1) {
+            //设置项目修改未上传的标识
+            selectProject.setIsUpload(-1);
+        }
         try {
             //修改数据库中的信息
             Project updateProject = projectService.updateByProjectCode(selectProject);
@@ -331,12 +335,7 @@ public class ProjectController {
             PageHelper.startPage(page + 1, size);
             List<ProjectDetailQuery> detailQueries = projectDetailQueryService.getPersonAndWorkerGroupInfo(projectCode);
             PageInfo<ProjectDetailQuery> pageInfo = new PageInfo<>(detailQueries);
-            Map<String, Object> map = new HashMap<>();
-            map.put("pageNum", pageInfo.getPageNum());
-            map.put("pageSize", pageInfo.getPageSize());
-            map.put("total", pageInfo.getTotal());
-            map.put("detailQueries", detailQueries);
-            return ResultVo.success(map);
+            return PageUtils.pageResult(pageInfo, detailQueries);
         } catch (Exception e) {
             logger.error("查询某个项目下的人员信息和班组信息失败, e:{}", e.getMessage());
             return ResultVo.failure();

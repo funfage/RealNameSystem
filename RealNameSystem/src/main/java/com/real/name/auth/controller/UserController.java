@@ -52,6 +52,8 @@ public class UserController {
             subject.login(token);
             Session session = SecurityUtils.getSubject().getSession();
             User user = (User) session.getAttribute("user");
+            //设置session中的认证信息过期时间，默认为30分钟，单位为毫秒，这里设置为6个小时
+            session.setTimeout(6 * 3600 * 1000);
             Map<String, Object> map = new HashMap<>();
             map.put("username", user.getUsername());
             map.put("phone", user.getPhone());

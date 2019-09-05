@@ -29,10 +29,14 @@ public class PayInfoServiceImpl implements PayInfoService {
 
     @Transactional
     @Override
-    public void savePayInfo(PayInfo payInfo, String projectCode, Integer personId) {
-        Integer projectDetailId = projectDetailQueryMapper.getIdByProjectCodeAndPersonId(projectCode, personId);
+    public void savePayInfo(PayInfo payInfo, String projectCode, Integer teamSysNo, Integer personId) {
+        Integer integer = projectDetailQueryMapper.findPersonStatusByCondition(projectCode, teamSysNo, personId);
+        if (integer == null || integer != 1) {
+            throw new AttendanceException(ResultError.PERSON_NO_EXISTS_IN_PROJECT);
+        }
+        Integer projectDetailId = projectDetailQueryMapper.getProjectPersonDetailId(projectCode, teamSysNo, personId);
         if (projectDetailId == null) {
-            throw new AttendanceException(ResultError.NO_FIND_PROJECT_DETAIL);
+            throw new AttendanceException(ResultError.PERSON_NO_EXISTS_IN_PROJECT);
         }
         payInfo.setProjectDetailQuery(new ProjectDetailQuery(projectDetailId));
         int i = payInfoMapper.savePayInfo(payInfo);
@@ -43,6 +47,14 @@ public class PayInfoServiceImpl implements PayInfoService {
 
     @Override
     public void updatePayInfo(PayInfo payInfo) {
+        if (payInfo.getProjectDetailQuery() == null || payInfo.getProjectDetailQuery().getId() == null) {
+            logger.error("传入的projectDetailId为空");
+            throw new AttendanceException(ResultError.OPERATOR_ERROR);
+        }
+        Integer integer = projectDetailQueryMapper.findPersonStatusById(payInfo.getProjectDetailQuery().getId());
+        if (integer == null || integer != 1) {
+            throw new AttendanceException(ResultError.PERSON_NO_EXISTS_IN_PROJECT);
+        }
         int i = payInfoMapper.updatePayInfoById(payInfo);
         if (i <= 0) {
             throw new AttendanceException(ResultError.UPDATE_ERROR);

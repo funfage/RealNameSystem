@@ -5,7 +5,6 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.real.name.common.annotion.JSON;
 import com.real.name.common.annotion.JSONS;
-import com.real.name.common.constant.DeviceConstant;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
@@ -16,9 +15,9 @@ import com.real.name.common.utils.PathUtil;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import com.real.name.person.entity.Person;
-import com.real.name.person.entity.PersonQuery;
+import com.real.name.person.entity.search.PersonSearch;
+import com.real.name.person.entity.search.PersonSearchInPro;
 import com.real.name.person.service.PersonService;
-import com.real.name.person.service.repository.PersonQueryMapper;
 import com.real.name.project.entity.ProjectDetailQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -203,7 +202,10 @@ public class PersonController {
         List<Device> allProjectIssueDevice = deviceService.findAllProjectIssueDevice(projectCode);
         //查询所有人员信息
         List<Person> personList = personService.findIssuePeopleImagesInfo(personIds);
-        personService.addPeopleToProject(projectCode, teamSysNo, personList, allIssueDevice, allProjectIssueDevice);
+        List<String> failNameList = personService.addPeopleToProject(projectCode, teamSysNo, personList, allIssueDevice, allProjectIssueDevice);
+        if (failNameList.size() > 0) {
+            return ResultVo.failure(failNameList, ResultError.PERSON_REJOIN_PROJECT_FAILURE);
+        }
         return ResultVo.success();
     }
 
@@ -261,9 +263,9 @@ public class PersonController {
      * 搜索人员信息
      */
     @PostMapping("/searchPerson")
-    public ResultVo searchPerson(PersonQuery personQuery) {
-        PageHelper.startPage(personQuery.getPageNum() + 1, personQuery.getPageSize());
-        List<Person> personList = personService.searchPerson(personQuery);
+    public ResultVo searchPerson(PersonSearch personSearch) {
+        PageHelper.startPage(personSearch.getPageNum() + 1, personSearch.getPageSize());
+        List<Person> personList = personService.searchPerson(personSearch);
         PageInfo<Person> pageInfo = new PageInfo<>(personList);
         Map<String, Object> map = new HashMap<>();
         map.put("personList", personList);
@@ -273,16 +275,19 @@ public class PersonController {
         return ResultVo.success(map);
     }
 
+    /**
+     * 搜索项目中的人员
+     */
     @GetMapping("searchPersonInPro")
     @JSONS({
             @JSON(type = ProjectDetailQuery.class, filter = "projectCode,teamSysNo,personId,project,createTime,attendanceList")
     })
-    public ResultVo searchPersonInPro(PersonQuery personQuery) {
-        if (StringUtils.isEmpty(personQuery.getProjectCode())) {
+    public ResultVo searchPersonInPro(PersonSearchInPro personSearchInPro) {
+        if (StringUtils.isEmpty(personSearchInPro.getProjectCode())) {
             throw AttendanceException.emptyMessage("项目编码");
         }
-        PageHelper.startPage(personQuery.getPageNum() + 1, personQuery.getPageSize());
-        List<ProjectDetailQuery> projectDetailQueryList = personService.searchPersonInPro(personQuery);
+        PageHelper.startPage(personSearchInPro.getPageNum() + 1, personSearchInPro.getPageSize());
+        List<ProjectDetailQuery> projectDetailQueryList = personService.searchPersonInPro(personSearchInPro);
         PageInfo<ProjectDetailQuery> pageInfo = new PageInfo<>(projectDetailQueryList);
         return PageUtils.pageResult(pageInfo, projectDetailQueryList);
     }

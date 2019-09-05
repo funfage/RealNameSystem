@@ -73,12 +73,9 @@ public class NationTest {
         Project project = new Project();
         project.setProjectCode("36bj84W235Zgc8O78yuS32510ppMkHfe");
         projectDetailQuery.setProject(project);
-        JSONObject jsonObject = NationalUtils.uploadGroup(projectDetailQuery);
-        if (jsonObject.getBoolean("error")) {
-            logger.error("上传班组信息出现异常");
-            return ResultVo.failure(jsonObject.getString("data"));
-        }
-        return ResultVo.success(jsonObject);
+//        JSONObject jsonObject = NationalUtils.uploadGroup(projectDetailQuery);
+
+        return ResultVo.success();
     }
 
     @GetMapping("/uploadPerson")

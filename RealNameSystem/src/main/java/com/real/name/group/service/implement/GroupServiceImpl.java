@@ -5,22 +5,20 @@ import com.real.name.common.result.ResultError;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import com.real.name.group.entity.WorkerGroup;
-import com.real.name.group.query.GroupQuery;
+import com.real.name.group.entity.query.GroupQuery;
+import com.real.name.group.entity.search.GroupSearch;
+import com.real.name.group.entity.search.GroupSearchInPro;
 import com.real.name.group.service.GroupService;
 import com.real.name.group.service.repository.GroupQueryMapper;
 import com.real.name.group.service.repository.GroupRepository;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
-import com.real.name.person.service.repository.PersonQueryMapper;
-import com.real.name.record.entity.Attendance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 
 @Service
@@ -70,11 +68,6 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public List<WorkerGroup> getUnRemoveGroupInContractor(Integer subContractorId) {
-        return groupQueryMapper.getUnRemoveGroupInContractor(subContractorId);
-    }
-
-    @Override
     public void deleteByTeamSysNo(Integer teamSysNo) {
         int i = groupQueryMapper.deleteByTeamSysNo(teamSysNo);
         if (i <= 0) {
@@ -100,7 +93,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Transactional
     @Override
-    public void groupReJoinToProject(String projectCode, Integer subContractorId, Integer teamSysNo, List<Person> personList, List<Device> allIssueDevice, List<Device> allProjectIssueDevice) {
+    public List<String> groupReJoinToProject(String projectCode, Integer subContractorId, Integer teamSysNo, List<Person> personList, List<Device> allIssueDevice, List<Device> allProjectIssueDevice) {
         //修改班组的移除标识和参建单位
         WorkerGroup group = new WorkerGroup();
         group.setTeamSysNo(teamSysNo);
@@ -111,13 +104,19 @@ public class GroupServiceImpl implements GroupService {
         if (i <= 0) {
             throw new AttendanceException(ResultError.REJOIN_PROJECT_FAILURE);
         }
-        //将人员加入项目中
-        personService.addPeopleToProject(projectCode, teamSysNo, personList, allIssueDevice, allProjectIssueDevice);
+        //将人员加入项目中，返回重新加入项目失败的人员
+        List<String> failNameList = personService.addPeopleToProject(projectCode, teamSysNo, personList, allIssueDevice, allProjectIssueDevice);
+        return failNameList;
     }
 
     @Override
-    public List<WorkerGroup> findRemoveGroupInContract(Integer subContractorId) {
-        return groupQueryMapper.findRemoveGroupInContract(subContractorId);
+    public List<WorkerGroup> getGroupInContractor(Integer subContractorId, Integer groupStatus) {
+        return groupQueryMapper.getGroupInContractor(subContractorId, groupStatus);
+    }
+
+    @Override
+    public List<WorkerGroup> getGroupNameInContractor(Integer subContractorId, Integer status) {
+        return groupQueryMapper.getGroupNameInContractor(subContractorId, status);
     }
 
     @Override
@@ -144,8 +143,8 @@ public class GroupServiceImpl implements GroupService {
 
 
     @Override
-    public List<WorkerGroup> searchGroup(GroupQuery groupQuery) {
-        return groupQueryMapper.searchGroup(groupQuery);
+    public List<WorkerGroup> searchGroup(GroupSearch groupSearch) {
+        return groupQueryMapper.searchGroup(groupSearch);
     }
 
     @Override
@@ -154,8 +153,23 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public List<GroupQuery> searchGroupInPro(GroupQuery groupQuery) {
-        return groupQueryMapper.searchGroupInPro(groupQuery);
+    public List<GroupQuery> searchGroupInPro(GroupSearchInPro groupSearchInPro) {
+        return groupQueryMapper.searchGroupInPro(groupSearchInPro);
+    }
+
+    @Override
+    public List<GroupQuery> findByIdList(List<Integer> groupIdList) {
+        return groupQueryMapper.findByIdList(groupIdList);
+    }
+
+    @Override
+    public Integer findUploadStatusById(Integer teamSysNo) {
+        return groupQueryMapper.findUploadStatusById(teamSysNo);
+    }
+
+    @Override
+    public Integer updateTeamSysNo(Integer oldTeamSysNo, Integer newTeamSysNo) {
+        return groupQueryMapper.updateTeamSysNo(oldTeamSysNo, newTeamSysNo);
     }
 
 }

@@ -38,17 +38,6 @@ import java.util.Map;
 @Configuration
 public class ShiroConfig {
 
-    private String noLoginUrl = "/user/noLogin";
-
-    private String loginSuccessUrl = "/user/loginSuccess";
-
-    private String unauthorizedUrl = "/user/unauthorized";
-
-    private String localUrl = "http://192.168.230.126:9901";
-
-    private String serverUrl = "http://139.9.47.190:9901";
-
-
     @Bean
     public ShiroFilterFactoryBean shirFilter(SecurityManager securityManager) {
         System.out.println("ShiroConfiguration.shirFilter()");
@@ -229,8 +218,8 @@ public class ShiroConfig {
         SimpleCookie simpleCookie = new SimpleCookie("sessionIdCookie");
         simpleCookie.setHttpOnly(true);
         //simpleCookie.setDomain(localUrl);
-        //设置有效时间,单位秒, 12小时 3600 * 12
-        simpleCookie.setMaxAge(3600 * 12);
+        //设置有效时间,单位秒, 12小时 3600 * 6
+        simpleCookie.setMaxAge(3600 * 6);
         return simpleCookie;
     }
 

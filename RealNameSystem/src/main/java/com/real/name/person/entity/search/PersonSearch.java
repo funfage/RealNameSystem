@@ -1,23 +1,13 @@
-package com.real.name.person.entity;
+package com.real.name.person.entity.search;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.real.name.person.entity.Person;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-public class PersonQuery extends Person {
-
-    @JsonIgnore
-    private String projectCode;
-
-    @JsonIgnore
-    private Integer subContractorId;
-
-    /**
-     * 是否有合同
-     * 1是 0否
-     */
-    @JsonIgnore
-    private Integer hasContract;
+@NoArgsConstructor
+public class PersonSearch extends Person {
 
     @JsonIgnore
     private String nameOrIdCard;
@@ -36,9 +26,5 @@ public class PersonQuery extends Person {
 
     @JsonIgnore
     private Integer pageSize = 10;
-
-    public PersonQuery() {
-
-    }
 
 }

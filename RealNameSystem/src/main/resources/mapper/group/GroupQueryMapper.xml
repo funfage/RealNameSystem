@@ -23,7 +23,7 @@
         <result property="groupStatus" column="group_status"/>
     </resultMap>
 
-    <resultMap id="GroupQuery" type="com.real.name.group.query.GroupQuery">
+    <resultMap id="GroupQuery" type="com.real.name.group.entity.query.GroupQuery">
         <id property="teamSysNo" column="team_sys_no"/>
         <result property="projectCode" column="project_code"/>
         <result property="subContractorId" column="sub_contractor_id"/>
@@ -76,6 +76,9 @@
         update
           worker_group
         <set>
+            <if test="workerGroup.teamSysNo != null">
+                team_sys_no = #{workerGroup.teamSysNo},
+            </if>
             <if test="workerGroup.projectCode != null">
                 project_code = #{workerGroup.projectCode},
             </if>
@@ -170,13 +173,35 @@
 
     <select id="findById" resultMap="GroupQuery">
         select
-        <include refid="groupSql"/>,
-        <include refid="subContractorSql"/>
+          <include refid="groupSql"/>,
+          <include refid="subContractorSql"/>
         from
           worker_group wg
         left join sub_contractor sc on wg.sub_contractor_id = sc.sub_contractor_id
         where
           team_sys_no = #{teamSysNo}
+    </select>
+
+    <select id="findByIdList" resultMap="GroupQuery">
+        select
+          <include refid="groupSql"/>,
+          <include refid="subContractorSql"/>
+        from
+          worker_group wg
+        left join sub_contractor sc on wg.sub_contractor_id = sc.sub_contractor_id
+        where
+          team_sys_no
+        in
+        <choose>
+            <when test="groupIdList != null and groupIdList.size() != 0">
+                <foreach collection="groupIdList" item="id" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </when>
+            <otherwise>
+                (null)
+            </otherwise>
+        </choose>
     </select>
 
     <select id="findByProjectCode" resultMap="GroupQuery">
@@ -207,11 +232,11 @@
         from
         worker_group wg
         <where>
-            <if test="groupQuery.teamSysNo != null">
-                and wg.team_sys_no = #{groupQuery.teamSysNo}
+            <if test="groupSearch.teamSysNo != null">
+                and wg.team_sys_no = #{groupSearch.teamSysNo}
             </if>
-            <if test="groupQuery.projectCode != null">
-                and wg.project_code = #{groupQuery.projectCode}
+            <if test="groupSearch.projectCode != null">
+                and wg.project_code = #{groupSearch.projectCode}
             </if>
         </where>
     </select>
@@ -231,8 +256,21 @@
         where
           team_sys_no = #{teamSysNo}
     </update>
+    
+    <select id="getGroupInContractor" resultMap="WorkerGroup">
+        select
+          <include refid="groupSql"/>
+        from
+          worker_group wg
+        where
+          wg.sub_contractor_id = #{subContractorId}
+        <if test="groupStatus != null">
+            and
+              wg.group_status = #{groupStatus}
+        </if>
+    </select>
 
-    <select id="getUnRemoveGroupInContractor" resultMap="WorkerGroup">
+    <select id="getGroupNameInContractor" resultMap="WorkerGroup">
         select
           wg.team_sys_no, wg.team_name
         from
@@ -241,19 +279,10 @@
           wg.sub_contractor_id = sc.sub_contractor_id
         and
           wg.sub_contractor_id = #{subContractorId}
-        and
-          wg.group_status = 1
-    </select>
-
-    <select id="findRemoveGroupInContract" parameterType="integer" resultMap="WorkerGroup">
-        select
-          wg.team_sys_no
-        from
-          worker_group wg
-        where
-          wg.sub_contractor_id = #{subContractorId}
-        and
-          group_status = 1
+        <if test="groupStatus != null">
+            and
+              wg.group_status = #{groupStatus}
+        </if>
     </select>
 
     <select id="findTeamNameByTeamSysNo" resultType="string">
@@ -273,15 +302,33 @@
           worker_group wg
         left join sub_contractor sc on wg.sub_contractor_id = sc.sub_contractor_id
         where
-          wg.project_code = #{groupQuery.projectCode}
-        <if test="groupQuery.corpName != null and groupQuery.corpName != ''">
+          wg.project_code = #{groupSearchInPro.projectCode}
+        <if test="groupSearchInPro.corpName != null and groupSearchInPro.corpName != ''">
             and
-            wg.corp_name like '%${groupQuery.corpName}%'
+            wg.corp_name like '%${groupSearchInPro.corpName}%'
         </if>
-        <if test="groupQuery.teamSysNo != null">
+        <if test="groupSearchInPro.teamSysNo != null">
             and
-            wg.team_sys_no = #{groupQuery.teamSysNo}
+            wg.team_sys_no = #{groupSearchInPro.teamSysNo}
         </if>
     </select>
+
+    <select id="findUploadStatusById" resultType="integer">
+        select
+          upload_status
+        from
+          worker_group
+        where
+          team_sys_no = #{teamSysNo}
+    </select>
+
+    <update id="updateTeamSysNo">
+        update
+          worker_group
+        set
+          team_sys_no = #{newTeamSysNo}
+        where
+          team_sys_no = #{oldTeamSysNo}
+    </update>
 
 </mapper>

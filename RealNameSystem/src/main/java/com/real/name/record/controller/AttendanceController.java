@@ -116,15 +116,15 @@ public class AttendanceController {
                                   @RequestParam(name = "pageSize", defaultValue = "40") Integer pageSize) {
         Date startDate = TimeUtil.getMonthFirstDay();
         Date endDate = new Date(System.currentTimeMillis());
-        List<PersonWorkRecord> personPeriodWorkInfoInProject = attendanceService.findPagePersonPeriodWorkInfoInProject(startDate, endDate, projectCode, pageNum, pageSize);
-        ProjectWorkRecord projectWorkRecord = createProjectWorkRecord(startDate, endDate, projectCode, personPeriodWorkInfoInProject);
-        Integer total = projectDetailQueryService.countPersonNumByProjectCode(projectCode);
-        Map<String, Object> map = new HashMap<>();
-        map.put("pageNum", pageNum + 1);
-        map.put("pageSize", pageSize > total ? total : pageSize);
-        map.put("total", total);
-        map.put("data", projectWorkRecord);
-        return ResultVo.success(map);
+        return attendanceService.getAttendance(startDate, endDate, projectCode, pageNum, pageSize);
+    }
+
+    @GetMapping("/searchAttendanceInPro")
+    public ResultVo searchAttendanceInPro(ProjectAttendanceQuery query) {
+        if (StringUtils.isEmpty(query.getProjectCode())) {
+            throw AttendanceException.emptyMessage("项目");
+        }
+        return attendanceService.searchAttendanceInPro(query);
     }
 
     /**
@@ -154,7 +154,7 @@ public class AttendanceController {
      * 获取某个项目下某个时间段所有人员的出勤情况
      */
     @GetMapping("/getPersonWorkDay")
-    public ResultVo getPersonWorkDay(@RequestParam("projectCode") String projectCode,
+    public ResultVo getPeopleWorkDayInProject(@RequestParam("projectCode") String projectCode,
                                      @RequestParam(value = "startDate", required = false) Date startDate,
                                      @RequestParam(value = "endDate", required = false) Date endDate,
                                      @RequestParam(value = "pageNum", defaultValue = "0") Integer pageNum,
@@ -165,37 +165,7 @@ public class AttendanceController {
         if (endDate == null) {
             endDate = TimeUtil.getNextMonthFirstDay();
         }
-        List<WorkDayInfo> workDayInfoList = new ArrayList<>();
-        List<PersonWorkRecord> personPeriodWorkInfoInProject = attendanceService.findPagePersonPeriodWorkInfoInProject(startDate, endDate, projectCode, pageNum, pageSize);
-        for (PersonWorkRecord personWorkRecord : personPeriodWorkInfoInProject) {
-            List<Attendance> attendanceList = personWorkRecord.getAttendanceList();
-            int workDays = 0;
-            Double hours = 0.0;
-            //整合员工出勤天数和工时
-            for (Attendance attendance : attendanceList) {
-                if (attendance.getWorkHours() != 0) {
-                    workDays++;
-                    hours += attendance.getWorkHours();
-                }
-            }
-            WorkDayInfo workDayInfo = new WorkDayInfo();
-            workDayInfo.setPersonName(personWorkRecord.getPersonName());
-            workDayInfo.setIdCardNumber(personWorkRecord.getIdCardNumber());
-            workDayInfo.setWorkType(personWorkRecord.getWorkType());
-            workDayInfo.setSubordinateCompany(personWorkRecord.getSubordinateCompany());
-            workDayInfo.setTeamName(personWorkRecord.getTeamName());
-            workDayInfo.setWorkDay(workDays);
-            workDayInfo.setWorkHours(hours);
-            workDayInfoList.add(workDayInfo);
-        }
-        //查询记录总条数
-        Integer total = projectDetailQueryService.countPersonNumByProjectCode(projectCode);
-        Map<String, Object> map = new HashMap<>();
-        map.put("pageNum", pageNum + 1);
-        map.put("pageSize", pageSize > total ? total : pageSize);
-        map.put("total", total);
-        map.put("data", workDayInfoList);
-        return ResultVo.success(map);
+        return attendanceService.getPeopleWorkDayInProject(startDate, endDate, projectCode, pageNum, pageSize);
     }
 
     /**
@@ -280,59 +250,11 @@ public class AttendanceController {
     public ResultVo exportRecords(@RequestParam("startDate") Date startDate,
                                   @RequestParam("endDate") Date endDate,
                                   @RequestParam("projectCode") String projectCode) {
-        List<PersonWorkRecord> personPeriodWorkInfoInProject = attendanceService.findPersonPeriodWorkInfoInProject(startDate, endDate, projectCode);
-        ProjectWorkRecord projectWorkRecord = createProjectWorkRecord(startDate, endDate, projectCode, personPeriodWorkInfoInProject);
-        List<String> headList = new ArrayList<>();
-        headList.add("姓名");
-        headList.add("身份证号码");
-        headList.add("性别");
-        headList.add("所属公司");
-        headList.add("班组");
-        headList.add("工种");
-        headList.add("出勤天数");
-        headList.add("考勤小时");
-        List<String> dayBetweenFormat = TimeUtil.getDayBetweenFormat(startDate, endDate);
-        //生成报表
-        try {
-            XSSFExcelUtils.exportXSSFExcel(projectWorkRecord, headList, dayBetweenFormat);
-        } catch (IOException e) {
-            logger.error("生成报表失败, projectName:{}, e:{}", projectWorkRecord.getProjectName(), e);
-            return ResultVo.failure(ResultError.GENERATE_EXCEL_ERROR);
-        }
-        return ResultVo.success(projectWorkRecord.getProjectCode());
+        return attendanceService.exportRecords(startDate, endDate, projectCode);
     }
 
 
-    private ProjectWorkRecord createProjectWorkRecord(Date startDate, Date endDate, String projectCode, List<PersonWorkRecord> personPeriodWorkInfoInProject) {
-        //查询项目名
-        String projectName = projectService.findProjectName(projectCode);
-        if (StringUtils.isEmpty(projectName)) {
-            throw new AttendanceException(ResultError.PROJECT_NOT_EXIST);
-        }
-        ProjectWorkRecord projectWorkRecord = new ProjectWorkRecord();
-        projectWorkRecord.setProjectCode(projectCode);
-        projectWorkRecord.setProjectName(projectName);
-        projectWorkRecord.setStartDate(startDate);
-        projectWorkRecord.setEndDate(endDate);
-        projectWorkRecord.setCreateTime(new Date());
-        for (PersonWorkRecord record : personPeriodWorkInfoInProject) {
-            List<Attendance> attendanceList = record.getAttendanceList();
-            double allWorkHours = 0.0;
-            int workDays = 0;
-            for (Attendance attendance : attendanceList) {
-                if (attendance.getStatus() == 1) {
-                    if (attendance.getWorkHours() != null && attendance.getWorkHours() > 0) {
-                        allWorkHours += attendance.getWorkHours();
-                        workDays++;
-                    }
-                }
-            }
-            record.setWorkDay(workDays);
-            record.setWorkHours(allWorkHours);
-        }
-        projectWorkRecord.setPersonWorkRecordList(personPeriodWorkInfoInProject);
-        return projectWorkRecord;
-    }
+
 
 }
 

@@ -33,6 +33,10 @@ public class ResultVo {
         return new ResultVo(error.getCode(), false, error.getMessage());
     }
 
+    public static ResultVo failure(Object data, String message) {
+        return new ResultVo(-1, false, data, message);
+    }
+
     public static ResultVo failure(ResultError error, String message) {
         return new ResultVo(error.getCode(), false, error.getMessage() + message);
     }

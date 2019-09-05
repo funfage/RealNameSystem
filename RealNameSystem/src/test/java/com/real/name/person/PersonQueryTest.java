@@ -5,7 +5,8 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.real.name.others.BaseTest;
 import com.real.name.person.entity.Person;
-import com.real.name.person.entity.PersonQuery;
+import com.real.name.person.entity.search.PersonSearch;
+import com.real.name.person.entity.search.PersonSearchInPro;
 import com.real.name.person.service.repository.PersonQueryMapper;
 import com.real.name.project.entity.ProjectDetailQuery;
 import org.junit.Test;
@@ -20,7 +21,7 @@ public class PersonQueryTest extends BaseTest {
 
     @Test
     public void find() {
-        PersonQuery personQuery = new PersonQuery();
+        PersonSearch personQuery = new PersonSearch();
       /*  personQuery.setAgeBegin(27);
         personQuery.setAgeEnd(40);
         personQuery.setWorkRole(10);*/
@@ -124,7 +125,7 @@ public class PersonQueryTest extends BaseTest {
 
     @Test
     public void getAdminPersonToAttendProject() {
-        List<Person> adminPersonToAttendProject = mapper.getAdminPersonToAttendProject("44010620190510008", "100dfdfere");
+        List<Person> adminPersonToAttendProject = mapper.getAdminPersonToAttendProject("36bj84W235Zgc8O78yuS32510ppMkHfe");
         System.out.println(adminPersonToAttendProject);
     }
 
@@ -168,7 +169,7 @@ public class PersonQueryTest extends BaseTest {
 
     @Test
     public void searchPersonInPro() {
-        PersonQuery personQuery = new PersonQuery();
+        PersonSearchInPro personQuery = new PersonSearchInPro();
         personQuery.setProjectCode("36bj84W235Zgc8O78yuS32510ppMkHfe");
         List<ProjectDetailQuery> people = mapper.searchPersonInPro(personQuery);
         System.out.println(people);
@@ -187,6 +188,21 @@ public class PersonQueryTest extends BaseTest {
         personQuery.setHasContract(1);
         List<ProjectDetailQuery> people5 = mapper.searchPersonInPro(personQuery);
         System.out.println(people5);
+    }
+
+    @Test
+    public void findPeopleUploadInfo() {
+        List<Integer> personIds = new ArrayList<>();
+        personIds.add(101);
+        personIds.add(102);
+        List<ProjectDetailQuery> list = mapper.findPeopleUploadInfo("", 1562649811, personIds);
+        System.out.println(list);
+    }
+
+    @Test
+    public void judgePersonJoinProject() {
+        Integer integer = mapper.judgePersonJoinProject(89);
+        System.out.println(integer);
     }
 
 

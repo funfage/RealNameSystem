@@ -2,15 +2,17 @@ package com.real.name.Group;
 
 import com.alibaba.fastjson.JSON;
 import com.real.name.group.entity.WorkerGroup;
-import com.real.name.group.query.GroupQuery;
+import com.real.name.group.entity.query.GroupQuery;
+import com.real.name.group.entity.search.GroupSearch;
+import com.real.name.group.entity.search.GroupSearchInPro;
 import com.real.name.group.service.repository.GroupQueryMapper;
 import com.real.name.group.service.repository.GroupRepository;
 import com.real.name.others.BaseTest;
-import com.real.name.subcontractor.entity.SubContractor;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -50,9 +52,9 @@ public class GroupTest extends BaseTest {
 
     @Test
     public void searchGroup() {
-        GroupQuery groupQuery = new GroupQuery();
-        groupQuery.setTeamSysNo(1500162326);
-        groupQueryMapper.searchGroup(groupQuery);
+        GroupSearch groupSearch = new GroupSearch();
+        groupSearch.setTeamSysNo(1500162326);
+        groupQueryMapper.searchGroup(groupSearch);
     }
 
     @Test
@@ -94,14 +96,8 @@ public class GroupTest extends BaseTest {
 
     @Test
     public void findRemoveGroupInContract() {
-        List<WorkerGroup> removeGroupInContract = groupQueryMapper.findRemoveGroupInContract(1);
+        List<WorkerGroup> removeGroupInContract = groupQueryMapper.getGroupNameInContractor(1, 1);
         System.out.println(removeGroupInContract);
-    }
-
-    @Test
-    public void getUnRemoveGroupInContractor() {
-        List<WorkerGroup> groupInContractor = groupQueryMapper.getUnRemoveGroupInContractor(1);
-        System.out.println(groupInContractor);
     }
 
     @Test
@@ -129,6 +125,12 @@ public class GroupTest extends BaseTest {
     }
 
     @Test
+    public void getGroupInContractor() {
+        List<WorkerGroup> groupInContractor = groupQueryMapper.getGroupInContractor(1, 1);
+        System.out.println(groupInContractor);
+    }
+
+    @Test
     public void findTeamNameByTeamSysNo() {
         String teamNameByTeamSysNo = groupQueryMapper.findTeamNameByTeamSysNo(3984387);
         System.out.println(teamNameByTeamSysNo);
@@ -136,7 +138,7 @@ public class GroupTest extends BaseTest {
 
     @Test
     public void searchGroupInPro() {
-        GroupQuery groupQuery = new GroupQuery();
+        GroupSearchInPro groupQuery = new GroupSearchInPro();
         groupQuery.setProjectCode("36bj84W235Zgc8O78yuS32510ppMkHfe");
         List<GroupQuery> groupQueries = groupQueryMapper.searchGroupInPro(groupQuery);
         System.out.println(groupQueries);
@@ -146,6 +148,27 @@ public class GroupTest extends BaseTest {
         groupQuery.setTeamSysNo(1562649811);
         List<GroupQuery> groupQueries2 = groupQueryMapper.searchGroupInPro(groupQuery);
         System.out.println(groupQueries2);
+    }
+
+    @Test
+    public void findUploadByTeamSysNo() {
+        Integer uploadByTeamSysNo = groupQueryMapper.findUploadStatusById(1562649811);
+        System.out.println(uploadByTeamSysNo);
+    }
+
+    @Test
+    public void findByIdList() {
+        List<Integer> idList = new ArrayList<>();
+        idList.add(1562649690);
+        idList.add(1562649811);
+        List<GroupQuery> byIdList = groupQueryMapper.findByIdList(idList);
+        System.out.println(byIdList);
+    }
+
+    @Test
+    public void updateTeamSysNo() {
+        Integer integer = groupQueryMapper.updateTeamSysNo(1534837444, 1534837555);
+        System.out.println(integer);
     }
 
 

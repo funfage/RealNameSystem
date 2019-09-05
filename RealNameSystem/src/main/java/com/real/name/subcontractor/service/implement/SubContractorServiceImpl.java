@@ -9,14 +9,16 @@ import com.real.name.group.service.GroupService;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
 import com.real.name.subcontractor.entity.SubContractor;
-import com.real.name.subcontractor.query.GroupPeople;
-import com.real.name.subcontractor.query.SubContractorQuery;
+import com.real.name.subcontractor.entity.query.GroupPeople;
+import com.real.name.subcontractor.entity.query.SubContractorQuery;
+import com.real.name.subcontractor.entity.search.SubContractorSearchInPro;
 import com.real.name.subcontractor.service.SubContractorService;
 import com.real.name.subcontractor.service.repository.SubContractorMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -58,8 +60,8 @@ public class SubContractorServiceImpl implements SubContractorService {
         if (i <= 0) {
             throw new AttendanceException(ResultError.REMOVE_FROM_PROJECT_FAILURE);
         }
-        //查询该参建单位下所有未移出的班组
-        List<WorkerGroup> workerGroupList = groupService.findRemoveGroupInContract(subContractorId);
+        //查询该参建单位下所有未移除的班组名和班组id
+        List<WorkerGroup> workerGroupList = groupService.getGroupNameInContractor(subContractorId, 1);
         //依次移除班组
         for (WorkerGroup workerGroup : workerGroupList) {
             groupService.removeGroupInProject(workerGroup.getTeamSysNo(), projectCode);
@@ -68,7 +70,7 @@ public class SubContractorServiceImpl implements SubContractorService {
     }
 
     @Override
-    public void contractorReJoinToProject(String projectCode, Integer subContractorId, List<GroupPeople> groupPeopleList) {
+    public List<String> contractorReJoinToProject(String projectCode, Integer subContractorId, List<GroupPeople> groupPeopleList) {
         //修改移除标识
         SubContractor subContractor = new SubContractor();
         subContractor.setSubContractorId(subContractorId);
@@ -81,12 +83,16 @@ public class SubContractorServiceImpl implements SubContractorService {
         List<Device> allIssueDevice = deviceService.findAllIssueDevice();
         //获取项目绑定的下发的设备
         List<Device> allProjectIssueDevice = deviceService.findAllProjectIssueDevice(projectCode);
+        List<String> failNameList = new ArrayList<>();
         //将班组依次重新加入项目
         for (GroupPeople groupPeople : groupPeopleList) {
             //查询需要重新加入项目的人员
             List<Person> personList = personService.findIssuePeopleImagesInfo(groupPeople.getPersonIds());
-            groupService.groupReJoinToProject(projectCode, subContractorId, groupPeople.getTeamSysNo(), personList, allIssueDevice, allProjectIssueDevice);
+            //将参建单位下的班组重新加入项目，并返回重新加入失败的人员姓名
+            List<String> list = groupService.groupReJoinToProject(projectCode, subContractorId, groupPeople.getTeamSysNo(), personList, allIssueDevice, allProjectIssueDevice);
+            failNameList.addAll(list);
         }
+        return failNameList;
     }
 
     @Override
@@ -101,6 +107,11 @@ public class SubContractorServiceImpl implements SubContractorService {
             setContractInfo(sub);
         }
         return subContractorList;
+    }
+
+    @Override
+    public List<SubContractorQuery> findContractCorpNameInPro(String projectCode, Integer status) {
+        return subContractorMapper.findContractCorpNameInPro(projectCode, status);
     }
 
     @Override
@@ -138,9 +149,19 @@ public class SubContractorServiceImpl implements SubContractorService {
     }
 
     @Override
-    public List<SubContractorQuery> searchContractorInPro(SubContractorQuery subContractorQuery) {
-        List<SubContractorQuery> subContractorQueryList = subContractorMapper.searchContractorInPro(subContractorQuery);
+    public List<SubContractorQuery> searchContractorInPro(SubContractorSearchInPro subContractorSearchInPro) {
+        List<SubContractorQuery> subContractorQueryList = subContractorMapper.searchContractorInPro(subContractorSearchInPro);
         return setContractorInfoList(subContractorQueryList);
+    }
+
+    @Override
+    public Integer findUploadStatusById(Integer subContractorId) {
+        return subContractorMapper.findUploadStatusById(subContractorId);
+    }
+
+    @Override
+    public List<SubContractorQuery> findByIdList(List<Integer> subContractorIdList) {
+        return subContractorMapper.findByIdList(subContractorIdList);
     }
 
     private List<SubContractorQuery> setContractorInfoList(List<SubContractorQuery> subContractorQueryList) {

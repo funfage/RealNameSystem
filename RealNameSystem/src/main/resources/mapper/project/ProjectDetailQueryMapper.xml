@@ -388,7 +388,7 @@
         select 1 from project_detail where id = #{id} limit 1;
     </select>
 
-    <select id="getIdByProjectCodeAndPersonId" resultType="integer">
+    <select id="getProjectPersonDetailId" resultType="integer">
         select
           id
         from
@@ -399,6 +399,9 @@
             </if>
             <if test="projectCode != null and projectCode != ''">
                 and pd.project_code = #{projectCode}
+            </if>
+            <if test="teamSysNo != null">
+                and pd.team_sys_no = #{teamSysNo}
             </if>
         </where>
     </select>
@@ -450,6 +453,29 @@
         limit
           1
     </select>
+
+    <select id="findPersonStatusByCondition" resultType="integer">
+        select
+          person_status
+        from
+          project_detail
+        where
+          project_code = #{projectCode}
+        and
+          team_sys_no = #{teamSysNo}
+        and
+          person_id = #{personId}
+    </select>
+
+    <select id="findPersonStatusById" resultType="integer">
+        select
+          person_status
+        from
+          project_detail
+        where
+          id = #{projectDetailId}
+    </select>
+
 
 </mapper>
 

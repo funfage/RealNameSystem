@@ -51,6 +51,16 @@ public class SubContractor {
 
     private Integer uploadStatus;
 
+    /**
+     * 合同签订率
+     */
+    private Float contractSignRate;
+
+    /**
+     * 在场人数
+     */
+    private Integer attendNum;
+
 
 
 }

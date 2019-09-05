@@ -142,5 +142,17 @@ public class ProjectTest extends BaseTest {
         System.out.println(integer);
     }
 
+    @Test
+    public void findUploadStatusByProjectCode() {
+        Integer status = projectQueryMapper.findUploadStatusByProjectCode("36bj84W235Zgc8O78yuS32510ppMkHfe");
+        System.out.println(status);
+    }
+
+    @Test
+    public void updateProjectCode() {
+        Integer integer = projectQueryMapper.updateProjectCode("398589nje53h453j5h35h435", "9545jckjdfhfgkdhfhj");
+        System.out.println(integer);
+    }
+
 
 }

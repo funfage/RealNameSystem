@@ -3,11 +3,13 @@ package com.real.name.subcontractor;
 import com.real.name.others.BaseTest;
 import com.real.name.project.entity.Project;
 import com.real.name.subcontractor.entity.SubContractor;
-import com.real.name.subcontractor.query.SubContractorQuery;
+import com.real.name.subcontractor.entity.query.SubContractorQuery;
+import com.real.name.subcontractor.entity.search.SubContractorSearchInPro;
 import com.real.name.subcontractor.service.repository.SubContractorMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -108,7 +110,7 @@ public class SubContractorTest extends BaseTest {
 
     @Test
     public void searchContractorInPro() {
-        SubContractorQuery query = new SubContractorQuery();
+        SubContractorSearchInPro query = new SubContractorSearchInPro();
         query.setProjectCode("36bj84W235Zgc8O78yuS32510ppMkHfe");
         List<SubContractorQuery> subContractorQueries = subContractorMapper.searchContractorInPro(query);
         System.out.println(subContractorQueries);
@@ -119,6 +121,23 @@ public class SubContractorTest extends BaseTest {
         List<SubContractorQuery> subContractorQueries2 = subContractorMapper.searchContractorInPro(query);
         System.out.println(subContractorQueries2);
     }
+
+
+    @Test
+    public void findUploadStatusById() {
+        Integer uploadStatusById = subContractorMapper.findUploadStatusById(1);
+        System.out.println(uploadStatusById);
+    }
+
+    @Test
+    public void findByIdList() {
+        List<Integer> idList = new ArrayList<>();
+        idList.add(1);
+        idList.add(2);
+        List<SubContractorQuery> byIdList = subContractorMapper.findByIdList(idList);
+        System.out.println(byIdList);
+    }
+
 
 
 }

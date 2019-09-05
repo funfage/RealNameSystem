@@ -43,6 +43,7 @@
           r.person_id = #{personId}
         and
           r.time_number = #{timeNumber}
+        group by r.device_id, r.person_id, r.time_number
     </select>
     
     <select id="getTodayRecord" resultMap="recordMap">

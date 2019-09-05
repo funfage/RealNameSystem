@@ -1,7 +1,6 @@
 package com.real.name.subcontractor.controller;
 
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.real.name.common.annotion.JSON;
@@ -13,8 +12,9 @@ import com.real.name.common.utils.PageUtils;
 import com.real.name.project.entity.Project;
 import com.real.name.project.service.ProjectService;
 import com.real.name.subcontractor.entity.SubContractor;
-import com.real.name.subcontractor.query.GroupPeople;
-import com.real.name.subcontractor.query.SubContractorQuery;
+import com.real.name.subcontractor.entity.query.GroupPeople;
+import com.real.name.subcontractor.entity.query.SubContractorQuery;
+import com.real.name.subcontractor.entity.search.SubContractorSearchInPro;
 import com.real.name.subcontractor.service.SubContractorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.xml.ws.RequestWrapper;
 import java.util.List;
 
 @RestController
@@ -54,6 +53,11 @@ public class SubContractorController {
      */
     @PostMapping("/updateSubContractor")
     public ResultVo updateSubContractor(@RequestBody SubContractor subContractor) {
+        Integer status = subContractorService.findUploadStatusById(subContractor.getSubContractorId());
+        if (status != null && status == 1) {
+            //设置参建单位修改未上传
+            subContractor.setUploadStatus(status);
+        }
         subContractorService.updateSubContractorById(subContractor);
         return ResultVo.success();
     }
@@ -82,7 +86,11 @@ public class SubContractorController {
             logger.error("json字符串groupPeopleListStr转换错误");
             return ResultVo.failure();
         }
-        subContractorService.contractorReJoinToProject(projectCode, subContractorId, groupPeopleList);
+        //重建单位重新加入项目
+        List<String> failNameList = subContractorService.contractorReJoinToProject(projectCode, subContractorId, groupPeopleList);
+        if (failNameList.size() > 0) {
+            return ResultVo.failure(failNameList, ResultError.PERSON_REJOIN_PROJECT_FAILURE);
+        }
         return ResultVo.success();
     }
 
@@ -128,6 +136,20 @@ public class SubContractorController {
     }
 
     /**
+     * 查询项目中未被移除的参建单位名和id
+     * @param status 为1为查询未被移除的参建单位信息, 否则为查询项目下所有参建单位信息
+     */
+    @GetMapping("/findContractCorpNameInPro")
+    @JSONS({
+            @JSON(type = SubContractorQuery.class, include = "subContractorId,corpCode,corpName")
+    })
+    public ResultVo findContractCorpNameInPro(@RequestParam("projectCode") String projectCode,
+                                           @RequestParam(name = "status", required = false) Integer status) {
+        List<SubContractorQuery> subContractorQueryList = subContractorService.findContractCorpNameInPro(projectCode, status);
+        return ResultVo.success(subContractorQueryList);
+    }
+
+    /**
      * 查未被移除的参建单位信息
      * @param status 为1时查询所有，否则为分页查询
      */
@@ -159,12 +181,12 @@ public class SubContractorController {
             @JSON(type = Project.class, include = "projectCode,name")
     })
     @GetMapping("/searchContractorInPro")
-    public ResultVo searchContractorInPro(SubContractorQuery subContractorQuery) {
-        if (StringUtils.isEmpty(subContractorQuery.getProjectCode())) {
+    public ResultVo searchContractorInPro(SubContractorSearchInPro subContractorSearchInPro) {
+        if (StringUtils.isEmpty(subContractorSearchInPro.getProjectCode())) {
             throw AttendanceException.emptyMessage("项目编码");
         }
-        PageHelper.startPage(subContractorQuery.getPageNum() + 1, subContractorQuery.getPageSize());
-        List<SubContractorQuery> subContractorQueryList = subContractorService.searchContractorInPro(subContractorQuery);
+        PageHelper.startPage(subContractorSearchInPro.getPageNum() + 1, subContractorSearchInPro.getPageSize());
+        List<SubContractorQuery> subContractorQueryList = subContractorService.searchContractorInPro(subContractorSearchInPro);
         PageInfo<SubContractorQuery> pageInfo = new PageInfo<>(subContractorQueryList);
         return PageUtils.pageResult(pageInfo, subContractorQueryList);
     }

@@ -63,7 +63,7 @@ public class AttendanceTest extends BaseTest {
     }
 
     @Test
-    public void countGroupTime() throws ParseException {
+    public void countGroupTime() {
         try {
             List<ProjectDetail> projectDetailList = projectDetailService.findAll();
             for (ProjectDetail projectDetail : projectDetailList) {
@@ -154,12 +154,12 @@ public class AttendanceTest extends BaseTest {
     @Test
     public void findPagePersonPeriodWorkInfoInProject() throws ParseException {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date start = dateFormat.parse("2019-07-01 00:00:00");
-        Date end = new Date(System.currentTimeMillis());
-        System.out.println(dateFormat.format(start));
-        System.out.println(dateFormat.format(end));
-        List<PersonWorkRecord> pagePersonPeriodWorkInfoInProject = attendanceMapper.findPagePersonPeriodWorkInfoInProject(start, end, "36bj84W235Zgc8O78yuS32510ppMkHfe", 0, 5);
+        Date start = dateFormat.parse("2019-08-01 00:00:00");
+        Date end = dateFormat.parse("2019-09-01 00:00:00");
+        List<PersonWorkRecord> pagePersonPeriodWorkInfoInProject = attendanceMapper.findPagePersonPeriodWorkInfoInProject(start, end, "36bj84W235Zgc8O78yuS32510ppMkHfe", 0, 10);
+        Integer count = attendanceMapper.countPersonPeriodWorkInfoInProject(start, end, "36bj84W235Zgc8O78yuS32510ppMkHfe");
         System.out.println(pagePersonPeriodWorkInfoInProject);
+        System.out.println(count);
     }
 
     @Test
@@ -199,6 +199,36 @@ public class AttendanceTest extends BaseTest {
         System.out.println(periodAttendNumInPIds);
         System.out.println(periodAttendErrNumInPIds);
     }
+
+    @Test
+    public void findAttendancePerson() {
+        Record attendancePerson = recordMapper.findAttendancePerson(12, "111", 123L);
+        System.out.println(attendancePerson);
+    }
+
+    @Test
+    public void searchAttendanceInPro() throws ParseException {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date start = dateFormat.parse("2019-08-01 00:00:00");
+        Date end = dateFormat.parse("2019-09-01 00:00:00");
+        List<PersonWorkRecord> personWorkRecords = attendanceMapper.searchAttendanceInPro("36bj84W235Zgc8O78yuS32510ppMkHfe", 1, "黄", start, end, 0, 10);
+        Integer count1 = attendanceMapper.countSearchAttendanceInPro("36bj84W235Zgc8O78yuS32510ppMkHfe", 1, "黄", start, end);
+        System.out.println(personWorkRecords);
+        System.out.println(count1);
+        List<PersonWorkRecord> personWorkRecords1 = attendanceMapper.searchAttendanceInPro("36bj84W235Zgc8O78yuS32510ppMkHfe", 1, null, start, end, 0, 10);
+        Integer count2 = attendanceMapper.countSearchAttendanceInPro("36bj84W235Zgc8O78yuS32510ppMkHfe", 1, null, start, end);
+        System.out.println(personWorkRecords1);
+        System.out.println(count2);
+        List<PersonWorkRecord> personWorkRecords2 = attendanceMapper.searchAttendanceInPro("36bj84W235Zgc8O78yuS32510ppMkHfe", null, "黄", start, end, 0, 10);
+        Integer count3 = attendanceMapper.countSearchAttendanceInPro("36bj84W235Zgc8O78yuS32510ppMkHfe", null, "黄", start, end);
+        System.out.println(personWorkRecords2);
+        System.out.println(count3);
+        List<PersonWorkRecord> personWorkRecords3 = attendanceMapper.searchAttendanceInPro("36bj84W235Zgc8O78yuS32510ppMkHfe", null, null, start, end, 0, 10);
+        Integer count4 = attendanceMapper.countSearchAttendanceInPro("36bj84W235Zgc8O78yuS32510ppMkHfe", null, null, start, end);
+        System.out.println(personWorkRecords3);
+        System.out.println(count4);
+    }
+
 
 
 

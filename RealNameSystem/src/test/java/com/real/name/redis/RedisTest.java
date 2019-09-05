@@ -28,7 +28,6 @@ public class RedisTest extends BaseTest {
         if (b == null) {
             System.out.println("is null");
         }
-
         System.out.println(name);
         jedisStrings.setIfAbsent("age", 12);
         jedisStrings.setIfAbsent("age", 18);
@@ -99,6 +98,21 @@ public class RedisTest extends BaseTest {
                 jedisStrings.set(key, teamName + "," + 1);
             }
         }
+    }
+
+    @Test
+    public void test4() {
+        jedisStrings.set("123", "admin", 1000, TimeUnit.MILLISECONDS);
+        jedisStrings.set("abc", "name");
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Object o = jedisStrings.get("123");
+        Object abc = jedisStrings.get("abc");
+        System.out.println(o);
+        System.out.println(abc);
     }
 
 }

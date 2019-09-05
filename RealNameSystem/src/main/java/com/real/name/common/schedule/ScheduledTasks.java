@@ -211,10 +211,10 @@ public class ScheduledTasks {
                     //1,员工只出不进
                     if (todayRecord.get(0).getDirection() == 2) {
                         attendance.setEndTime(new Date(todayRecord.get(0).getTimeNumber()));
-                        attendance.setStatus(0);
+                        attendance.setStatus(CommConstant.ONLY_EXIT);
                     } else if (todayRecord.get(todayRecord.size() - 1).getDirection() == 1) { // 2,只进不出
                         attendance.setStartTime(new Date(todayRecord.get(todayRecord.size() - 1).getTimeNumber()));
-                        attendance.setStatus(-1);
+                        attendance.setStatus(CommConstant.ONLY_ENTER);
                     } else {
                         int index = 0;
                         for (int i = 0; i < todayRecord.size() - 1; i++) {
@@ -244,7 +244,7 @@ public class ScheduledTasks {
                             }
                         }
                         if (totalTime < 0) { // 算法异常
-                            attendance.setStatus(-2);
+                            attendance.setStatus(CommConstant.COUNT_ERROR);
                         }
                         //设置结束工作的时间
                         attendance.setEndTime(new Date(todayRecord.get(todayRecord.size() - 1).getTimeNumber()));

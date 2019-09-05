@@ -12,7 +12,9 @@ import com.real.name.common.utils.PageUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.device.service.DeviceService;
 import com.real.name.group.entity.WorkerGroup;
-import com.real.name.group.query.GroupQuery;
+import com.real.name.group.entity.query.GroupQuery;
+import com.real.name.group.entity.search.GroupSearch;
+import com.real.name.group.entity.search.GroupSearchInPro;
 import com.real.name.group.service.GroupService;
 import com.real.name.person.entity.Person;
 import com.real.name.person.service.PersonService;
@@ -29,7 +31,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/group")
@@ -147,7 +148,10 @@ public class GroupController {
         //获取所有下发的人员信息
         List<Person> personList = personService.findIssueInfoByPersonIdIn(personIds);
         //班组重新加入项目
-        groupService.groupReJoinToProject(projectCode, subContractorId, teamSysNo, personList, allIssueDevice, allProjectIssueDevice);
+        List<String> failNameList = groupService.groupReJoinToProject(projectCode, subContractorId, teamSysNo, personList, allIssueDevice, allProjectIssueDevice);
+        if (failNameList.size() > 0) {
+            return ResultVo.failure(failNameList, ResultError.PERSON_REJOIN_PROJECT_FAILURE);
+        }
         return ResultVo.success();
     }
 
@@ -175,12 +179,26 @@ public class GroupController {
     }
 
     /**
-     * 获取某个参建单位下的未被移除的班组
+     * 获取某个参建单位下班组信息
      */
     @GetMapping("/getGroupInContractor")
+    public ResultVo getGroupInContractor(@RequestParam("subContractorId") Integer subContractorId,
+                                         @RequestParam(value = "status", required = false) Integer status) {
+        List<WorkerGroup> workerGroupList = groupService.getGroupInContractor(subContractorId, status);
+        return ResultVo.success(workerGroupList);
+    }
+
+    /**
+     * 获取某个参建单位下的未被移除的班组名
+     * @param status 如果不传为查询参建单位下的所有,
+     *               如果status为1则查询未被移除的班组,
+     *               如果为0则查下被移除的班组
+     */
+    @GetMapping("/getGroupNameInContractor")
     @JSON(type = WorkerGroup.class, include = "teamSysNo,teamName")
-    public ResultVo getGroupInContractor(@RequestParam("subContractorId") Integer subContractorId) {
-        List<WorkerGroup> workerGroupList = groupService.getUnRemoveGroupInContractor(subContractorId);
+    public ResultVo getGroupNameInContractor(@RequestParam("subContractorId") Integer subContractorId,
+                                         @RequestParam(value = "status", required = false) Integer status) {
+        List<WorkerGroup> workerGroupList = groupService.getGroupNameInContractor(subContractorId, status);
         return ResultVo.success(workerGroupList);
     }
 
@@ -188,9 +206,9 @@ public class GroupController {
      * 搜索班组
      */
     @PostMapping("/searchGroup")
-    public ResultVo searchGroup(GroupQuery groupQuery) {
-        PageHelper.startPage(groupQuery.getPageNum() + 1, groupQuery.getPageSize());
-        List<WorkerGroup> workerGroups = groupService.searchGroup(groupQuery);
+    public ResultVo searchGroup(GroupSearch groupSearch) {
+        PageHelper.startPage(groupSearch.getPageNum() + 1, groupSearch.getPageSize());
+        List<WorkerGroup> workerGroups = groupService.searchGroup(groupSearch);
         PageInfo<WorkerGroup> pageInfo = new PageInfo<>(workerGroups);
         Map<String, Object> map = new HashMap<>();
         map.put("workerGroups", workerGroups);
@@ -207,12 +225,12 @@ public class GroupController {
     @JSONS({
             @JSON(type = SubContractor.class, include = "subContractorId,corpCode,corpName,corpType")
     })
-    public ResultVo searchGroupInPro(GroupQuery groupQuery) {
-        if (StringUtils.isEmpty(groupQuery.getProjectCode())) {
+    public ResultVo searchGroupInPro(GroupSearchInPro groupSearchInPro) {
+        if (StringUtils.isEmpty(groupSearchInPro.getProjectCode())) {
             throw AttendanceException.emptyMessage("项目编号");
         }
-        PageHelper.startPage(groupQuery.getPageNum() + 1, groupQuery.getPageSize());
-        List<GroupQuery> groupQueryList = groupService.searchGroupInPro(groupQuery);
+        PageHelper.startPage(groupSearchInPro.getPageNum() + 1, groupSearchInPro.getPageSize());
+        List<GroupQuery> groupQueryList = groupService.searchGroupInPro(groupSearchInPro);
         PageInfo<GroupQuery> pageInfo = new PageInfo<>(groupQueryList);
         return PageUtils.pageResult(pageInfo, groupQueryList);
     }

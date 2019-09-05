@@ -1,11 +1,11 @@
 package com.real.name.person.service.repository;
 
 import com.real.name.person.entity.Person;
-import com.real.name.person.entity.PersonQuery;
+import com.real.name.person.entity.search.PersonSearch;
+import com.real.name.person.entity.search.PersonSearchInPro;
 import com.real.name.project.entity.ProjectDetailQuery;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Map;
@@ -55,7 +55,7 @@ public interface PersonQueryMapper {
      * 获取添加到项目的人员
      * 人员过滤的条件是：与参建单位的CorpCode一致，并且不在本项目下（或者在该项目下但是已经被移除）的管理人员。
      */
-    List<Person> getAdminPersonToAttendProject(@Param("projectCode") String projectCode, @Param("ContractCorpCode") String ContractCorpCode);
+    List<Person> getAdminPersonToAttendProject(@Param("projectCode") String projectCode);
 
     /**
      * 根据人员类型查询
@@ -83,6 +83,11 @@ public interface PersonQueryMapper {
      * 查询多个人员信息
      */
     List<Person> findByPersonIdIn(@Param("personIds") List<Integer> personIds);
+
+    /**
+     * 查询包括头像信息的多个人员信息
+     */
+    List<Person> findAllByPersonIdIn(@Param("personIds") List<Integer> personIds);
 
     /**
      * 查询需要下发的多个人员信息
@@ -134,7 +139,7 @@ public interface PersonQueryMapper {
     /**
      * 搜索人员
      */
-    List<Person> searchPerson(@Param("personQuery") PersonQuery personQuery);
+    List<Person> searchPerson(@Param("personSearch") PersonSearch personSearch);
 
     /**
      * 获取总的人员数
@@ -159,6 +164,18 @@ public interface PersonQueryMapper {
     /**
      * 搜索项目中的人员
      */
-    List<ProjectDetailQuery> searchPersonInPro(@Param("personQuery") PersonQuery personQuery);
+    List<ProjectDetailQuery> searchPersonInPro(@Param("personSearchInPro") PersonSearchInPro personSearchInPro);
+
+    /**
+     * 查询人员上传到全国平台需要的信息
+     */
+    List<ProjectDetailQuery> findPeopleUploadInfo(@Param("projectCode") String projectCode,
+                                                  @Param("teamSysNo") Integer teamSysNo,
+                                                  @Param("personIds") List<Integer> personIds);
+
+    /**
+     * 判断人员是否加入了项目，不包括从项目中移除的人员
+     */
+    Integer judgePersonJoinProject(@Param("personId") Integer personId);
 
 }

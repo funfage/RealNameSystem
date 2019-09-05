@@ -1,4 +1,4 @@
-package com.real.name.subcontractor.query;
+package com.real.name.subcontractor.entity.query;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

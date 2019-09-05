@@ -53,4 +53,9 @@ public interface ContractInfoMapper {
      */
     List<ContractInfo> searchContractInfo(@Param("contractInfoQuery") ContractInfoQuery contractInfoQuery);
 
+    /**
+     * 获取所有需要上传的人员合同信息
+     */
+    List<ContractInfo> findUploadContractInfo(List<Integer> contractInfoIdList);
+
 }

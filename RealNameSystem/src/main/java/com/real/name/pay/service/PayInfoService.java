@@ -10,7 +10,7 @@ public interface PayInfoService {
     /**
      * 保存薪资记录
      */
-    void savePayInfo(PayInfo payInfo, String projectCode, Integer personId);
+    void savePayInfo(PayInfo payInfo, String projectCode, Integer teamSysNo, Integer personId);
 
     /**
      * 更新薪资

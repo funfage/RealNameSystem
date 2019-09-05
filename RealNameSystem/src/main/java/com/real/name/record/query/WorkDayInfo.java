@@ -19,6 +19,8 @@ public class WorkDayInfo {
 
     private Double workHours;
 
+    private Integer personStatus;
+
     public WorkDayInfo() {
     }
 }

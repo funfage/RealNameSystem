@@ -175,7 +175,7 @@ public class ProjectDetailQueryTest extends BaseTest {
 
     @Test
     public void getIdByProjectCodeAndPersonId() {
-        Integer id = mapper.getIdByProjectCodeAndPersonId("36bj84W235Zgc8O78yuS32510ppMkHfe", 94);
+        Integer id = mapper.getProjectPersonDetailId("36bj84W235Zgc8O78yuS32510ppMkHfe", 1562649811, 94);
         System.out.println(id);
     }
 
@@ -195,6 +195,14 @@ public class ProjectDetailQueryTest extends BaseTest {
     public void judgePersonInProGroup() {
         Integer integer = mapper.judgePersonInProGroup("44010620190510008", 1562649690, 213);
         System.out.println(integer);
+    }
+
+    @Test
+    public void findPersonStatusByCondition() {
+        Integer integer = mapper.findPersonStatusByCondition("36bj84W235Zgc8O78yuS32510ppMkHfe", 1562649811, 94);
+        System.out.println(integer);
+        Integer integer2 = mapper.findPersonStatusById(97);
+        System.out.println(integer2);
     }
 
 

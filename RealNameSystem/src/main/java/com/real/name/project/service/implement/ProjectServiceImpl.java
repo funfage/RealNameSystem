@@ -15,10 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Time;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class ProjectServiceImpl implements ProjectService {
@@ -55,6 +52,11 @@ public class ProjectServiceImpl implements ProjectService {
         } else {
             return projectQueryMapper.findAll();
         }
+    }
+
+    @Override
+    public List<Project> findAllInProjectCode(Set<String> projectCodeList) {
+        return projectQueryMapper.findAllInProjectCode(projectCodeList);
     }
 
     @Override
@@ -130,6 +132,16 @@ public class ProjectServiceImpl implements ProjectService {
     public boolean judgeEmptyByProjectCode(String projectCode) {
         Integer integer = projectQueryMapper.judgeEmptyByProjectCode(projectCode);
         return integer == null || integer <= 0;
+    }
+
+    @Override
+    public Integer findUploadStatusByProjectCode(String projectCode) {
+        return projectQueryMapper.findUploadStatusByProjectCode(projectCode);
+    }
+
+    @Override
+    public Integer updateProjectCode(String oldProjectCode, String newProjectCode) {
+        return projectQueryMapper.updateProjectCode(oldProjectCode, newProjectCode);
     }
 
 }

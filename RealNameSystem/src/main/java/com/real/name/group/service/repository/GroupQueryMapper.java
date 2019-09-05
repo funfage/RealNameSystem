@@ -1,11 +1,12 @@
 package com.real.name.group.service.repository;
 
 import com.real.name.group.entity.WorkerGroup;
-import com.real.name.group.query.GroupQuery;
+import com.real.name.group.entity.query.GroupQuery;
+import com.real.name.group.entity.search.GroupSearch;
+import com.real.name.group.entity.search.GroupSearchInPro;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.text.ParsePosition;
 import java.util.List;
 
 @Mapper
@@ -38,6 +39,11 @@ public interface GroupQueryMapper {
     GroupQuery findById(@Param("teamSysNo") Integer teamSysNo);
 
     /**
+     * 根据id集合查询
+     */
+    List<GroupQuery> findByIdList(@Param("groupIdList") List<Integer> groupIdList);
+
+    /**
      * 根据projectCode查询
      */
     List<GroupQuery> findByProjectCode(@Param("projectCode") String projectCode);
@@ -56,7 +62,7 @@ public interface GroupQueryMapper {
     /**
      * 搜索班组
      */
-    List<WorkerGroup> searchGroup(@Param("groupQuery") GroupQuery groupQuery);
+    List<WorkerGroup> searchGroup(@Param("groupSearch") GroupSearch groupSearch);
 
     /**
      * 根据teamSysNo删除
@@ -69,14 +75,16 @@ public interface GroupQueryMapper {
     int setProGroupRemoveStatus(@Param("teamSysNo") Integer teamSysNo);
 
     /**
-     * 获取某个参见单位下的班组
+     * 查询某个参建单位下的班组信息
      */
-    List<WorkerGroup> getUnRemoveGroupInContractor(@Param("subContractorId") Integer subContractorId);
+    List<WorkerGroup> getGroupInContractor(@Param("subContractorId") Integer subContractorId,
+                                           @Param("groupStatus") Integer groupStatus);
 
     /**
-     * 查询参建单位下所有未移出项目的班组
+     * 查询某个参建单位下所有班组名
      */
-    List<WorkerGroup> findRemoveGroupInContract(@Param("subContractorId") Integer subContractorId);
+    List<WorkerGroup> getGroupNameInContractor(@Param("subContractorId") Integer subContractorId,
+                                               @Param("groupStatus") Integer groupStatus);
 
     /**
      * 根据班组编号查询班组名称
@@ -86,7 +94,18 @@ public interface GroupQueryMapper {
     /**
      * 搜索项目中的班组
      */
-    List<GroupQuery> searchGroupInPro(@Param("groupQuery") GroupQuery groupQuery);
+    List<GroupQuery> searchGroupInPro(@Param("groupSearchInPro") GroupSearchInPro groupSearchInPro);
+
+    /**
+     * 查询班组上传标识
+     */
+    Integer findUploadStatusById(@Param("teamSysNo") Integer teamSysNo);
+
+    /**
+     * 修改班组的teamSysNo
+     */
+    Integer updateTeamSysNo(@Param("oldTeamSysNo") Integer oldTeamSysNo,
+                            @Param("newTeamSysNo") Integer newTeamSysNo);
 
 }
 

@@ -2,7 +2,9 @@ package com.real.name.group.service;
 
 import com.real.name.device.entity.Device;
 import com.real.name.group.entity.WorkerGroup;
-import com.real.name.group.query.GroupQuery;
+import com.real.name.group.entity.query.GroupQuery;
+import com.real.name.group.entity.search.GroupSearch;
+import com.real.name.group.entity.search.GroupSearchInPro;
 import com.real.name.person.entity.Person;
 import org.apache.ibatis.annotations.Param;
 
@@ -31,11 +33,6 @@ public interface GroupService {
     void updateByTeamSysNo(WorkerGroup workerGroup);
 
     /**
-     * 获取某个参见单位下的班组
-     */
-    List<WorkerGroup> getUnRemoveGroupInContractor(Integer subContractorId);
-
-    /**
      * 删除班组信息
      */
     void deleteByTeamSysNo(Integer teamSysNo);
@@ -48,12 +45,17 @@ public interface GroupService {
     /**
      * 班组重新加入项目
      */
-    void groupReJoinToProject(String projectCode, Integer subContractorId, Integer teamSysNo, List<Person> personList, List<Device> allIssueDevice, List<Device> allProjectIssueDevice);
+    List<String> groupReJoinToProject(String projectCode, Integer subContractorId, Integer teamSysNo, List<Person> personList, List<Device> allIssueDevice, List<Device> allProjectIssueDevice);
 
     /**
-     * 查询参建单位下所有未移出项目的班组
+     * 查询某个参建单位下的班组信息
      */
-    List<WorkerGroup> findRemoveGroupInContract(Integer subContractorId);
+    List<WorkerGroup> getGroupInContractor(Integer subContractorId, Integer groupStatus);
+
+    /**
+     * 查询某个参建单位下所有班组信息
+     */
+    List<WorkerGroup> getGroupNameInContractor(Integer subContractorId, Integer status);
 
     /**
      * 根据teamName判断班组是否存在
@@ -82,7 +84,7 @@ public interface GroupService {
     /**
      * 搜素班组
      */
-    List<WorkerGroup> searchGroup(GroupQuery groupQuery);
+    List<WorkerGroup> searchGroup(GroupSearch groupSearch);
 
     /**
      * 根据班组编号查询班组名称
@@ -92,6 +94,21 @@ public interface GroupService {
     /**
      * 搜索项目中的班组
      */
-    List<GroupQuery> searchGroupInPro(GroupQuery groupQuery);
+    List<GroupQuery> searchGroupInPro(GroupSearchInPro groupSearchInPro);
+
+    /**
+     * 根据id集合查询
+     */
+    List<GroupQuery> findByIdList(List<Integer> groupIdList);
+
+    /**
+     * 查询班组上传标识
+     */
+    Integer findUploadStatusById(Integer teamSysNo);
+
+    /**
+     * 修改班组的teamSysNo
+     */
+    Integer updateTeamSysNo(Integer oldTeamSysNo, Integer newTeamSysNo);
 
 }

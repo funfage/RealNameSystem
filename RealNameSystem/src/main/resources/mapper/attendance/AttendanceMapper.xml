@@ -39,6 +39,14 @@
         </foreach>
     </sql>
 
+    <sql id="personWorkRecord">
+        pd.id as project_detail_id, pd.person_status,
+        p.person_id as p_person_id, p.person_name, p.gender, p.id_card_number, p.id_card_type, p.work_type, p.work_role,
+        sc.corp_name as subordinate_company, sc.corp_code,
+        wg.team_sys_no as wg_team_sys_no, wg.team_name,
+        a.attendance_id, a.work_hours, a.work_time, a.start_time, a.end_time, a.status
+    </sql>
+
     <sql id="foreachProjectIds">
         <choose>
             <when test="projectDetailIds != null and projectDetailIds.size() != 0">
@@ -167,15 +175,13 @@
 
     <select id="findPersonPeriodWorkInfoInProject" resultMap="personWorkRecord">
         select
-          pd.id as project_detail_id, pd.person_status,
-          p.person_id as p_person_id, p.person_name, p.gender, p.id_card_number, p.id_card_type, p.work_type, p.work_role, p.subordinate_company, p.corp_code,
-          wg.team_sys_no as wg_team_sys_no, wg.team_name,
-          a.attendance_id, a.work_hours, a.work_time, a.start_time, a.end_time, a.status
+          <include refid="personWorkRecord"/>
         from
           project_detail pd
-        left join person p on pd.person_id = p.person_id
-        left join worker_group wg on pd.team_sys_no = wg.team_sys_no
-        left join attendance a on a.project_detail_id = pd.id
+        inner join person p on pd.person_id = p.person_id
+        inner join worker_group wg on pd.team_sys_no = wg.team_sys_no
+        inner join sub_contractor sc on wg.sub_contractor_id = sc.sub_contractor_id
+        inner join attendance a on a.project_detail_id = pd.id
         where
           pd.project_code = #{projectCode}
         and
@@ -188,33 +194,111 @@
 
     <select id="findPagePersonPeriodWorkInfoInProject" resultMap="personWorkRecord">
         select
-          pd.id as project_detail_id, pd.person_status,
-          p.person_id as p_person_id, p.person_name, p.gender, p.id_card_number, p.id_card_type, p.work_type, p.work_role, p.subordinate_company, p.corp_code,
-          wg.team_sys_no as wg_team_sys_no, wg.team_name,
-          a.attendance_id, a.work_hours, a.work_time, a.start_time, a.end_time, a.status
+          <include refid="personWorkRecord"/>
         from
         (
           select
-            *
+            pd.*
           from
-            project_detail
+            project_detail pd
+          where
+            pd.project_code = #{projectCode}
           order by
-            id
+            pd.id
           <if test="offset != null and limit != null">
               limit #{offset}, #{limit}
           </if>
         ) pd
-        left join person p on pd.person_id = p.person_id
-        left join worker_group wg on pd.team_sys_no = wg.team_sys_no
+        inner join person p on pd.person_id = p.person_id
+        inner join worker_group wg on pd.team_sys_no = wg.team_sys_no
+        inner join sub_contractor sc on wg.sub_contractor_id = sc.sub_contractor_id
         left join attendance a on a.project_detail_id = pd.id
-        where
-          pd.project_code = #{projectCode}
         and
           a.work_time &gt;= #{startTime}
         and
           a.work_time &lt;= #{endTime}
+        where
+          pd.project_code = #{projectCode}
         order by
-          a.work_time
+          a.work_time, p.person_id
+    </select>
+
+    <select id="countPersonPeriodWorkInfoInProject" resultType="integer">
+        select
+          count(distinct pd.id)
+        from
+          project_detail pd
+        where
+          pd.project_code = #{projectCode}
+    </select>
+
+    <select id="searchAttendanceInPro" resultMap="personWorkRecord">
+        select
+          <include refid="personWorkRecord"/>
+        from
+        (
+            select
+              distinct pd.*
+            from
+              project_detail pd
+            inner join person p on pd.person_id = p.person_id
+            <if test="personName != null and personName != ''">
+                and p.person_name like '%${personName}%'
+            </if>
+            inner join worker_group wg on pd.team_sys_no = wg.team_sys_no
+            <if test="subContractorId != null">
+                inner join sub_contractor sc on sc.sub_contractor_id = #{subContractorId}
+                and
+                sc.sub_contractor_id = wg.sub_contractor_id
+            </if>
+            where
+              pd.project_code = #{projectCode}
+            order by
+            id
+            <if test="offset != null and limit != null">
+                limit #{offset}, #{limit}
+            </if>
+        ) pd
+        inner join person p on pd.person_id = p.person_id
+          <if test="personName != null and personName != ''">
+              and p.person_name like '%${personName}%'
+          </if>
+        inner join worker_group wg on pd.team_sys_no = wg.team_sys_no
+        inner join sub_contractor sc on wg.sub_contractor_id = sc.sub_contractor_id
+        <if test="subContractorId != null">
+            and
+              sc.sub_contractor_id = #{subContractorId}
+            and
+              sc.sub_contractor_id = wg.sub_contractor_id
+        </if>
+        left join attendance a on a.project_detail_id = pd.id
+        and
+          a.work_time &gt;= #{startTime}
+        and
+          a.work_time &lt;= #{endTime}
+        where
+          pd.project_code = #{projectCode}
+        order by
+          a.work_time, p.person_id
+    </select>
+
+    <select id="countSearchAttendanceInPro" resultType="integer">
+        select
+          count(distinct id)
+        from
+          project_detail pd
+        inner join person p on pd.person_id = p.person_id
+        <if test="personName != null and personName != ''">
+            and p.person_name like '%${personName}%'
+        </if>
+        inner join worker_group wg on pd.team_sys_no = wg.team_sys_no
+        <if test="subContractorId != null">
+            inner join sub_contractor sc on sc.sub_contractor_id = #{subContractorId}
+            and
+            sc.sub_contractor_id = wg.sub_contractor_id
+        </if>
+        where
+          pd.project_code = #{projectCode}
     </select>
 
     <select id="getPeriodAttendNumAndWorkHours" resultType="map">

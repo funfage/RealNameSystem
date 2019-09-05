@@ -48,6 +48,57 @@
         <result property="createTime" column="create_time"/>
     </resultMap>
 
+    <resultMap id="personQuery" type="com.real.name.person.entity.query.PersonQuery">
+        <id property="personId" column="p_person_id"/>
+        <result property="personName" column="person_name"/>
+        <result property="subordinateCompany" column="subordinate_company"/>
+        <result property="corpCode" column="corp_code"/>
+        <result property="gender" column="gender"/>
+        <result property="address" column="address"/>
+        <result property="age" column="age"/>
+        <result property="bankLinkNumber" column="bank_link_number"/>
+        <result property="cardNumber" column="card_number"/>
+        <result property="cellPhone" column="cell_phone"/>
+        <result property="cultureLevelType" column="culture_level_type"/>
+        <result property="expiryDate" column="expiry_date"/>
+        <result property="grantOrg" column="grant_org"/>
+        <result property="groupNo" column="group_no"/>
+        <result property="hasBadMedicalHistory" column="has_bad_medical_history"/>
+        <result property="hasBuyInsurance" column="has_buy_insurance"/>
+        <result property="hometown" column="hometown"/>
+        <result property="idCardIndex" column="id_card_index"/>
+        <result property="idCardNumber" column="id_card_number"/>
+        <result property="idCardType" column="id_card_type"/>
+        <result property="issueCardDate" column="issue_card_date"/>
+        <result property="issueCardPic" column="issue_card_pic"/>
+        <result property="isTeamLeader" column="is_team_leader"/>
+        <result property="joinedTime" column="joined_time"/>
+        <result property="maritalStatus" column="marital_status"/>
+        <result property="nation" column="nation"/>
+        <result property="negativeIdCardImage" column="negative_id_card_image"/>
+        <result property="payRollBankCardNumber" column="pay_roll_bank_card_number"/>
+        <result property="payRollBankName" column="pay_roll_bank_name"/>
+        <result property="payRollTopBankCode" column="pay_roll_top_bank_code"/>
+        <result property="politicsType" column="politics_type"/>
+        <result property="positiveIdCardImage" column="positive_id_card_image"/>
+        <result property="specialty" column="specialty"/>
+        <result property="startDate" column="start_date"/>
+        <result property="suffixName" column="suffix_name"/>
+        <result property="urgentLinkMan" column="urgent_link_man"/>
+        <result property="urgentLinkManPhone" column="urgent_link_man_phone"/>
+        <result property="workDate" column="work_date"/>
+        <result property="workRole" column="work_role"/>
+        <result property="workType" column="work_type"/>
+        <result property="headImage" column="head_image"/>
+        <result property="uploadStatus" column="upload_status"/>
+        <result property="createTime" column="create_time"/>
+        <association property="subContractor" javaType="com.real.name.subcontractor.entity.SubContractor">
+            <id property="subContractorId" column="sub_contractor_id"/>
+            <result property="corpCode" column="corp_code"/>
+            <result property="corpName" column="corp_name"/>
+        </association>
+    </resultMap>
+
     <sql id="personInfo">
         distinct (p.person_id) as p_person_id, p.person_name, p.subordinate_company, p.corp_code, p.gender, p.address, p.age, p.bank_link_number, p.card_number,
         p.cell_phone, p.culture_level_type, p.expiry_date, p.grant_org, p.group_no, p.has_bad_medical_history,
@@ -56,6 +107,17 @@
         p.pay_roll_bank_card_number, p.pay_roll_bank_name, p.pay_roll_top_bank_code, p.politics_type, p.positive_id_card_image,
         p.specialty, p.start_date, p.suffix_name, p.urgent_link_man, p.urgent_link_man_phone, p.work_date,
         p.work_role, p.work_type, p.upload_status, p.create_time
+    </sql>
+
+    <sql id="personWithSubContractor">
+        distinct (p.person_id) as p_person_id, p.person_name, p.subordinate_company, p.corp_code, p.gender, p.address, p.age, p.bank_link_number, p.card_number,
+        p.cell_phone, p.culture_level_type, p.expiry_date, p.grant_org, p.group_no, p.has_bad_medical_history,
+        p.has_buy_insurance, p.hometown, p.id_card_index, p.id_card_number, p.id_card_type, p.issue_card_date,
+        p.issue_card_pic, p.is_team_leader, p.joined_time, p.marital_status, p.nation, p.negative_id_card_image,
+        p.pay_roll_bank_card_number, p.pay_roll_bank_name, p.pay_roll_top_bank_code, p.politics_type, p.positive_id_card_image,
+        p.specialty, p.start_date, p.suffix_name, p.urgent_link_man, p.urgent_link_man_phone, p.work_date,
+        p.work_role, p.work_type, p.upload_status, p.create_time,
+        sc.sub_contractor_id, sc.corp_code, sc.corp_name
     </sql>
 
     <sql id="personInfoWithImage">
@@ -141,15 +203,21 @@
 
     <select id="getNormalPersonToAttendProject" resultMap="queryMap">
         select
-          <include refid="personInfo"/>
+            <include refid="personInfo"/>
         from
-          person p
+            person p
         where
-          p.corp_code = #{ContractCorpCode}
-        and
-          p.work_role != 10
-        and
-          not exists (select pd.person_id from project_detail pd where p.person_id = pd.person_id and pd.person_status = 1)
+            p.work_role = 20
+        and not exists (
+            select
+                pd.person_id
+            from
+                project_detail pd
+            where
+                p.person_id = pd.person_id
+            and
+                pd.person_status = 1
+        )
     </select>
 
     <select id="getAdminPersonToAttendProject" resultMap="queryMap">
@@ -158,8 +226,7 @@
         from
             person p
         where
-            p.corp_code = #{ContractCorpCode}
-        and p.work_role = 10
+            p.work_role = 10
         and not exists (
             select
                 pd.person_id
@@ -167,8 +234,9 @@
                 project_detail pd
             where
                 pd.project_code = #{projectCode}
+            and
+                pd.person_status = 1
             and p.person_id = pd.person_id
-            and pd.person_status = 1
         )
     </select>
 
@@ -260,7 +328,27 @@
                 </foreach>
             </when>
             <otherwise>
-                ()
+                (null)
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findAllByPersonIdIn" resultMap="queryMap">
+        select
+          <include refid="personInfoWithImage"/>
+        from
+          person p
+        where
+          p.person_id
+        in
+        <choose>
+            <when test="personIds != null and personIds.size() != 0">
+                <foreach collection="personIds" item="id" index="index" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </when>
+            <otherwise>
+                (null)
             </otherwise>
         </choose>
     </select>
@@ -377,26 +465,28 @@
         from
         person p
         <where>
-            <if test="personQuery.nameOrIdCard != null ">
+            <if test="personSearch.nameOrIdCard != null ">
                 and
                 (
-                person_name like '%${personQuery.nameOrIdCard}%'
+                person_name like '%${personSearch.nameOrIdCard}%'
                 or
-                id_card_number like '%${personQuery.nameOrIdCard}%'
+                id_card_number like '%${personSearch.nameOrIdCard}%'
                 )
             </if>
-            <if test="personQuery.workRole != null">
-                and work_role = #{personQuery.workRole}
+            <if test="personSearch.workRole != null">
+                and work_role = #{personSearch.workRole}
             </if>
-            <if test="personQuery.gender != null ">
-                and gender = #{personQuery.gender}
+            <if test="personSearch.gender != null ">
+                and gender = #{personSearch.gender}
             </if>
-            <if test="personQuery.nation != null">
-                and nation = #{personQuery.nation}
+            <if test="personSearch.nation != null">
+                and nation = #{personSearch.nation}
             </if>
-            <if test="personQuery.age != null">
-                and gender &gt;= #{personQuery.ageBegin}
-                and gender &lt;= #{personQuery.ageEnd}
+            <if test="personSearch.ageBegin != null">
+                and age &gt;= #{personSearch.ageBegin}
+            </if>
+            <if test="personSearch.ageEnd != null">
+                and age &lt;= #{personSearch.ageEnd}
             </if>
         </where>
     </select>
@@ -456,12 +546,12 @@
           person p
         inner join project_detail pd on p.person_id = pd.person_id and pd.project_code = #{personQuery.projectCode}
         inner join worker_group wg on wg.team_sys_no = pd.team_sys_no
-        <if test="personQuery.subContractorId != null">
-            inner join sub_contractor sc on sc.sub_contractor_id = wg.sub_contractor_id and sc.sub_contractor_id = #{personQuery.subContractorId}
+        <if test="personSearchInPro.subContractorId != null">
+            inner join sub_contractor sc on sc.sub_contractor_id = wg.sub_contractor_id and sc.sub_contractor_id = #{personSearchInPro.subContractorId}
         </if>
-        <if test="personQuery.hasContract != null">
+        <if test="personSearchInPro.hasContract != null">
             <choose>
-                <when test="personQuery.hasContract == 1">
+                <when test="personSearchInPro.hasContract == 1">
                     and exists
                     (select cf.contract_id from contract_info cf where cf.project_detail_id = pd.id)
                 </when>
@@ -471,14 +561,50 @@
                 </otherwise>
             </choose>
         </if>
-        <if test="personQuery.personName != null">
-            and p.person_name like '%${personQuery.personName}%'
+        <if test="personSearchInPro.personName != null">
+            and p.person_name like '%${personSearchInPro.personName}%'
         </if>
-        <if test="personQuery.workRole != null">
-            and p.work_role = #{personQuery.workRole}
+        <if test="personSearchInPro.workRole != null">
+            and p.work_role = #{personSearchInPro.workRole}
         </if>
-        <if test="personQuery.workType != null and personQuery.workType != ''">
-            and p.work_type = #{personQuery.workType}
+        <if test="personSearchInPro.workType != null and personSearchInPro.workType != ''">
+            and p.work_type = #{personSearchInPro.workType}
         </if>
     </select>
+
+    <select id="findPeopleUploadInfo" resultMap="com.real.name.project.service.repository.ProjectDetailQueryMapper.queryAllMap">
+        select
+          <include refid="com.real.name.project.service.repository.ProjectDetailQueryMapper.personSqlWithImage"/>,
+          wg.team_sys_no as wg_team_sys_no,
+          wg.team_name
+        from
+          person p
+        left join project_detail pd on p.person_id = pd.person_id
+        left join worker_group wg on wg.team_sys_no = pd.team_sys_no
+        where
+          p.person_id
+        in
+        <choose>
+            <when test="personIds != null and personIds.size() != 0">
+                <foreach collection="personIds" item="id" index="index" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </when>
+            <otherwise>
+                (null)
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="judgePersonJoinProject" resultType="integer">
+        select
+          count(*)
+        from
+          project_detail
+        where
+          person_id = #{personId}
+        and
+          person_status != 1
+    </select>
+
 </mapper>

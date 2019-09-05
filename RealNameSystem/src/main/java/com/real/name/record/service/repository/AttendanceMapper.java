@@ -71,6 +71,33 @@ public interface AttendanceMapper {
                                                                  @Param("limit") Integer limit);
 
     /**
+     * 统计查询人员考勤的总数
+     */
+    Integer countPersonPeriodWorkInfoInProject(@Param("startTime") Date startTime,
+                                               @Param("endTime") Date endTime,
+                                               @Param("projectCode") String projectCode);
+
+    /**
+     * 搜索项目下的考勤
+     */
+    List<PersonWorkRecord> searchAttendanceInPro(@Param("projectCode") String projectCode,
+                                                 @Param("subContractorId") Integer subContractorId,
+                                                 @Param("personName") String personName,
+                                                 @Param("startTime") Date startTime,
+                                                 @Param("endTime") Date endTime,
+                                                 @Param("offset") Integer offset,
+                                                 @Param("limit") Integer limit);
+
+    /**
+     * 查询搜索结果的总数
+     */
+    Integer countSearchAttendanceInPro(@Param("projectCode") String projectCode,
+                                       @Param("subContractorId") Integer subContractorId,
+                                       @Param("personName") String personName,
+                                       @Param("startTime") Date startTime,
+                                       @Param("endTime") Date endTime);
+
+    /**
      * 累计某个时间段的除异常数据外的考勤次数和考勤工时
      */
     Map<String, Object> getPeriodAttendNumAndWorkHours(@Param("startTime") Date startTime,

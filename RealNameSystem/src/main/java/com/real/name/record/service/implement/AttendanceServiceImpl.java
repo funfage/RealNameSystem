@@ -4,25 +4,39 @@ import com.real.name.auth.entity.User;
 import com.real.name.auth.service.AuthUtils;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
+import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.TimeUtil;
+import com.real.name.common.utils.XSSFExcelUtils;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.project.entity.ProjectDetailQuery;
+import com.real.name.project.service.ProjectDetailQueryService;
+import com.real.name.project.service.ProjectService;
 import com.real.name.project.service.repository.ProjectDetailQueryMapper;
 import com.real.name.record.entity.Attendance;
 import com.real.name.record.query.PersonWorkRecord;
+import com.real.name.record.query.ProjectAttendanceQuery;
+import com.real.name.record.query.ProjectWorkRecord;
+import com.real.name.record.query.WorkDayInfo;
 import com.real.name.record.service.AttendanceService;
 import com.real.name.record.service.repository.AttendanceMapper;
 import com.real.name.record.service.repository.GroupAttendMapper;
 import com.real.name.record.service.repository.ProjectAttendMapper;
 import org.apache.shiro.SecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
+import java.io.IOException;
+import java.sql.Time;
 import java.util.*;
 
 @Service
 public class AttendanceServiceImpl implements AttendanceService {
+
+    private Logger logger = LoggerFactory.getLogger(AttendanceServiceImpl.class);
 
     @Autowired
     private AttendanceMapper attendanceMapper;
@@ -36,8 +50,15 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Autowired
     private ProjectAttendMapper projectAttendMapper;
 
+    @Autowired
+    private ProjectService projectService;
+
+    @Autowired
+    private ProjectDetailQueryService projectDetailQueryService;
+
     @Transactional
     @Override
+
     public void updateAndRecountAttendByAdmin(Long attendanceId, double workHours, Date startTime, Date endTime, String projectCode, Integer teamSysNo) {
         //查询attendanceId查询attendance
         Attendance selectAttend = attendanceMapper.findByAttendanceId(attendanceId);
@@ -69,15 +90,73 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public List<PersonWorkRecord> findPersonPeriodWorkInfoInProject(Date startDate, Date endDate, String projectCode) {
-        return attendanceMapper.findPersonPeriodWorkInfoInProject(startDate, endDate, projectCode);
+    public ResultVo getAttendance(Date startTime, Date endTime, String projectCode, Integer pageNum, Integer pageSize) {
+        int offset = pageNum * pageSize;
+        int limit = pageSize;
+        //分页查询人员在指定时间的考勤
+        List<PersonWorkRecord> personWorkRecords = attendanceMapper.findPagePersonPeriodWorkInfoInProject(startTime, endTime, projectCode, offset, limit);
+        ProjectWorkRecord projectWorkRecord = createProjectWorkRecord(startTime, endTime, projectCode, personWorkRecords);
+        Integer total = attendanceMapper.countPersonPeriodWorkInfoInProject(startTime, endTime, projectCode);
+        Map<String, Object> map = new HashMap<>();
+        map.put("pageNum", pageNum + 1);
+        map.put("pageSize", pageSize > total ? total : pageSize);
+        map.put("total", total);
+        map.put("data", projectWorkRecord);
+        return ResultVo.success(map);
     }
 
     @Override
-    public List<PersonWorkRecord> findPagePersonPeriodWorkInfoInProject(Date startTime, Date endTime, String projectCode, Integer pageNum, Integer pageSize) {
+    public ResultVo searchAttendanceInPro(ProjectAttendanceQuery query) {
+        Date startTime;
+        Date endTime;
+        if (query.getSearchDate() != null) {
+            startTime = TimeUtil.getDateBegin(query.getSearchDate());
+            endTime = TimeUtil.getDateEnd(query.getSearchDate());
+        } else {
+            startTime = TimeUtil.getMonthFirstDay();
+            endTime = TimeUtil.getMonthLastDay();
+        }
+        int offset = query.getPageNum() * query.getPageSize();
+        int limit = query.getPageSize();
+        List<PersonWorkRecord> personWorkRecords = attendanceMapper.searchAttendanceInPro(query.getProjectCode(), query.getSubContractorId(),
+                query.getPersonName(), startTime, endTime, offset, limit);
+        Integer total = attendanceMapper.countSearchAttendanceInPro(query.getProjectCode(), query.getSubContractorId(), query.getPersonName(), startTime, endTime);
+        Map<String, Object> map = new HashMap<>();
+        map.put("data", personWorkRecords);
+        map.put("pageNum", query.getPageNum());
+        map.put("pageSize", query.getPageSize() > total ? total : query.getPageSize());
+        map.put("total", total);
+        return ResultVo.success(map);
+    }
+
+    @Override
+    public ResultVo getPeopleWorkDayInProject(Date startTime, Date endTime, String projectCode, Integer pageNum, Integer pageSize) {
+        List<WorkDayInfo> workDayInfoList = new ArrayList<>();
         int offset = pageNum * pageSize;
         int limit = pageSize;
-        return attendanceMapper.findPagePersonPeriodWorkInfoInProject(startTime, endTime, projectCode, offset, limit);
+        List<PersonWorkRecord> personPeriodWorkInfoInProject = attendanceMapper.findPagePersonPeriodWorkInfoInProject(startTime, endTime, projectCode, offset, limit);
+        for (PersonWorkRecord personWorkRecord : personPeriodWorkInfoInProject) {
+            List<Attendance> attendanceList = personWorkRecord.getAttendanceList();
+            Map<String, Object> map = countPersonPeriodWorkInfo(attendanceList);
+            WorkDayInfo workDayInfo = new WorkDayInfo();
+            workDayInfo.setPersonName(personWorkRecord.getPersonName());
+            workDayInfo.setIdCardNumber(personWorkRecord.getIdCardNumber());
+            workDayInfo.setWorkType(personWorkRecord.getWorkType());
+            workDayInfo.setSubordinateCompany(personWorkRecord.getSubordinateCompany());
+            workDayInfo.setTeamName(personWorkRecord.getTeamName());
+            workDayInfo.setWorkDay((Integer) map.get("workDays"));
+            workDayInfo.setWorkHours((Double) map.get("allWorkHours"));
+            workDayInfo.setPersonStatus(personWorkRecord.getPersonStatus());
+            workDayInfoList.add(workDayInfo);
+        }
+        //查询记录总条数
+        Integer total = attendanceMapper.countPersonPeriodWorkInfoInProject(startTime, endTime, projectCode);
+        Map<String, Object> map = new HashMap<>();
+        map.put("pageNum", pageNum + 1);
+        map.put("pageSize", pageSize > total ? total : pageSize);
+        map.put("total", total);
+        map.put("data", workDayInfoList);
+        return ResultVo.success(map);
     }
 
     @Override
@@ -90,7 +169,7 @@ public class AttendanceServiceImpl implements AttendanceService {
             //获取某个班组的总工时
             Double hours = groupAttendMapper.countGroupHoursInPeriod(workerGroup.getTeamSysNo(), startDate, endDate);
             //获取班组下总工时
-            map.put(workerGroup.getTeamName(),  hours);
+            map.put(workerGroup.getTeamName(), hours);
         }
         return map;
     }
@@ -117,9 +196,67 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
     }
 
+    @Override
+    public ResultVo exportRecords(Date startTime, Date endTime, String projectCode) {
+        List<PersonWorkRecord> personWorkRecords = attendanceMapper.findPersonPeriodWorkInfoInProject(startTime, endTime, projectCode);
+        ProjectWorkRecord projectWorkRecord = createProjectWorkRecord(startTime, endTime, projectCode, personWorkRecords);
+        List<String> headList = new ArrayList<>();
+        headList.add("姓名");
+        headList.add("身份证号码");
+        headList.add("性别");
+        headList.add("所属公司");
+        headList.add("班组");
+        headList.add("工种");
+        headList.add("出勤天数");
+        headList.add("考勤小时");
+        List<String> dayBetweenFormat = TimeUtil.getDayBetweenFormat(startTime, endTime);
+        //生成报表
+        try {
+            XSSFExcelUtils.exportXSSFExcel(projectWorkRecord, headList, dayBetweenFormat);
+        } catch (IOException e) {
+            logger.error("生成报表失败, projectName:{}, e:{}", projectWorkRecord.getProjectName(), e);
+            return ResultVo.failure(ResultError.GENERATE_EXCEL_ERROR);
+        }
+        return ResultVo.success(projectWorkRecord.getProjectCode());
+    }
 
+    private ProjectWorkRecord createProjectWorkRecord(Date startDate, Date endDate, String projectCode, List<PersonWorkRecord> personPeriodWorkInfoInProject) {
+        //查询项目名
+        String projectName = projectService.findProjectName(projectCode);
+        if (StringUtils.isEmpty(projectName)) {
+            throw new AttendanceException(ResultError.PROJECT_NOT_EXIST);
+        }
+        ProjectWorkRecord projectWorkRecord = new ProjectWorkRecord();
+        projectWorkRecord.setProjectCode(projectCode);
+        projectWorkRecord.setProjectName(projectName);
+        projectWorkRecord.setStartDate(startDate);
+        projectWorkRecord.setEndDate(endDate);
+        projectWorkRecord.setCreateTime(new Date());
+        for (PersonWorkRecord record : personPeriodWorkInfoInProject) {
+            List<Attendance> attendanceList = record.getAttendanceList();
+            Map<String, Object> map = countPersonPeriodWorkInfo(attendanceList);
+            record.setWorkDay((Integer) map.get("workDays"));
+            record.setWorkHours((Double) map.get("allWorkHours"));
+        }
+        projectWorkRecord.setPersonWorkRecordList(personPeriodWorkInfoInProject);
+        return projectWorkRecord;
+    }
 
-
-
+    private Map<String, Object> countPersonPeriodWorkInfo(List<Attendance> attendanceList) {
+        double allWorkHours = 0.0;
+        int workDays = 0;
+        for (Attendance attendance : attendanceList) {
+            if (attendance.getStatus() != null && attendance.getStatus() == 1) {
+                if (attendance.getWorkHours() != null && attendance.getWorkHours() > 0) {
+                    allWorkHours += attendance.getWorkHours();
+                    workDays++;
+                }
+            }
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("allWorkHours", allWorkHours);
+        map.put("workDays", workDays);
+        return map;
+    }
 
 }

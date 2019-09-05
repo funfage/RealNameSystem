@@ -3,7 +3,8 @@ package com.real.name.person.service;
 import com.real.name.common.result.ResultVo;
 import com.real.name.device.entity.Device;
 import com.real.name.person.entity.Person;
-import com.real.name.person.entity.PersonQuery;
+import com.real.name.person.entity.search.PersonSearch;
+import com.real.name.person.entity.search.PersonSearchInPro;
 import com.real.name.project.entity.ProjectDetailQuery;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +19,7 @@ public interface PersonService {
     /**
      * 将人员添加到项目
      */
-    void addPeopleToProject(String projectCode, Integer teamSysNo, List<Person> personList, List<Device> allIssueDevice, List<Device> allProjectIssueDevice);
+    List<String> addPeopleToProject(String projectCode, Integer teamSysNo, List<Person> personList, List<Device> allIssueDevice, List<Device> allProjectIssueDevice);
 
     /**
      * 删除设备人员信息
@@ -81,6 +82,11 @@ public interface PersonService {
      * 查询该集合id下所有人员信息
      */
     List<Person> findByPersonIdIn(List<Integer> personIds);
+
+    /**
+     * 查询包括头像信息的多个人员信息
+     */
+    List<Person> findAllByPersonIdIn(List<Integer> personIds);
 
     /**
      * 根据id查询人员
@@ -153,7 +159,7 @@ public interface PersonService {
     /**
      * 搜索人员信息
      */
-    List<Person> searchPerson(PersonQuery personQuery);
+    List<Person> searchPerson(PersonSearch personSearch);
 
     /**
      * 获取人员首页数据
@@ -174,6 +180,16 @@ public interface PersonService {
     /**
      * 搜索项目中的人员
      */
-    List<ProjectDetailQuery> searchPersonInPro(PersonQuery personQuery);
+    List<ProjectDetailQuery> searchPersonInPro(PersonSearchInPro personSearchInPro);
+
+    /**
+     * 查询需要上传到全国平台的人员信息
+     */
+    List<ProjectDetailQuery> findPeopleUploadInfo(String projectCode, Integer teamSysNo, List<Integer> personIds);
+
+    /**
+     * 判断人员是否加入了项目，不包括从项目中移除的人员
+     */
+    Integer judgePersonJoinProject(Integer personId);
 
 }

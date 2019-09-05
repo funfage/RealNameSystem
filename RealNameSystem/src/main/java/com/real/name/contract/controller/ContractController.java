@@ -40,9 +40,10 @@ public class ContractController {
     @PostMapping("/saveContractInfo")
     public ResultVo saveContractInfo(@RequestParam("contractInfo") String contractInfoStr,
                                      @RequestParam("projectCode") String projectCode,
+                                     @RequestParam("teamSysNo") Integer teamSysNo,
                                      @RequestParam("personId") Integer personId,
                                      @RequestParam("contractFiles") MultipartFile [] contractFiles) {
-        ContractInfo contractInfo = null;
+        ContractInfo contractInfo;
         try {
             contractInfo = JSONObject.parseObject(contractInfoStr, ContractInfo.class);
         } catch (Exception e) {
@@ -56,7 +57,7 @@ public class ContractController {
         //校验合同信息
         verifyContractInfo(contractInfo);
         //保存合同信息
-        contractInfoService.saveContractInfo(contractInfo, projectCode, personId);
+        contractInfoService.saveContractInfo(contractInfo, projectCode, teamSysNo, personId);
         Integer contractId = contractInfo.getContractId();
         //保存文件并保存合同信息和文件的一对多关联
         contractInfoService.saveContractFileList(contractId, contractFiles);
@@ -70,7 +71,7 @@ public class ContractController {
     public ResultVo updateContractInfo(@RequestParam("contractInfo") String contractInfoStr,
                                        @RequestParam(name = "deleteFileList", required = false) List<String> deleteFileList,
                                        @RequestParam(name = "contractFiles", required = false) MultipartFile[] addFileList) {
-        ContractInfo contractInfo = null;
+        ContractInfo contractInfo;
         try {
             contractInfo = JSONObject.parseObject(contractInfoStr, ContractInfo.class);
         } catch (Exception e) {

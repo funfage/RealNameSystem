@@ -1,6 +1,7 @@
 package com.real.name.group.entity;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -16,6 +17,7 @@ import java.util.Date;
 @Setter
 @Getter
 @ToString
+@NoArgsConstructor
 public class WorkerGroup {
 
     /**
@@ -98,9 +100,6 @@ public class WorkerGroup {
      * 0被移除
      */
     private Integer groupStatus;
-
-    public WorkerGroup() {
-    }
 
     public WorkerGroup(Integer teamSysNo) {
         this.teamSysNo = teamSysNo;

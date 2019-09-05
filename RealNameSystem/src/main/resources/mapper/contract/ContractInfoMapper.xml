@@ -200,6 +200,13 @@
           <include refid="searchCondition"/>
     </select>
 
+    <select id="findUploadContractInfo" resultMap="contractInfoMap">
+        select
+          <include refid="searchAll"/>
+        from
+
+    </select>
+
 </mapper>
 
 

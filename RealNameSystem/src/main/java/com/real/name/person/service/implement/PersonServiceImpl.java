@@ -6,17 +6,17 @@ import com.github.pagehelper.PageInfo;
 import com.real.name.auth.entity.User;
 import com.real.name.auth.service.AuthUtils;
 import com.real.name.common.constant.CommConstant;
-import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.constant.DeviceConstant;
+import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
-import com.real.name.common.utils.*;
+import com.real.name.common.utils.JedisService;
+import com.real.name.common.utils.PageUtils;
+import com.real.name.common.utils.TimeUtil;
 import com.real.name.common.websocket.WebSocket;
 import com.real.name.device.entity.Device;
 import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.device.service.DeviceService;
-import com.real.name.device.service.repository.DeviceQueryMapper;
-import com.real.name.group.entity.WorkerGroup;
 import com.real.name.group.service.GroupService;
 import com.real.name.issue.entity.IssueAccess;
 import com.real.name.issue.entity.IssueFace;
@@ -25,11 +25,11 @@ import com.real.name.issue.service.IssueAccessService;
 import com.real.name.issue.service.IssueFaceService;
 import com.real.name.issue.service.repository.IssueFaceMapper;
 import com.real.name.person.entity.Person;
-import com.real.name.person.entity.PersonQuery;
+import com.real.name.person.entity.search.PersonSearch;
+import com.real.name.person.entity.search.PersonSearchInPro;
 import com.real.name.person.service.PersonService;
 import com.real.name.person.service.repository.PersonQueryMapper;
 import com.real.name.person.service.repository.PersonRepository;
-import com.real.name.project.entity.ProjectDetail;
 import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.ProjectService;
@@ -92,10 +92,19 @@ public class PersonServiceImpl implements PersonService {
 
     @Transactional
     @Override
-    public void addPeopleToProject(String projectCode, Integer teamSysNo, List<Person> personList, List<Device> allIssueDevice, List<Device> allProjectIssueDevice) {
+    public List<String> addPeopleToProject(String projectCode, Integer teamSysNo, List<Person> personList, List<Device> allIssueDevice, List<Device> allProjectIssueDevice) {
+        List<String> failNameList = new ArrayList<>();
         for (Person person : personList) {
             if (!StringUtils.isEmpty(person.getPersonName()) || !StringUtils.isEmpty(person.getHeadImage())) {
                 Integer personId = person.getPersonId();
+                //如果不是管理员，判断人员是否已经加入了其他项目
+                if (person.getWorkRole() != 10) {
+                    Integer integer = personQueryMapper.judgePersonJoinProject(personId);
+                    if (integer != null && integer >= 0) {
+                        failNameList.add(person.getPersonName());
+                        continue;
+                    }
+                }
                 //判断人员是否在这个项目班组中
                 boolean exists = projectDetailQueryService.judgePersonInProGroup(projectCode, teamSysNo, personId);
                 if (!exists) {
@@ -122,6 +131,7 @@ public class PersonServiceImpl implements PersonService {
                 }
             }
         }
+        return failNameList;
     }
 
     private void addPersonToDevices(String projectCode, Person person, List<Device> deviceList) {
@@ -178,12 +188,13 @@ public class PersonServiceImpl implements PersonService {
         logger.info("出场的人员姓名为：{}", person.getPersonName());
         logger.info("出场的班组名为：{}", teamName);
         String key = projectCode + CommConstant.ABSENT + teamName;
+        long ttl = TimeUtil.getTomorrowBeginMilliSecond() - System.currentTimeMillis();
         if (jedisKeys.hasKey(key)) {
             String value = (String) jedisStrings.get(key);
             int number = Integer.parseInt(value.substring(value.lastIndexOf(",") + 1)) + 1;
-            jedisStrings.set(key, teamName + "," + number, TimeUtil.getTomorrowBeginMilliSecond(), TimeUnit.MILLISECONDS);
+            jedisStrings.set(key, teamName + "," + number, ttl, TimeUnit.MILLISECONDS);
         } else {
-            jedisStrings.set(key, teamName + "," + 1, TimeUtil.getTomorrowBeginMilliSecond(), TimeUnit.MILLISECONDS);
+            jedisStrings.set(key, teamName + "," + 1, ttl, TimeUnit.MILLISECONDS);
         }
         //推送出场消息给前端
         JSONObject map = new JSONObject();
@@ -206,7 +217,7 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public List<Person> getPersonToAttendProject(String projectCode, String ContractCorpCode, Integer isAdminGroup) {
         if (isAdminGroup == 1) { // 管理员班组
-            return personQueryMapper.getAdminPersonToAttendProject(projectCode, ContractCorpCode);
+            return personQueryMapper.getAdminPersonToAttendProject(projectCode);
         } else {
             return personQueryMapper.getNormalPersonToAttendProject(ContractCorpCode);
         }
@@ -386,6 +397,11 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
+    public List<Person> findAllByPersonIdIn(List<Integer> personIds) {
+        return personQueryMapper.findAllByPersonIdIn(personIds);
+    }
+
+    @Override
     public Optional<Person> findById(Integer personId) {
         return personRepository.findById(personId);
     }
@@ -446,8 +462,8 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public List<Person> searchPerson(PersonQuery personQuery) {
-        return personQueryMapper.searchPerson(personQuery);
+    public List<Person> searchPerson(PersonSearch personSearch) {
+        return personQueryMapper.searchPerson(personSearch);
     }
 
     @Override
@@ -456,8 +472,18 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public List<ProjectDetailQuery> searchPersonInPro(PersonQuery personQuery) {
-        return personQueryMapper.searchPersonInPro(personQuery);
+    public List<ProjectDetailQuery> searchPersonInPro(PersonSearchInPro personSearchInPro) {
+        return personQueryMapper.searchPersonInPro(personSearchInPro);
+    }
+
+    @Override
+    public List<ProjectDetailQuery> findPeopleUploadInfo(String projectCode, Integer teamSysNo, List<Integer> personIds) {
+        return personQueryMapper.findPeopleUploadInfo(projectCode, teamSysNo, personIds);
+    }
+
+    @Override
+    public Integer judgePersonJoinProject(Integer personId) {
+        return personQueryMapper.judgePersonJoinProject(personId);
     }
 
 

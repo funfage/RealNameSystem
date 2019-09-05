@@ -1,7 +1,6 @@
 package com.real.name.httptest;
 
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.real.name.common.annotion.JSON;
 import com.real.name.common.annotion.JSONS;
@@ -14,10 +13,9 @@ import com.real.name.contract.entity.ContractInfo;
 import com.real.name.device.netty.utils.FaceDeviceUtils;
 import com.real.name.device.entity.Device;
 import com.real.name.person.entity.Person;
-import com.real.name.project.entity.ProjectDetailQuery;
 import com.real.name.project.service.repository.ProjectDetailQueryMapper;
 import com.real.name.record.query.PeriodTime;
-import com.real.name.subcontractor.query.GroupPeople;
+import com.real.name.subcontractor.entity.query.GroupPeople;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

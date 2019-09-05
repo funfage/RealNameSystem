@@ -143,14 +143,14 @@
         from
         project pj
         <where>
-            <if test="projectQuery.name != null">
+            <if test="projectQuery.name != null and projectQuery.name != ''">
                 and pj.name like '%${projectQuery.name}%'
             </if>
-            <if test="projectQuery.address != null">
+            <if test="projectQuery.address != null and projectQuery.address != ''">
                 and pj.address like '%${projectQuery.address}%'
             </if>
-            <if test="projectQuery.category != null">
-                and pj.category like '%${projectQuery.category}%'
+            <if test="projectQuery.category != null and projectQuery.category != ''">
+                and pj.category = #{projectQuery.category}
             </if>
             <if test="projectQuery.prjStatus != null">
                 and pj.prj_status = #{projectQuery.prjStatus}
@@ -231,5 +231,23 @@
         limit
           1
     </select>
+
+    <select id="findUploadStatusByProjectCode" resultType="integer">
+        select
+          is_upload
+        from
+          project
+        where
+          project_code = #{projectCode}
+    </select>
+
+    <update id="updateProjectCode">
+        update
+          project
+        set
+          project_code = #{newProjectCode}
+        where
+          project_code = #{oldProjectCode}
+    </update>
 
 </mapper>

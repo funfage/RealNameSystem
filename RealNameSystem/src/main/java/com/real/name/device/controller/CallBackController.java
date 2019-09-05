@@ -72,16 +72,8 @@ public class CallBackController {
         //排除识别失败的记录
         if (type != null && !excludeType.contains(type)) {
             Record record = new Record();
-            //识别模式，0：刷脸，1：卡&人脸双重认证，2：人证比对，3：刷卡
-            if (type.equals("face_0")) {
-                record.setType(0);
-            } else if(type.equals("faceAndcard_0")) {
-                record.setType(1);
-            } else if (type.equals("idcard_0")) {
-                record.setType(2);
-            } else if (type.equals("card_0")) {
-                record.setType(3);
-            }
+            //识别模式
+            setRecordType(record, type);
             //获取用户信息
             Person person = personService.findPersonNameByPersonId(Integer.valueOf(personId));
             //设置用户名
@@ -108,7 +100,8 @@ public class CallBackController {
                         //将信息推送到远程
                         String presentInfo = sendToClient(sendInfo, device, time);
                         //设置有效时间为第二天凌晨12点
-                        jedisStrings.set(key, presentInfo, TimeUtil.getTomorrowBeginMilliSecond(), TimeUnit.MILLISECONDS);
+                        long ttl = TimeUtil.getTomorrowBeginMilliSecond() - System.currentTimeMillis();
+                        jedisStrings.set(key, presentInfo, ttl, TimeUnit.MILLISECONDS);
                         logger.warn("在场的key:{}, value:{}, time:{}", device.getProjectCode() + person.getPersonId(), presentInfo, TimeUtil.getTomorrowBeginMilliSecond());
                     } else if (device.getDirection() == 2 && jedisKeys.hasKey(key)) {
                         //删除键
@@ -179,6 +172,21 @@ public class CallBackController {
         map.put("type", CommConstant.PRESENT_TYPE);
         webSocket.sendMessageToAll(map.toJSONString());
         return map.toJSONString();
+    }
+
+    /**
+     * 0：刷脸，1：卡&人脸双重认证，2：人证比对，3：刷卡
+     */
+    private void setRecordType(Record record, String type) {
+        if (type.equals("face_0")) {
+            record.setType(0);
+        } else if(type.equals("faceAndcard_0")) {
+            record.setType(1);
+        } else if (type.equals("idcard_0")) {
+            record.setType(2);
+        } else if (type.equals("card_0")) {
+            record.setType(3);
+        }
     }
 
 }

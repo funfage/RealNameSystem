@@ -18,6 +18,21 @@ public class NationConstant {
 
     public static String corpKey;
 
+    /**
+     * 上传成功
+     */
+    public static Integer uploadSuccess;
+
+    /**
+     * 未上传标识
+     */
+    public static Integer unUpload = 0;
+
+    /**
+     * 修改未上传
+     */
+    public static Integer updateUnUpload = -1;
+
     @Value("${nation.url}")
     public void setUrl(String url) {
         NationConstant.url = url;

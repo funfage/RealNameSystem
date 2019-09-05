@@ -24,7 +24,7 @@
         </association>
     </resultMap>
 
-    <resultMap id="SubContractorQuery" type="com.real.name.subcontractor.query.SubContractorQuery">
+    <resultMap id="SubContractorQuery" type="com.real.name.subcontractor.entity.query.SubContractorQuery">
         <id property="subContractorId" column="sub_contractor_id"/>
         <result property="corpCode" column="corp_code"/>
         <result property="corpName" column="corp_name"/>
@@ -141,6 +141,21 @@
           pj.project_code = sc.project_code
     </select>
 
+    <select id="findContractCorpNameInPro" resultMap="SubContractorQuery">
+        select
+          sc.sub_contractor_id, sc.corp_name, sc.corp_code
+        from
+          sub_contractor sc, project pj
+        where
+          sc.project_code = #{projectCode}
+        and
+          pj.project_code = sc.project_code
+        <if test="status != null">
+          and
+            sc.contractor_status = #{status}
+        </if>
+    </select>
+
     <select id="findUnRemoveInProject" resultMap="SubContractorQuery">
         select
           <include refid="subContractorQuerySql"/>
@@ -161,6 +176,28 @@
           sub_contractor sc, project pj
         where
           sc.sub_contractor_id = #{subContractorId}
+        and
+          pj.project_code = sc.project_code
+    </select>
+
+    <select id="findByIdList" resultMap="SubContractorQuery">
+        select
+          <include refid="subContractorQuerySql"/>
+        from
+          sub_contractor sc, project pj
+        where
+          sc.sub_contractor_id
+        in
+        <choose>
+            <when test="idList != null and idList.size() != 0">
+                <foreach collection="idList" item="id" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </when>
+            <otherwise>
+                (null)
+            </otherwise>
+        </choose>
         and
           pj.project_code = sc.project_code
     </select>
@@ -224,19 +261,26 @@
         from
           sub_contractor sc, project pj
         where
-          sc.project_code = #{subContractorQuery.projectCode}
+          sc.project_code = #{subContractorSearchInPro.projectCode}
         and
           pj.project_code = sc.project_code
-        <if test="subContractorQuery.corpName != null and subContractorQuery.corpName != ''">
+        <if test="subContractorSearchInPro.corpName != null and subContractorSearchInPro.corpName != ''">
             and
-            sc.corp_name like '%${subContractorQuery.corpName}%'
+            sc.corp_name like '%${subContractorSearchInPro.corpName}%'
         </if>
-        <if test="subContractorQuery.corpCode != null and subContractorQuery.corpCode != ''">
+        <if test="subContractorSearchInPro.corpCode != null and subContractorSearchInPro.corpCode != ''">
             and
-            sc.corp_code = #{subContractorQuery.corpCode}
+            sc.corp_code = #{subContractorSearchInPro.corpCode}
         </if>
     </select>
 
-
+    <select id="findUploadStatusById" resultType="integer">
+        select
+          upload_status
+        from
+          sub_contractor
+        where
+          sub_contractor_id = #{subContractorId}
+    </select>
 
 </mapper>

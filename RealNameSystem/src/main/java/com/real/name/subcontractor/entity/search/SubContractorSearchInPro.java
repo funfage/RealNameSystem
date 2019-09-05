@@ -1,21 +1,13 @@
-package com.real.name.subcontractor.query;
+package com.real.name.subcontractor.entity.search;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.real.name.subcontractor.entity.SubContractor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-public class SubContractorQuery extends SubContractor {
-
-    /**
-     * 合同签订率
-     */
-    private Float contractSignRate;
-
-    /**
-     * 在场人数
-     */
-    private Integer attendNum;
+@NoArgsConstructor
+public class SubContractorSearchInPro extends SubContractor {
 
     /**
      * 项目编码

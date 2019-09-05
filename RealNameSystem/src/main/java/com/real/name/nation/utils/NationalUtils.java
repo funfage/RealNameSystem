@@ -3,15 +3,16 @@ package com.real.name.nation.utils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.real.name.common.constant.NationConstant;
+import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.utils.AesUtils;
 import com.real.name.common.utils.CommonUtils;
 import com.real.name.common.utils.HTTPTool;
+import com.real.name.contract.entity.ContractInfo;
 import com.real.name.group.entity.WorkerGroup;
-import com.real.name.nation.entity.NationSubContractor;
+import com.real.name.group.entity.query.GroupQuery;
+import com.real.name.nation.entity.*;
 import com.real.name.nation.entity.NationSubContractor.BankInfo;
-import com.real.name.nation.entity.NationalGroup;
-import com.real.name.nation.entity.NationalPerson;
-import com.real.name.nation.entity.NationalProject;
+import com.real.name.pay.entity.PayInfo;
 import com.real.name.person.entity.Person;
 import com.real.name.project.entity.Project;
 import com.real.name.project.entity.ProjectDetailQuery;
@@ -68,7 +69,12 @@ public class NationalUtils {
         nationalProject.setNationNum(getByInteger(project.getNationNum(), 3));
         String data = JSON.toJSONString(nationalProject);
         String result = postData(data, method);
-        return HandleResultReturn(result);
+        JSONObject jsonObject = HandleResultReturn(result);
+        if (jsonObject.getBoolean("error")) {
+            logger.error("全国平台上传项目信息出现异常");
+            throw new AttendanceException(jsonObject.getString("data"));
+        }
+        return jsonObject;
     }
 
     /**
@@ -99,7 +105,12 @@ public class NationalUtils {
         nationalProject.setNationNum(getByInteger(project.getNationNum(), 3));
         String data = JSON.toJSONString(nationalProject);
         String result = postData(data, method);
-        return HandleResultReturn(result);
+        JSONObject jsonObject = HandleResultReturn(result);
+        if (jsonObject.getBoolean("error")) {
+            logger.error("全国平台修改项目信息出现异常");
+            throw new AttendanceException(jsonObject.getString("data"));
+        }
+        return jsonObject;
     }
 
     /**
@@ -132,6 +143,11 @@ public class NationalUtils {
         String data = JSON.toJSONString(nationSubContractor);
         System.out.println(data);
         String result = postData(data, method);
+        JSONObject jsonObject = HandleResultReturn(result);
+        if (jsonObject.getBoolean("error")) {
+            logger.error("全国平台上传参建单位信息出现异常");
+            throw new AttendanceException(jsonObject.getString("data"));
+        }
         return HandleResultReturn(result);
     }
 
@@ -164,33 +180,12 @@ public class NationalUtils {
         nationSubContractor.setBankInfos(bankInfos);
         String data = JSON.toJSONString(nationSubContractor);
         String result = postData(data, method);
-        return HandleResultReturn(result);
-    }
-
-    /**
-     * 上传班组班组
-     */
-    public static JSONObject uploadGroup(ProjectDetailQuery projectDetailQuery) {
-        String method = "Team.Add";
-        Project project = projectDetailQuery.getProject();
-        WorkerGroup workerGroup = projectDetailQuery.getWorkerGroup();
-        NationalGroup nationalGroup = new NationalGroup();
-        nationalGroup.setProjectCode(project.getProjectCode());
-        nationalGroup.setCorpCode(workerGroup.getCorpCode());
-        nationalGroup.setCorpName(workerGroup.getCorpName());
-        nationalGroup.setTeamName(workerGroup.getTeamName());
-        nationalGroup.setResponsiblePersonIDCardType(getByInteger(workerGroup.getResponsiblePersonIdCardType(), 2));
-        nationalGroup.setResponsiblePersonIDNumber(AesUtils.encrypt(workerGroup.getResponsiblePersonIdNumber(), NationConstant.appsecret));
-        nationalGroup.setRemark(workerGroup.getRemark());
-        if (workerGroup.getEntryTime() != null) {
-            nationalGroup.setEntryTime(simpleDateFormat.format(workerGroup.getEntryTime()));
+        JSONObject jsonObject = HandleResultReturn(result);
+        if (jsonObject.getBoolean("error")) {
+            logger.error("全国平台修改参建单位信息出现异常");
+            throw new AttendanceException(jsonObject.getString("data"));
         }
-        if (workerGroup.getExitTime() != null) {
-            nationalGroup.setExitTime(simpleDateFormat.format(workerGroup.getExitTime()));
-        }
-        String data = JSON.toJSONString(nationalGroup);
-        String result = postData(data, method);
-        return HandleResultReturn(result);
+        return jsonObject;
     }
 
     /**
@@ -214,7 +209,44 @@ public class NationalUtils {
         }
         String data = JSON.toJSONString(nationalGroup);
         String result = postData(data, method);
-        return HandleResultReturn(result);
+        JSONObject jsonObject = HandleResultReturn(result);
+        if (jsonObject.getBoolean("error")) {
+            logger.error("全国平台修改班组信息出现异常");
+            throw new AttendanceException(jsonObject.getString("data"));
+        }
+        return jsonObject;
+    }
+
+    /**
+     * 上传班组班组
+     */
+    public static JSONObject uploadGroup(GroupQuery workerGroup) {
+        String method = "Team.Add";
+        SubContractor subContractor = workerGroup.getSubContractor();
+        NationalGroup nationalGroup = new NationalGroup();
+        nationalGroup.setProjectCode(workerGroup.getProjectCode());
+        nationalGroup.setCorpCode(subContractor.getCorpCode());
+        nationalGroup.setCorpName(subContractor.getCorpName());
+        nationalGroup.setTeamName(workerGroup.getTeamName());
+        nationalGroup.setResponsiblePersonName(workerGroup.getResponsiblePersonName());
+        nationalGroup.setResponsiblePersonPhone(workerGroup.getResponsiblePersonPhone());
+        nationalGroup.setResponsiblePersonIDCardType(getByInteger(workerGroup.getResponsiblePersonIdCardType(), 2));
+        nationalGroup.setResponsiblePersonIDNumber(AesUtils.encrypt(workerGroup.getResponsiblePersonIdNumber(), NationConstant.appsecret));
+        nationalGroup.setRemark(workerGroup.getRemark());
+        if (workerGroup.getEntryTime() != null) {
+            nationalGroup.setEntryTime(simpleDateFormat.format(workerGroup.getEntryTime()));
+        }
+        if (workerGroup.getExitTime() != null) {
+            nationalGroup.setExitTime(simpleDateFormat.format(workerGroup.getExitTime()));
+        }
+        String data = JSON.toJSONString(nationalGroup);
+        String result = postData(data, method);
+        JSONObject jsonObject = HandleResultReturn(result);
+        if (jsonObject.getBoolean("error")) {
+            logger.error("全国平台上传班组信息出现异常");
+            throw new AttendanceException(jsonObject.getString("data"));
+        }
+        return jsonObject;
     }
 
     /**
@@ -277,7 +309,12 @@ public class NationalUtils {
         nationPerson.setWorkerList(workerList);
         String data = JSON.toJSONString(nationPerson);
         String result = postData(data, method);
-        return HandleResultReturn(result);
+        JSONObject jsonObject = HandleResultReturn(result);
+        if (jsonObject.getBoolean("error")) {
+            logger.error("全国平台上传人员信息出现异常");
+            throw new AttendanceException(jsonObject.getString("data"));
+        }
+        return jsonObject;
     }
 
     /**
@@ -340,9 +377,89 @@ public class NationalUtils {
         nationPerson.setWorkerList(workerList);
         String data = JSON.toJSONString(nationPerson);
         String result = postData(data, method);
-        return HandleResultReturn(result);
+        JSONObject jsonObject = HandleResultReturn(result);
+        if (jsonObject.getBoolean("error")) {
+            logger.error("全国平台修改人员信息出现异常");
+            throw new AttendanceException(jsonObject.getString("data"));
+        }
+        return jsonObject;
     }
 
+    /**
+     * 上传合同信息
+     */
+    public static JSONObject uploadContractInfo(ContractInfo contractInfo) {
+        String method = "WorkerContract.Add";
+        ProjectDetailQuery projectDetailQuery = contractInfo.getProjectDetailQuery();
+        Person person = projectDetailQuery.getPerson();
+        NationalContractInfo nationalContractInfo = new NationalContractInfo();
+        NationalContractInfo.Contract contract = new NationalContractInfo().new Contract();
+//        contract.setproject
+        contract.setCorpCode(person.getCorpCode());
+        contract.setCorpName(person.getSubordinateCompany());
+        if (contractInfo.getStartDate() != null) {
+            contract.setStartDate(simpleDateFormat.format(contractInfo.getStartDate()));
+        }
+        if (contractInfo.getEndDate() != null) {
+            contract.setEndDate(simpleDateFormat.format(contractInfo.getEndDate()));
+        }
+        List<NationalContractInfo.Contract> contractList = new ArrayList<>();
+        contractList.add(contract);
+        nationalContractInfo.setContractList(contractList);
+        String data = JSON.toJSONString(nationalContractInfo);
+        String result = postData(data, method);
+        JSONObject jsonObject = HandleResultReturn(result);
+        if (jsonObject.getBoolean("error")) {
+            logger.error("全国平台上传合同信息信息出现异常");
+            throw new AttendanceException(jsonObject.getString("data"));
+        }
+        return jsonObject;
+    }
+
+    /**
+     * 上传薪资信息
+     */
+    public static JSONObject uploadPayInfo(PayInfo payInfo) {
+        String method = "Payroll.Add";
+        ProjectDetailQuery projectDetailQuery = payInfo.getProjectDetailQuery();
+        Person person = projectDetailQuery.getPerson();
+        NationalPayInfo nationalPayInfo = new NationalPayInfo();
+        nationalPayInfo.setProjectCode(projectDetailQuery.getProject().getProjectCode());
+        nationalPayInfo.setCorpCode(person.getCorpCode());
+        nationalPayInfo.setCorpName(person.getSubordinateCompany());
+        nationalPayInfo.setTeamSysNo(projectDetailQuery.getWorkerGroup().getTeamSysNo());
+        NationalPayInfo.Detail detail = new NationalPayInfo().new Detail();
+        detail.setIdCardType(person.getIdCardType().toString());
+        detail.setIdCardNumber(person.getIdCardNumber());
+        detail.setPayRollBankCardNumber(person.getPayRollBankCardNumber());
+        detail.setPayRollBankCode(person.getPayRollTopBankCode().toString());
+        detail.setPayRollBankName(person.getPayRollBankName());
+        detail.setPayBankCardNumber(payInfo.getPayBankCardNumber());
+        detail.setPayBankCode(payInfo.getPayBankCode());
+        detail.setPayBankName(payInfo.getPayBankName());
+        detail.setIsBackPay(payInfo.getIsBackPay());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
+        if (payInfo.getBalanceDate() != null) {
+            nationalPayInfo.setPayMonth(dateFormat.format(payInfo.getBalanceDate()));
+            detail.setBalanceDate(simpleDateFormat.format(payInfo.getBalanceDate()));
+        }
+        if (payInfo.getBackPayMonth() != null) {
+            nationalPayInfo.setPayMonth(dateFormat.format(payInfo.getBackPayMonth()));
+            detail.setBackPayMonth(simpleDateFormat.format(payInfo.getBackPayMonth()));
+        }
+        detail.setThirdPayRollCode(payInfo.getThirdPayRollCode());
+        List<NationalPayInfo.Detail> detailList = new ArrayList<>();
+        detailList.add(detail);
+        nationalPayInfo.setDetailList(detailList);
+        String data = JSON.toJSONString(nationalPayInfo);
+        String result = postData(data, method);
+        JSONObject jsonObject = HandleResultReturn(result);
+        if (jsonObject.getBoolean("error")) {
+            logger.error("全国平台上传薪资信息信息出现异常");
+            throw new AttendanceException(jsonObject.getString("data"));
+        }
+        return jsonObject;
+    }
 
 
     /**

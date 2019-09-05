@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.real.name.auth.entity.Role;
 import com.real.name.auth.entity.User;
+import com.real.name.common.result.ResultError;
+import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.TimeUtil;
 import com.real.name.common.utils.XSSFExcelUtils;
 import com.real.name.device.netty.model.AccessResponse;
@@ -11,7 +13,7 @@ import com.real.name.device.netty.utils.ConvertUtils;
 import com.real.name.project.entity.Project;
 import com.real.name.record.query.ProjectWorkRecord;
 import com.real.name.subcontractor.entity.SubContractor;
-import com.real.name.subcontractor.query.GroupPeople;
+import com.real.name.subcontractor.entity.query.GroupPeople;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -24,7 +26,15 @@ public class MyTest {
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public static void main(String[] args) throws Exception {
-        getGroupPeopleJSON();
+        List<String> list = new ArrayList<>();
+        List<String> list1 = new ArrayList<>();
+        list.addAll(list1);
+        list.add("name1");
+        list.add("name2");
+        ResultVo failure = ResultVo.failure(list, ResultError.PERSON_REJOIN_PROJECT_FAILURE);
+        String s = JSON.toJSONString(failure);
+        System.out.println(list1.size());
+        System.out.println(s);
     }
 
     private static void getGroupPeopleJSON() {

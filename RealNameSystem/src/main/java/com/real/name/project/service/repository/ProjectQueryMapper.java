@@ -30,6 +30,10 @@ public interface ProjectQueryMapper {
      * 查询所有项目信息(项目管理员只查询该项目下的信息)
      */
     List<Project> findAll();
+
+    /**
+     * 查询在projectCodeList中所有项目的信息
+     */
     List<Project> findAllInProjectCode(@Param("projectCodeList") Set<String> projectCodeList);
 
     /**
@@ -87,5 +91,16 @@ public interface ProjectQueryMapper {
      * 根据项目编码判断项目是否存在
      */
     Integer judgeEmptyByProjectCode(@Param("projectCode") String projectCode);
+
+    /**
+     * 查询项目上传状态
+     */
+    Integer findUploadStatusByProjectCode(@Param("projectCode") String projectCode);
+
+    /**
+     * 修改项目编码
+     */
+    Integer updateProjectCode(@Param("oldProjectCode") String oldProjectCode,
+                              @Param("newProjectCode") String newProjectCode);
 
 }

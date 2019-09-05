@@ -11,7 +11,7 @@ public interface ContractInfoService {
     /**
      * 添加合同信息
      */
-    void saveContractInfo(ContractInfo contractInfo, String projectCode, Integer personId);
+    void saveContractInfo(ContractInfo contractInfo, String projectCode, Integer teamSysNo, Integer personId);
 
     /**
      * 保存合同和文件的关联

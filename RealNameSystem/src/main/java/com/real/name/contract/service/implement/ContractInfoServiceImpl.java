@@ -9,8 +9,12 @@ import com.real.name.contract.entity.ContractInfo;
 import com.real.name.contract.query.ContractInfoQuery;
 import com.real.name.contract.service.ContractInfoService;
 import com.real.name.contract.service.repository.ContractInfoMapper;
+import com.real.name.person.service.PersonService;
 import com.real.name.project.entity.ProjectDetailQuery;
+import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.repository.ProjectDetailQueryMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +26,8 @@ import java.util.List;
 @Service
 public class ContractInfoServiceImpl implements ContractInfoService {
 
+    private Logger logger = LoggerFactory.getLogger(ContractInfoServiceImpl.class);
+
     @Autowired
     private ContractInfoMapper contractInfoMapper;
 
@@ -30,8 +36,13 @@ public class ContractInfoServiceImpl implements ContractInfoService {
 
     @Transactional
     @Override
-    public void saveContractInfo(ContractInfo contractInfo, String projectCode, Integer personId) {
-        Integer projectDetailId = projectDetailQueryMapper.getIdByProjectCodeAndPersonId(projectCode, personId);
+    public void saveContractInfo(ContractInfo contractInfo, String projectCode, Integer teamSysNo, Integer personId) {
+        Integer integer = projectDetailQueryMapper.findPersonStatusByCondition(projectCode, teamSysNo, personId);
+        if (integer == null || integer != 1) {
+            throw new AttendanceException(ResultError.PERSON_NO_EXISTS_IN_PROJECT);
+        }
+        //判断人员所在的项目班组是否被移除
+        Integer projectDetailId = projectDetailQueryMapper.getProjectPersonDetailId(projectCode, teamSysNo, personId);
         if (projectDetailId == null) {
             throw new AttendanceException(ResultError.NO_FIND_PROJECT_DETAIL);
         }
@@ -72,6 +83,14 @@ public class ContractInfoServiceImpl implements ContractInfoService {
     @Transactional
     @Override
     public void updateContractInfo(ContractInfo contractInfo) {
+        if (contractInfo.getProjectDetailQuery() == null || contractInfo.getProjectDetailQuery().getId() == null) {
+            logger.error("传入的projectDetailId为空");
+            throw new AttendanceException(ResultError.OPERATOR_ERROR);
+        }
+        Integer integer = projectDetailQueryMapper.findPersonStatusById(contractInfo.getProjectDetailQuery().getId());
+        if (integer == null || integer != 1) {
+            throw new AttendanceException(ResultError.PERSON_NO_EXISTS_IN_PROJECT);
+        }
         int i = contractInfoMapper.updateContractInfoById(contractInfo);
         if (i <= 0) {
             throw new AttendanceException((ResultError.UPDATE_ERROR));
