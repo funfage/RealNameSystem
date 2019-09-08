@@ -255,7 +255,7 @@ public class PersonController {
     })
     public ResultVo getPersonInGroup(@RequestParam("teamSysNo") Integer teamSysNo,
                                      @RequestParam("projectCode") String projectCode,
-                                     @RequestParam(value = "status", defaultValue = "1") Integer status) {
+                                     @RequestParam(value = "status", required = false) Integer status) {
         return ResultVo.success(personService.getPersonInGroup(teamSysNo, projectCode, status));
     }
 

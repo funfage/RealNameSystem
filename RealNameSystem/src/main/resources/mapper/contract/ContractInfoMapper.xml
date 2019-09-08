@@ -9,13 +9,50 @@
         <result property="uploadStatus" column="upload_status"/>
         <association property="projectDetailQuery" javaType="com.real.name.project.entity.ProjectDetailQuery" column="person_id">
             <id property="id" column="project_detail_id"/>
+            <result property="projectCode" column="pd_project_code"/>
+            <result property="personStatus" column="person_status"/>
             <association property="person" javaType="com.real.name.person.entity.Person" column="person_id">
-                <id property="personId" column="person_id"/>
+                <id property="personId" column="p_person_id"/>
                 <result property="personName" column="person_name"/>
-                <result property="corpCode" column="corp_code"/>
-                <result property="subordinateCompany" column="subordinate_company"/>
-                <result property="idCardType" column="id_card_type"/>
+                <result property="gender" column="gender"/>
+                <result property="address" column="address"/>
+                <result property="age" column="age"/>
+                <result property="bankLinkNumber" column="bank_link_number"/>
+                <result property="cardNumber" column="card_number"/>
+                <result property="cellPhone" column="cell_phone"/>
+                <result property="cultureLevelType" column="culture_level_type"/>
+                <result property="expiryDate" column="expiry_date"/>
+                <result property="grantOrg" column="grant_org"/>
+                <result property="groupNo" column="group_no"/>
+                <result property="hasBadMedicalHistory" column="has_bad_medical_history"/>
+                <result property="hasBuyInsurance" column="has_buy_insurance"/>
+                <result property="hometown" column="hometown"/>
+                <result property="idCardIndex" column="id_card_index"/>
                 <result property="idCardNumber" column="id_card_number"/>
+                <result property="idCardType" column="id_card_type"/>
+                <result property="issueCardDate" column="issue_card_date"/>
+                <result property="issueCardPic" column="issue_card_pic"/>
+                <result property="isTeamLeader" column="is_team_leader"/>
+                <result property="joinedTime" column="joined_time"/>
+                <result property="maritalStatus" column="marital_status"/>
+                <result property="nation" column="nation"/>
+                <result property="negativeIdCardImage" column="negative_id_card_image"/>
+                <result property="payRollBankCardNumber" column="pay_roll_bank_card_number"/>
+                <result property="payRollBankName" column="pay_roll_bank_name"/>
+                <result property="payRollTopBankCode" column="pay_roll_top_bank_code"/>
+                <result property="politicsType" column="politics_type"/>
+                <result property="positiveIdCardImage" column="positive_id_card_image"/>
+                <result property="specialty" column="specialty"/>
+                <result property="startDate" column="p_start_date"/>
+                <result property="suffixName" column="suffix_name"/>
+                <result property="urgentLinkMan" column="urgent_link_man"/>
+                <result property="urgentLinkManPhone" column="urgent_link_man_phone"/>
+                <result property="workDate" column="work_date"/>
+                <result property="workRole" column="work_role"/>
+                <result property="workType" column="work_type"/>
+                <result property="headImage" column="head_image"/>
+                <result property="uploadStatus" column="upload_status"/>
+                <result property="createTime" column="create_time"/>
             </association>
             <association property="workerGroup" javaType="com.real.name.group.entity.WorkerGroup" column="team_sys_no">
                 <id property="teamSysNo" column="team_sys_no"/>
@@ -33,13 +70,97 @@
         </collection>
     </resultMap>
 
+    <resultMap id="contractInfoQueryMap" type="com.real.name.contract.entity.query.ContractInfoQuery">
+        <id property="contractId" column="contract_id"/>
+        <result property="contractPeriodType" column="contract_period_type"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="uploadStatus" column="upload_status"/>
+        <association property="projectDetailQuery" javaType="com.real.name.project.entity.ProjectDetailQuery" column="person_id">
+            <id property="id" column="project_detail_id"/>
+            <result property="projectCode" column="pd_project_code"/>
+            <result property="personStatus" column="person_status"/>
+            <association property="person" javaType="com.real.name.person.entity.Person" column="person_id">
+                <id property="personId" column="p_person_id"/>
+                <result property="personName" column="person_name"/>
+                <result property="gender" column="gender"/>
+                <result property="address" column="address"/>
+                <result property="age" column="age"/>
+                <result property="bankLinkNumber" column="bank_link_number"/>
+                <result property="cardNumber" column="card_number"/>
+                <result property="cellPhone" column="cell_phone"/>
+                <result property="cultureLevelType" column="culture_level_type"/>
+                <result property="expiryDate" column="expiry_date"/>
+                <result property="grantOrg" column="grant_org"/>
+                <result property="groupNo" column="group_no"/>
+                <result property="hasBadMedicalHistory" column="has_bad_medical_history"/>
+                <result property="hasBuyInsurance" column="has_buy_insurance"/>
+                <result property="hometown" column="hometown"/>
+                <result property="idCardIndex" column="id_card_index"/>
+                <result property="idCardNumber" column="id_card_number"/>
+                <result property="idCardType" column="id_card_type"/>
+                <result property="issueCardDate" column="issue_card_date"/>
+                <result property="issueCardPic" column="issue_card_pic"/>
+                <result property="isTeamLeader" column="is_team_leader"/>
+                <result property="joinedTime" column="joined_time"/>
+                <result property="maritalStatus" column="marital_status"/>
+                <result property="nation" column="nation"/>
+                <result property="negativeIdCardImage" column="negative_id_card_image"/>
+                <result property="payRollBankCardNumber" column="pay_roll_bank_card_number"/>
+                <result property="payRollBankName" column="pay_roll_bank_name"/>
+                <result property="payRollTopBankCode" column="pay_roll_top_bank_code"/>
+                <result property="politicsType" column="politics_type"/>
+                <result property="positiveIdCardImage" column="positive_id_card_image"/>
+                <result property="specialty" column="specialty"/>
+                <result property="startDate" column="p_start_date"/>
+                <result property="suffixName" column="suffix_name"/>
+                <result property="urgentLinkMan" column="urgent_link_man"/>
+                <result property="urgentLinkManPhone" column="urgent_link_man_phone"/>
+                <result property="workDate" column="work_date"/>
+                <result property="workRole" column="work_role"/>
+                <result property="workType" column="work_type"/>
+                <result property="headImage" column="head_image"/>
+                <result property="uploadStatus" column="upload_status"/>
+                <result property="createTime" column="create_time"/>
+            </association>
+            <association property="workerGroup" javaType="com.real.name.group.entity.WorkerGroup" column="team_sys_no">
+                <id property="teamSysNo" column="team_sys_no"/>
+                <result property="teamName" column="team_name"/>
+            </association>
+            <association property="project" javaType="com.real.name.project.entity.Project" column="project_code">
+                <id property="projectCode" column="project_code"/>
+                <result property="name" column="name"/>
+            </association>
+        </association>
+        <association property="subContractor" javaType="com.real.name.subcontractor.entity.SubContractor">
+            <id property="subContractorId" column="sub_contractor_id"/>
+            <result property="corpName" column="corp_name"/>
+            <result property="corpCode" column="corp_code"/>
+        </association>
+        <collection property="contractFileList" ofType="com.real.name.contract.entity.ContractFile">
+            <id property="id" column="id"/>
+            <result property="contractId" column="c_contract_id"/>
+            <result property="fileName" column="file_name"/>
+        </collection>
+    </resultMap>
+
     <sql id="searchAll">
         ci.contract_id, ci.contract_period_type, ci.start_date, ci.end_date, ci.upload_status,
         p.person_id, p.person_name, p.corp_code, p.subordinate_company, p.id_card_type, p.id_card_number,
         wg.team_sys_no, wg.team_name,
         pj.project_code, pj.name,
         cf.id, cf.file_name,
-        pd.id as project_detail_id
+        pd.id as project_detail_id, pd.person_status
+    </sql>
+
+    <sql id="searchAllWithSub">
+        ci.contract_id, ci.contract_period_type, ci.start_date, ci.end_date, ci.upload_status,
+        p.person_id, p.person_name, p.id_card_type, p.id_card_number,
+        wg.team_sys_no, wg.team_name,
+        sc.sub_contractor_id, sc.corp_name, sc.corp_code,
+        pj.project_code, pj.name,
+        cf.id, cf.file_name,
+        pd.id as project_detail_id, pd.person_status
     </sql>
 
     <sql id="searchNoContractFile">
@@ -48,21 +169,32 @@
         wg.team_sys_no, wg.team_name,
         pj.project_code, pj.name,
         null, null,
+        pd.id as project_detail_id, pd.person_status
+    </sql>
+
+    <sql id="searchNoContractFileWithSub">
+        ci.contract_id, ci.contract_period_type, ci.start_date, ci.end_date, ci.upload_status,
+        p.person_id, p.person_name, p.id_card_type, p.id_card_number,
+        wg.team_sys_no, wg.team_name,
+        sc.sub_contractor_id, sc.corp_name, sc.corp_code,
+        pj.project_code, pj.name,
+        null, null,
         pd.id as project_detail_id
     </sql>
 
+
     <sql id="searchCondition">
-        <if test="contractInfoQuery.projectName != null and contractInfoQuery.projectName != ''">
-            and pj.name like '%${contractInfoQuery.projectName}%'
+        <if test="contractInfoSearch.projectName != null and contractInfoSearch.projectName != ''">
+            and pj.name like '%${contractInfoSearch.projectName}%'
         </if>
-        <if test="contractInfoQuery.personName != null and contractInfoQuery.personName != ''">
-            and p.person_name = #{contractInfoQuery.personName}
+        <if test="contractInfoSearch.personName != null and contractInfoSearch.personName != ''">
+            and p.person_name = #{contractInfoSearch.personName}
         </if>
-        <if test="contractInfoQuery.subordinateCompany != null and contractInfoQuery.subordinateCompany != ''">
-            and p.subordinate_company like '%${contractInfoQuery.subordinateCompany}%'
+        <if test="contractInfoSearch.subordinateCompany != null and contractInfoSearch.subordinateCompany != ''">
+            and sc.corp_name like '%${contractInfoSearch.subordinateCompany}%'
         </if>
-        <if test="contractInfoQuery.corpCode != null and contractInfoQuery.corpCode != ''">
-            and p.corp_code = #{contractInfoQuery.corpCode}
+        <if test="contractInfoSearch.corpCode != null and contractInfoSearch.corpCode != ''">
+            and sc.corp_code = #{contractInfoSearch.corpCode}
         </if>
     </sql>
 
@@ -134,59 +266,65 @@
           file_name = #{fileName}
     </delete>
 
-    <select id="getAllContractInfo" resultMap="contractInfoMap">
+    <select id="getAllContractInfo" resultMap="contractInfoQueryMap">
         select
-          <include refid="searchAll"/>
+          <include refid="searchAllWithSub"/>
         from
-          contract_info ci, person p, worker_group wg, project_detail pd, project pj, contract_file cf
+          contract_info ci, person p, worker_group wg, project_detail pd, project pj, sub_contractor sc, contract_file cf
         where
           ci.project_detail_id = pd.id
         and
           p.person_id = pd.person_id
         and
           wg.team_sys_no = pd.team_sys_no
+        and
+          sc.sub_contractor_id = wg.sub_contractor_id
         and
           pj.project_code = pd.project_code
         and
           ci.contract_id = cf.contract_id
         union
         select
-          <include refid="searchNoContractFile"/>
+          <include refid="searchNoContractFileWithSub"/>
         from
-          contract_info ci, person p, worker_group wg, project_detail pd, project pj
+          contract_info ci, person p, worker_group wg, project_detail pd, project pj, sub_contractor sc
         where
           ci.project_detail_id = pd.id
         and
           p.person_id = pd.person_id
         and
           wg.team_sys_no = pd.team_sys_no
+        and
+          sc.sub_contractor_id = wg.sub_contractor_id
         and
           pj.project_code = pd.project_code
         and
           ci.contract_id not in (select contract_id from contract_file)
     </select>
 
-    <select id="searchContractInfo" resultMap="contractInfoMap">
+    <select id="searchContractInfo" resultMap="contractInfoQueryMap">
         select
-          <include refid="searchAll"/>
+          <include refid="searchAllWithSub"/>
         from
-          contract_info ci, person p, worker_group wg, project_detail pd, project pj, contract_file cf
+          contract_info ci, person p, worker_group wg, project_detail pd, project pj, sub_contractor sc, contract_file cf
         where
           ci.project_detail_id = pd.id
         and
           p.person_id = pd.person_id
         and
           wg.team_sys_no = pd.team_sys_no
+        and
+          sc.sub_contractor_id = wg.sub_contractor_id
         and
           pj.project_code = pd.project_code
         and
           ci.contract_id = cf.contract_id
           <include refid="searchCondition"/>
-        UNION
+        union
         select
-          <include refid="searchNoContractFile"/>
+          <include refid="searchNoContractFileWithSub"/>
         from
-          contract_info ci, person p, worker_group wg, project_detail pd, project pj
+          contract_info ci, person p, worker_group wg, project_detail pd, project pj, sub_contractor sc
         where
           ci.project_detail_id = pd.id
         and
@@ -194,17 +332,39 @@
         and
           wg.team_sys_no = pd.team_sys_no
         and
+          sc.sub_contractor_id = wg.sub_contractor_id
+        and
           pj.project_code = pd.project_code
         and
           ci.contract_id not in (select contract_id from contract_file)
           <include refid="searchCondition"/>
     </select>
 
-    <select id="findUploadContractInfo" resultMap="contractInfoMap">
+    <select id="findUploadContractsInfo" resultMap="contractInfoQueryMap">
         select
-          <include refid="searchAll"/>
+          ci.contract_period_type, ci.start_date, ci.end_date, ci.upload_status,
+          pd.project_code as pd_project_code,
+          sc.corp_code, sc.corp_name,
+          p.person_id, p.person_name, p.id_card_type, p.id_card_number, p.upload_status
         from
-
+          contract_info ci
+        inner join project_detail pd on pd.id = ci.project_detail_id
+        inner join person p on p.person_id = pd.person_id
+        inner join worker_group wg on wg.team_sys_no = pd.team_sys_no
+        inner join sub_contractor sc on sc.sub_contractor_id = wg.sub_contractor_id
+        where
+          ci.contract_id
+        in 
+        <choose>
+            <when test="contractInfoIdList != null and contractInfoIdList.size() != 0">
+                <foreach collection="contractInfoIdList" item="id" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </when>
+            <otherwise>
+                (null)
+            </otherwise>
+        </choose>
     </select>
 
 </mapper>

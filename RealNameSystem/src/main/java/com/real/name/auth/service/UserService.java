@@ -19,6 +19,11 @@ public interface UserService {
     void updateUser(User user);
 
     /**
+     * 根据用户电话号修改
+     */
+    void updateUserByPhone(User user);
+
+    /**
      * 管理员修改用户信息
      */
     void updateUserByAdmin(User user);

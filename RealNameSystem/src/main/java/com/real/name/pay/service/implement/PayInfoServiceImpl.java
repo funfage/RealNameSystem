@@ -3,7 +3,8 @@ package com.real.name.pay.service.implement;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.pay.entity.PayInfo;
-import com.real.name.pay.query.PayInfoQuery;
+import com.real.name.pay.entity.query.PayInfoQuery;
+import com.real.name.pay.entity.search.PayInfoSearch;
 import com.real.name.pay.service.PayInfoService;
 import com.real.name.pay.service.repository.PayInfoMapper;
 import com.real.name.project.entity.ProjectDetailQuery;
@@ -70,12 +71,12 @@ public class PayInfoServiceImpl implements PayInfoService {
     }
 
     @Override
-    public List<PayInfo> getAllPayInfo() {
+    public List<PayInfoQuery> getAllPayInfo() {
         return payInfoMapper.getAllPayInfo();
     }
 
     @Override
-    public List<PayInfo> searchPayInfo(PayInfoQuery payInfoQuery) {
-        return payInfoMapper.searchPayInfo(payInfoQuery);
+    public List<PayInfo> searchPayInfo(PayInfoSearch payInfoSearch) {
+        return payInfoMapper.searchPayInfo(payInfoSearch);
     }
 }

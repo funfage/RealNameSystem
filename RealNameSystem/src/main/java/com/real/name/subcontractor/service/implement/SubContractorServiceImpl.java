@@ -101,8 +101,8 @@ public class SubContractorServiceImpl implements SubContractorService {
     }
 
     @Override
-    public List<SubContractorQuery> findByProjectCode(String projectCode) {
-        List<SubContractorQuery> subContractorList = subContractorMapper.findByProjectCode(projectCode);
+    public List<SubContractorQuery> findContractInPro(String projectCode, Integer contractStatus) {
+        List<SubContractorQuery> subContractorList = subContractorMapper.findContractInPro(projectCode, contractStatus);
         for (SubContractorQuery sub : subContractorList) {
             setContractInfo(sub);
         }

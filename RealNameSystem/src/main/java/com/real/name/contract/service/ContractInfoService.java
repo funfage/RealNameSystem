@@ -1,7 +1,9 @@
 package com.real.name.contract.service;
 
 import com.real.name.contract.entity.ContractInfo;
-import com.real.name.contract.query.ContractInfoQuery;
+import com.real.name.contract.entity.query.ContractInfoQuery;
+import com.real.name.contract.entity.search.ContractInfoSearch;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -36,11 +38,16 @@ public interface ContractInfoService {
     /**
      * 查询所有合同记录
      */
-    List<ContractInfo> getAllContractInfo();
+    List<ContractInfoQuery> getAllContractInfo();
 
     /**
      * 搜索合同
      */
-    List<ContractInfo> searchContractInfo(ContractInfoQuery contractInfoQuery);
+    List<ContractInfoQuery> searchContractInfo(ContractInfoSearch contractInfoSearch);
+
+    /**
+     * 获取所有需要上传的人员合同信息
+     */
+    List<ContractInfoQuery> findUploadContractsInfo(List<Integer> contractInfoIdList);
 
 }

@@ -13,12 +13,13 @@ import com.real.name.common.utils.PageUtils;
 import com.real.name.common.utils.PathUtil;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.pay.entity.PayInfo;
-import com.real.name.pay.query.PayInfoQuery;
+import com.real.name.pay.entity.query.PayInfoQuery;
+import com.real.name.pay.entity.search.PayInfoSearch;
 import com.real.name.pay.service.PayInfoService;
 import com.real.name.person.entity.Person;
 import com.real.name.project.entity.Project;
 import com.real.name.project.entity.ProjectDetailQuery;
-import com.real.name.project.service.ProjectDetailQueryService;
+import com.real.name.subcontractor.entity.SubContractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,25 +119,26 @@ public class PayInfoController {
     /**
      * =====================================以下只与查询有关==============================
      */
-
     /**
      * 查询所有薪资记录
      */
     @JSONS({
-            @JSON(type = ProjectDetailQuery.class, filter = "createTime,attendanceList,projectCode,teamSysNo"),
-            @JSON(type = Person.class, include = "personId,personName,corpCode,subordinateCompany,idCardType,idCardNumber," +
+            @JSON(type = ProjectDetailQuery.class, filter = "createTime,attendanceList,projectCode,teamSysNo,personId"),
+            @JSON(type = Person.class, include = "personId,personName,idCardType,idCardNumber," +
                     "payRollBankCardNumber,payRollBankName,bankLinkNumber,payRollTopBankCode"),
             @JSON(type = WorkerGroup.class, include = "teamSysNo,teamName"),
+            @JSON(type = SubContractor.class, include = "subContractorId,corpCode,corpName"),
             @JSON(type = Project.class, include = "projectCode,name")
     })
     @GetMapping("/getAllPayInfo")
     public ResultVo getAllPayInfo(@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
                                   @RequestParam(name = "pageSize", defaultValue = "20") Integer pageSize) {
         PageHelper.startPage(pageNum + 1, pageSize);
-        List<PayInfo> allPayInfo = payInfoService.getAllPayInfo();
-        PageInfo<PayInfo> pageInfo = new PageInfo<>(allPayInfo);
+        List<PayInfoQuery> allPayInfo = payInfoService.getAllPayInfo();
+        PageInfo<PayInfoQuery> pageInfo = new PageInfo<>(allPayInfo);
         return PageUtils.pageResult(pageInfo, allPayInfo);
     }
+
 
     /**
      * 薪资搜索
@@ -149,9 +151,9 @@ public class PayInfoController {
             @JSON(type = Project.class, include = "projectCode,name")
     })
     @GetMapping("/searchPayInfo")
-    public ResultVo searchPayInfo(PayInfoQuery payInfoQuery) {
-        PageHelper.startPage(payInfoQuery.getPageNum(), payInfoQuery.getPageSize());
-        List<PayInfo> infoList = payInfoService.searchPayInfo(payInfoQuery);
+    public ResultVo searchPayInfo(PayInfoSearch payInfoSearch) {
+        PageHelper.startPage(payInfoSearch.getPageNum(), payInfoSearch.getPageSize());
+        List<PayInfo> infoList = payInfoService.searchPayInfo(payInfoSearch);
         PageInfo<PayInfo> pageInfo = new PageInfo<>(infoList);
         return PageUtils.pageResult(pageInfo, infoList);
     }

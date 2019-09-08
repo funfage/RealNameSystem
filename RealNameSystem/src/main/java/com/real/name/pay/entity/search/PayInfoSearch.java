@@ -1,12 +1,11 @@
-package com.real.name.pay.query;
+package com.real.name.pay.entity.search;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.real.name.pay.entity.PayInfo;
 import lombok.Data;
 
 @Data
-public class PayInfoQuery extends PayInfo {
-
+public class PayInfoSearch extends PayInfo {
     private String nameOrIdCardNumber;
 
     private String projectCode;
@@ -16,5 +15,4 @@ public class PayInfoQuery extends PayInfo {
 
     @JsonIgnore
     private Integer pageSize = 20;
-
 }

@@ -1,15 +1,22 @@
 package com.real.name.common.controller;
 
+import com.real.name.auth.entity.User;
 import com.real.name.auth.service.UserService;
+import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
+import com.real.name.common.utils.CommonUtils;
 import com.real.name.common.utils.FileTool;
+import com.real.name.common.utils.JedisService;
+import com.real.name.common.utils.SendSms;
 import com.real.name.device.service.DeviceService;
 import com.real.name.person.service.PersonService;
 import com.real.name.project.service.ProjectService;
+import org.apache.ibatis.annotations.Param;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/common")
@@ -41,6 +49,9 @@ public class CommonController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private JedisService.JedisStrings jedisStrings;
 
     /**
      * 文件下载
@@ -89,6 +100,41 @@ public class CommonController {
         //获取用户相关首页信息
         map.put("userInfo", userService.getUserMainPageinfo());
         return ResultVo.success(map);
+    }
+
+    /**
+     * 发送短信验证码
+     */
+    @GetMapping("/sendAuthCode")
+    public ResultVo sendAuthCode(@RequestParam("phone") String phone) {
+        if (!CommonUtils.isRightPhone(phone)) {
+            return ResultVo.failure(ResultError.PHONE_ERROR);
+        }
+            String code = SendSms.sendMessage(phone);
+        if (StringUtils.isEmpty(phone)) {
+            return ResultVo.failure(ResultError.SEND_MESSAGE_ERROR);
+        }
+        //设置验证码的有效期为5分钟
+        jedisStrings.set(phone, code, 10, TimeUnit.MINUTES);
+        return ResultVo.success();
+    }
+
+    /**
+     * 判断输入的验证码是否正确
+     */
+    @GetMapping("/judgeAuthCode")
+    public ResultVo judgeAuthCode(@RequestParam("phone") String phone,
+                                  @RequestParam("authCode") String authCode) {
+        String sendCode = (String) jedisStrings.get(phone);
+        if (StringUtils.isEmpty(sendCode) || !sendCode.equals(authCode)) {
+            return ResultVo.failure(ResultError.AUTH_CODE_ERROR);
+        }
+        //判断用户是否存在
+        User user = userService.getUserByPhone(phone);
+        if (user == null) {
+            return ResultVo.failure(ResultError.USER_NOT_EXIST);
+        }
+        return ResultVo.success();
     }
 
 

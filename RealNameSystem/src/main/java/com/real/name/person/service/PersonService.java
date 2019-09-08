@@ -190,6 +190,6 @@ public interface PersonService {
     /**
      * 判断人员是否加入了项目，不包括从项目中移除的人员
      */
-    Integer judgePersonJoinProject(Integer personId);
+    Integer judgePersonJoinOtherProject(Integer personId, String projectCode);
 
 }

@@ -11,12 +11,14 @@ import com.real.name.common.result.ResultVo;
 import com.real.name.common.utils.PageUtils;
 import com.real.name.contract.entity.ContractFile;
 import com.real.name.contract.entity.ContractInfo;
-import com.real.name.contract.query.ContractInfoQuery;
+import com.real.name.contract.entity.query.ContractInfoQuery;
+import com.real.name.contract.entity.search.ContractInfoSearch;
 import com.real.name.contract.service.ContractInfoService;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.person.entity.Person;
 import com.real.name.project.entity.Project;
 import com.real.name.project.entity.ProjectDetailQuery;
+import com.real.name.subcontractor.entity.SubContractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,8 +110,9 @@ public class ContractController {
     @JSONS({
             @JSON(type = ProjectDetailQuery.class, filter = "createTime,attendanceList,projectCode,teamSysNo"),
             @JSON(type = Person.class,
-                    include = "personId,personName,corpCode,subordinateCompany,idCardType,idCardNumber"),
+                    include = "personId,personName,idCardType,idCardNumber"),
             @JSON(type = WorkerGroup.class, include = "teamSysNo,teamName"),
+            @JSON(type = SubContractor.class, include = "subContractorId,corpCode,corpName"),
             @JSON(type = Project.class, include = "projectCode,name"),
             @JSON(type = ContractFile.class, filter = "contractId")
     })
@@ -117,8 +120,8 @@ public class ContractController {
     public ResultVo getAllContractInfo(@RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
                                        @RequestParam(name = "pageSize", defaultValue = "20") Integer pageSize) {
         PageHelper.startPage(   pageNum + 1, pageSize);
-        List<ContractInfo> allContractInfo = contractInfoService.getAllContractInfo();
-        PageInfo<ContractInfo> pageInfo = new PageInfo<>(allContractInfo);
+        List<ContractInfoQuery> allContractInfo = contractInfoService.getAllContractInfo();
+        PageInfo<ContractInfoQuery> pageInfo = new PageInfo<>(allContractInfo);
         return PageUtils.pageResult(pageInfo, allContractInfo);
     }
 
@@ -128,16 +131,17 @@ public class ContractController {
     @JSONS({
             @JSON(type = ProjectDetailQuery.class, filter = "createTime,attendanceList,projectCode,teamSysNo"),
             @JSON(type = Person.class,
-                    include = "personId,personName,corpCode,subordinateCompany,idCardType,idCardNumber"),
+                    include = "personId,personName,idCardType,idCardNumber"),
             @JSON(type = WorkerGroup.class, include = "teamSysNo,teamName"),
+            @JSON(type = SubContractor.class, include = "subContractorId,corpCode,corpName"),
             @JSON(type = Project.class, include = "projectCode,name"),
             @JSON(type = ContractFile.class, filter = "contractId")
     })
     @GetMapping("/searchContractInfo")
-    public ResultVo searchContractInfo(ContractInfoQuery contractInfoQuery) {
-        PageHelper.startPage(contractInfoQuery.getPageNum() + 1, contractInfoQuery.getPageSize());
-        List<ContractInfo> contractInfoList = contractInfoService.searchContractInfo(contractInfoQuery);
-        PageInfo<ContractInfo> pageInfo = new PageInfo<>(contractInfoList);
+    public ResultVo searchContractInfo(ContractInfoSearch contractInfoSearch) {
+        PageHelper.startPage(contractInfoSearch.getPageNum() + 1, contractInfoSearch.getPageSize());
+        List<ContractInfoQuery> contractInfoList = contractInfoService.searchContractInfo(contractInfoSearch);
+        PageInfo<ContractInfoQuery> pageInfo = new PageInfo<>(contractInfoList);
         return PageUtils.pageResult(pageInfo, contractInfoList);
     }
 

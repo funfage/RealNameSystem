@@ -5,6 +5,7 @@ import com.real.name.auth.service.UserService;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
+import com.real.name.common.utils.JedisService;
 import org.apache.ibatis.annotations.Param;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -31,6 +32,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private JedisService.JedisStrings jedisStrings;
 
     /**
      * 用户登录提交访问的方法
@@ -73,20 +77,50 @@ public class UserController {
      */
     @PostMapping("/userRegister")
     public ResultVo userRegister(User user) {
-        //TODO 判断用户输入的验证码书否正确
         //校验用户输入的信息是否符合要求
         verifyUser(user);
         //根据电话号码查询用户是否已注册
         User selectUser = userService.getUserByPhone(user.getPhone());
-        if (selectUser != null) {
-            throw new AttendanceException(ResultError.USER_HAS_REGISTER);
+        if (selectUser != null || selectUser.getStatus() == 1) {
+            return ResultVo.failure(ResultError.USER_HAS_REGISTER);
         }
         //判断两次输入的密码是否正确
         if (StringUtils.isEmpty(user.getPassword()) || !user.getPassword().equals(user.getPasswordAgain())) {
-            throw new AttendanceException(ResultError.USER_PASSWORD_NO_MATCH);
+            return ResultVo.failure(ResultError.USER_PASSWORD_NO_MATCH);
+        }
+        //获取发送的验证码
+        String sendCode = (String) jedisStrings.get(user.getPhone());
+        //判断用户输入的验证码书否正确
+        if (StringUtils.isEmpty(user.getAuthCode()) || !user.getAuthCode().equals(sendCode)) {
+            return ResultVo.failure(ResultError.AUTH_CODE_ERROR);
         }
         //注册用户
         userService.registerUser(user);
+        return ResultVo.success();
+    }
+
+    /**
+     * 用户忘记密码修改
+     */
+    @Transactional
+    @PostMapping("/updatePassword")
+    public ResultVo updatePassword(User user) {
+        if (StringUtils.isEmpty(user.getPhone())) {
+            return ResultVo.failure(ResultError.PHONE_EMPTY);
+        } else if (StringUtils.isEmpty(user.getPassword())) {
+            return ResultVo.failure(ResultError.PASSWORD_EMPTY);
+        }
+        String sendCode = (String) jedisStrings.get(user.getPhone());
+        //判断用户输入的验证码是否正确
+        if (StringUtils.isEmpty(user.getAuthCode()) || !user.getAuthCode().equals(sendCode)) {
+            return ResultVo.failure(ResultError.OPERATOR_ERROR);
+        }
+        //判断两次输入的密码是否一致
+        if (!user.getPassword().equals(user.getPasswordAgain())) {
+            return ResultVo.failure(ResultError.USER_PASSWORD_NO_MATCH);
+        }
+        //修改用户密码
+        userService.updateUser(user);
         return ResultVo.success();
     }
 

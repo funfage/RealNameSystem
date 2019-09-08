@@ -9,6 +9,10 @@ public class CommonUtils {
 
     private static SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
+    /**
+     *
+     * @return true 正确，false不正确
+     */
     public static boolean isRightPhone(String phone) {
         return StringUtils.hasText(phone) && phone.length() == 11 && phone.startsWith("1");
     }

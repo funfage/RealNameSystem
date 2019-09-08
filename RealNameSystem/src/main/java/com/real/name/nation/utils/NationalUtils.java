@@ -8,11 +8,13 @@ import com.real.name.common.utils.AesUtils;
 import com.real.name.common.utils.CommonUtils;
 import com.real.name.common.utils.HTTPTool;
 import com.real.name.contract.entity.ContractInfo;
+import com.real.name.contract.entity.query.ContractInfoQuery;
 import com.real.name.group.entity.WorkerGroup;
 import com.real.name.group.entity.query.GroupQuery;
 import com.real.name.nation.entity.*;
 import com.real.name.nation.entity.NationSubContractor.BankInfo;
 import com.real.name.pay.entity.PayInfo;
+import com.real.name.pay.entity.query.PayInfoQuery;
 import com.real.name.person.entity.Person;
 import com.real.name.project.entity.Project;
 import com.real.name.project.entity.ProjectDetailQuery;
@@ -388,15 +390,18 @@ public class NationalUtils {
     /**
      * 上传合同信息
      */
-    public static JSONObject uploadContractInfo(ContractInfo contractInfo) {
+    public static JSONObject uploadContractInfo(ContractInfoQuery contractInfo) {
         String method = "WorkerContract.Add";
         ProjectDetailQuery projectDetailQuery = contractInfo.getProjectDetailQuery();
         Person person = projectDetailQuery.getPerson();
+        SubContractor subContractor = contractInfo.getSubContractor();
         NationalContractInfo nationalContractInfo = new NationalContractInfo();
+        nationalContractInfo.setProjectCode(projectDetailQuery.getProjectCode());
         NationalContractInfo.Contract contract = new NationalContractInfo().new Contract();
-//        contract.setproject
-        contract.setCorpCode(person.getCorpCode());
-        contract.setCorpName(person.getSubordinateCompany());
+        contract.setCorpCode(subContractor.getCorpCode());
+        contract.setCorpName(subContractor.getCorpName());
+        contract.setIdCardType(getByInteger(person.getIdCardType(), 2));
+        contract.setIdCardNumber(AesUtils.encrypt(person.getIdCardNumber(), NationConstant.appsecret));
         if (contractInfo.getStartDate() != null) {
             contract.setStartDate(simpleDateFormat.format(contractInfo.getStartDate()));
         }
@@ -419,17 +424,18 @@ public class NationalUtils {
     /**
      * 上传薪资信息
      */
-    public static JSONObject uploadPayInfo(PayInfo payInfo) {
+    public static JSONObject uploadPayInfo(PayInfoQuery payInfo) {
         String method = "Payroll.Add";
         ProjectDetailQuery projectDetailQuery = payInfo.getProjectDetailQuery();
         Person person = projectDetailQuery.getPerson();
+        SubContractor subContractor = payInfo.getSubContractor();
         NationalPayInfo nationalPayInfo = new NationalPayInfo();
-        nationalPayInfo.setProjectCode(projectDetailQuery.getProject().getProjectCode());
-        nationalPayInfo.setCorpCode(person.getCorpCode());
-        nationalPayInfo.setCorpName(person.getSubordinateCompany());
+        nationalPayInfo.setProjectCode(projectDetailQuery.getProjectCode());
+        nationalPayInfo.setCorpCode(subContractor.getCorpCode());
+        nationalPayInfo.setCorpName(subContractor.getCorpName());
         nationalPayInfo.setTeamSysNo(projectDetailQuery.getWorkerGroup().getTeamSysNo());
         NationalPayInfo.Detail detail = new NationalPayInfo().new Detail();
-        detail.setIdCardType(person.getIdCardType().toString());
+        detail.setIdCardType(getByInteger(person.getIdCardType(), 2));
         detail.setIdCardNumber(person.getIdCardNumber());
         detail.setPayRollBankCardNumber(person.getPayRollBankCardNumber());
         detail.setPayRollBankCode(person.getPayRollTopBankCode().toString());

@@ -8,27 +8,27 @@ public interface NationService {
     /**
      * 上传项目到全国平台/修改上传到全国平台
      */
-    void uploadProject(Set<String> projectCodeList);
+    List<String> uploadProject(Set<String> projectCodeList);
 
     /**
      * 参建单位上传到全国平台/修改上传到全国平台
      * @param projectCode 参建单位所在的项目编码
      */
-    void uploadSubContractor(List<Integer> subContractorIdList, String projectCode);
+    List<String> uploadSubContractor(List<Integer> subContractorIdList, String projectCode);
 
     /**
      * 删除班组信息到全国平台
      */
-    void uploadWorkerGroup(List<Integer> groupIdList, Integer subContractorId);
+    List<String> uploadWorkerGroup(List<Integer> groupIdList, Integer subContractorId);
 
     /**
      * 人员信息上传到全国平台/修改上传到全国平台
      */
-    void uploadPerson(List<Integer> personIdList, Integer teamSysNo, String projectCode);
+    List<String> uploadPerson(List<Integer> personIdList, Integer teamSysNo, String projectCode);
 
     /**
      * 合同信息上传到全国平台/修改上传到全国平台
      */
-    void uploadContractor(List<Integer> contractorIdList);
+    List<String> uploadContractor(List<Integer> contractorIdList);
 
 }

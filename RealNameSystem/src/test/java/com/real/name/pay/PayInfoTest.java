@@ -3,7 +3,8 @@ package com.real.name.pay;
 import com.alibaba.fastjson.JSONObject;
 import com.real.name.others.BaseTest;
 import com.real.name.pay.entity.PayInfo;
-import com.real.name.pay.query.PayInfoQuery;
+import com.real.name.pay.entity.query.PayInfoQuery;
+import com.real.name.pay.entity.search.PayInfoSearch;
 import com.real.name.pay.service.repository.PayInfoMapper;
 import com.real.name.project.entity.ProjectDetailQuery;
 import org.junit.Test;
@@ -35,8 +36,8 @@ public class PayInfoTest extends BaseTest {
 
     @Test
     public void getAllPayInfo() {
-        List<PayInfo> allPayInfo = payInfoMapper.getAllPayInfo();
-        PayInfo payInfo = allPayInfo.get(0);
+        List<PayInfoQuery> allPayInfo = payInfoMapper.getAllPayInfo();
+        PayInfoQuery payInfo = allPayInfo.get(0);
         String jsonString = JSONObject.toJSONString(payInfo);
         System.out.println(jsonString);
     }
@@ -65,7 +66,7 @@ public class PayInfoTest extends BaseTest {
 
     @Test
     public void searchPayInfo() {
-        PayInfoQuery query = new PayInfoQuery();
+        PayInfoSearch query = new PayInfoSearch();
         query.setProjectCode("36bj84W235Zgc8O78yuS32510ppMkHfe");
         query.setNameOrIdCardNumber("勇");
         List<PayInfo> payInfos = payInfoMapper.searchPayInfo(query);

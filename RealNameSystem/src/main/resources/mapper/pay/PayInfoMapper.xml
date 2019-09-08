@@ -16,6 +16,7 @@
         <result property="uploadStatus" column="upload_status"/>
         <association property="projectDetailQuery" javaType="com.real.name.project.entity.ProjectDetailQuery" column="person_id">
             <id property="id" column="id"/>
+            <result property="personStatus" column="person_status"/>
             <association property="person" javaType="com.real.name.person.entity.Person" column="person_id">
                 <id property="personId" column="person_id"/>
                 <result property="personName" column="person_name"/>
@@ -39,6 +40,50 @@
         </association>
     </resultMap>
 
+    <resultMap id="payInfoQueryMap" type="com.real.name.pay.entity.query.PayInfoQuery">
+        <id property="payId" column="pay_id"/>
+        <result property="payBankCardNumber" column="pay_bank_card_number"/>
+        <result property="payBankCode" column="pay_bank_code"/>
+        <result property="payBankName" column="pay_bank_name"/>
+        <result property="totalPayAmount" column="total_pay_amount"/>
+        <result property="actualAmount" column="actual_amount"/>
+        <result property="isBackPay" column="is_back_pay"/>
+        <result property="balanceDate" column="balance_date"/>
+        <result property="backPayMonth" column="back_pay_month"/>
+        <result property="thirdPayRollCode" column="third_pay_roll_code"/>
+        <result property="suffixName" column="suffix_name"/>
+        <result property="uploadStatus" column="upload_status"/>
+        <association property="projectDetailQuery" javaType="com.real.name.project.entity.ProjectDetailQuery" column="person_id">
+            <id property="id" column="id"/>
+            <result property="personStatus" column="person_status"/>
+            <association property="person" javaType="com.real.name.person.entity.Person" column="person_id">
+                <id property="personId" column="person_id"/>
+                <result property="personName" column="person_name"/>
+                <result property="corpCode" column="corp_code"/>
+                <result property="subordinateCompany" column="subordinate_company"/>
+                <result property="idCardType" column="id_card_type"/>
+                <result property="idCardNumber" column="id_card_number"/>
+                <result property="payRollBankCardNumber" column="pay_roll_bank_card_number"/>
+                <result property="payRollBankName" column="pay_roll_bank_name"/>
+                <result property="bankLinkNumber" column="bank_link_number"/>
+                <result property="payRollTopBankCode" column="pay_roll_top_bank_code"/>
+            </association>
+            <association property="workerGroup" javaType="com.real.name.group.entity.WorkerGroup" column="team_sys_no">
+                <id property="teamSysNo" column="team_sys_no"/>
+                <result property="teamName" column="team_name"/>
+            </association>
+            <association property="project" javaType="com.real.name.project.entity.Project" column="project_code">
+                <id property="projectCode" column="project_code"/>
+                <result property="name" column="name"/>
+            </association>
+        </association>
+        <association property="subContractor" javaType="com.real.name.subcontractor.entity.SubContractor">
+            <id property="subContractorId" column="sub_contractor_id"/>
+            <result property="corpCode" column="corp_code"/>
+            <result property="corpName" column="corp_name"/>
+        </association>
+    </resultMap>
+
     <sql id="searchAll">
         py.pay_id, py.pay_bank_card_number, py.pay_bank_code, py.pay_bank_name, py.total_pay_amount,
         py.actual_amount, py.is_back_pay, py.balance_date, date_format(py.back_pay_month, '%Y-%m-%d') as back_pay_month, py.third_pay_roll_code, py.suffix_name, py.upload_status,
@@ -47,6 +92,17 @@
         wg.team_sys_no, wg.team_name,
         pj.project_code, pj.name,
         pd.id
+    </sql>
+
+    <sql id="payInfoQuerySearchAll">
+        py.pay_id, py.pay_bank_card_number, py.pay_bank_code, py.pay_bank_name, py.total_pay_amount,
+        py.actual_amount, py.is_back_pay, py.balance_date, date_format(py.back_pay_month, '%Y-%m-%d') as back_pay_month, py.third_pay_roll_code, py.suffix_name, py.upload_status,
+        p.person_id, p.person_name, p.id_card_type, p.id_card_number, p.pay_roll_bank_card_number,
+        p.pay_roll_bank_name, p.bank_link_number, p.pay_roll_top_bank_code,
+        wg.team_sys_no, wg.team_name,
+        sc.sub_contractor_id, sc.corp_code, sc.corp_name,
+        pj.project_code, pj.name,
+        pd.id, pd.person_status
     </sql>
 
     <insert id="savePayInfo" parameterType="com.real.name.pay.entity.PayInfo"
@@ -110,40 +166,34 @@
           pay_id = #{payId}
     </delete>
 
-    <select id="getAllPayInfo" resultMap="payInfoMap">
+    <select id="getAllPayInfo" resultMap="payInfoQueryMap">
         select
-          <include refid="searchAll"/>
+          <include refid="payInfoQuerySearchAll"/>
         from
-          pay_info py, project_detail pd, person p, worker_group wg, project pj
-        where
-          py.project_detail_id = pd.id
-        and
-          p.person_id = pd.person_id
-        and
-          wg.team_sys_no = pd.team_sys_no
-        and
-          pj.project_code = pd.project_code
+          pay_info py
+        left join project_detail pd on pd.id = py.project_detail_id
+        left join person p on p.person_id = pd.person_id
+        left join worker_group wg on wg.team_sys_no = pd.team_sys_no
+        left join sub_contractor sc on sc.sub_contractor_id = wg.sub_contractor_id
+        left join project pj on pj.project_code = pd.project_code
     </select>
 
-    <select id="searchPayInfo" resultMap="payInfoMap">
+    <select id="searchPayInfo" resultMap="payInfoQueryMap">
         select
-          <include refid="searchAll"/>
+          <include refid="payInfoQuerySearchAll"/>
         from
-          pay_info py, project_detail pd, person p, worker_group wg, project pj
-        where
-          py.project_detail_id = pd.id
-        and
-          p.person_id = pd.person_id
-        and
-          wg.team_sys_no = pd.team_sys_no
-        and
-          pj.project_code = pd.project_code
-        <if test="payInfoQuery.projectCode != null">
-            and pj.project_code = #{payInfoQuery.projectCode}
+          pay_info py
+        inner join project_detail pd on pd.id = py.project_detail_id
+        inner join person p on p.person_id = pd.person_id
+        inner join worker_group wg on wg.team_sys_no = pd.team_sys_no
+        inner join sub_contractor sc on sc.sub_contractor_id = wg.sub_contractor_id
+        inner join project pj on pj.project_code = pd.project_code
+        <if test="payInfoSearch.projectCode != null">
+            and pj.project_code = #{payInfoSearch.projectCode}
         </if>
-        <if test="payInfoQuery.nameOrIdCardNumber != null">
-            and (p.person_name like '%${payInfoQuery.nameOrIdCardNumber}%'
-            or p.id_card_number like '%${payInfoQuery.nameOrIdCardNumber}%')
+        <if test="payInfoSearch.nameOrIdCardNumber != null">
+            and (p.person_name like '%${payInfoSearch.nameOrIdCardNumber}%'
+            or p.id_card_number like '%${payInfoSearch.nameOrIdCardNumber}%')
         </if>
     </select>
 

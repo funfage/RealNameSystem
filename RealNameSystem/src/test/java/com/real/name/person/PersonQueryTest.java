@@ -201,7 +201,7 @@ public class PersonQueryTest extends BaseTest {
 
     @Test
     public void judgePersonJoinProject() {
-        Integer integer = mapper.judgePersonJoinProject(89);
+        Integer integer = mapper.judgePersonJoinOtherProject(89, "36bj84W235Zgc8O78yuS32510ppMkHfe");
         System.out.println(integer);
     }
 

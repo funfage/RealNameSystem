@@ -130,7 +130,7 @@
           contractor_status = #{contractorStatus}
     </select>
 
-    <select id="findByProjectCode" resultMap="SubContractorQuery">
+    <select id="findContractInPro" resultMap="SubContractorQuery">
         select
           <include refid="subContractorQuerySql"/>
         from
@@ -139,6 +139,10 @@
           sc.project_code = #{projectCode}
         and
           pj.project_code = sc.project_code
+        <if test="contractStatus != null">
+            and
+              contractor_status = #{contractStatus}
+        </if>
     </select>
 
     <select id="findContractCorpNameInPro" resultMap="SubContractorQuery">
@@ -150,9 +154,9 @@
           sc.project_code = #{projectCode}
         and
           pj.project_code = sc.project_code
-        <if test="status != null">
+        <if test="contractStatus != null">
           and
-            sc.contractor_status = #{status}
+            sc.contractor_status = #{contractStatus}
         </if>
     </select>
 

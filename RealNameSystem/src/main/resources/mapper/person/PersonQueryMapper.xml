@@ -361,9 +361,16 @@
         where
           p.person_id
         in
-        <foreach collection="personIds" item="personId" separator="," open="(" close=")">
-            #{personId}
-        </foreach>
+        <choose>
+            <when test="personIds != null and personIds.size() != 0">
+                <foreach collection="personIds" item="personId" separator="," open="(" close=")">
+                    #{personId}
+                </foreach>
+            </when>
+            <otherwise>
+                (null)
+            </otherwise>
+        </choose>
     </select>
 
     <select id="findByIdCardIndex" resultMap="queryMap">
@@ -544,7 +551,7 @@
           pd.person_status
         from
           person p
-        inner join project_detail pd on p.person_id = pd.person_id and pd.project_code = #{personQuery.projectCode}
+        inner join project_detail pd on p.person_id = pd.person_id and pd.project_code = #{personSearchInPro.projectCode}
         inner join worker_group wg on wg.team_sys_no = pd.team_sys_no
         <if test="personSearchInPro.subContractorId != null">
             inner join sub_contractor sc on sc.sub_contractor_id = wg.sub_contractor_id and sc.sub_contractor_id = #{personSearchInPro.subContractorId}
@@ -596,7 +603,7 @@
         </choose>
     </select>
 
-    <select id="judgePersonJoinProject" resultType="integer">
+    <select id="judgePersonJoinOtherProject" resultType="integer">
         select
           count(*)
         from
@@ -604,7 +611,9 @@
         where
           person_id = #{personId}
         and
-          person_status != 1
+          project_code != #{projectCode}
+        and
+          person_status = 1
     </select>
 
 </mapper>

@@ -56,6 +56,9 @@ public class ShiroConfig {
         Map<String, String> map = new LinkedHashMap<>();
         //静态资源
         map.put("/static/**", "anon");
+        //公共
+        map.put("/common/sendAuthCode", "anon");
+        map.put("/common/judgeAuthCode", "anon");
         //回调地址
         map.put("/attendance", "anon");
         map.put("/heartbeat", "anon");
@@ -72,6 +75,7 @@ public class ShiroConfig {
         map.put("/user/userApply", "perms[userApply]");
         map.put("/user/updateUserByAdmin", "perms[updateUserByAdmin]");
         map.put("/user/deleteUser", "perms[deleteUser]");
+        map.put("/user/updatePassword", "anon");
         //项目
         map.put("/project/createProject", "perms[createProject]");
         map.put("/project/updateProject", "perms[updateProject]");

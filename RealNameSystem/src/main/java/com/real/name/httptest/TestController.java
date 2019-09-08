@@ -8,6 +8,7 @@ import com.real.name.common.filter.CustomerJsonSerializer;
 import com.real.name.common.result.ResultVo;
 import com.real.name.common.schedule.entity.FaceRecordData;
 import com.real.name.common.schedule.entity.Records;
+import com.real.name.common.utils.SendSms;
 import com.real.name.common.websocket.WebSocket;
 import com.real.name.contract.entity.ContractInfo;
 import com.real.name.device.netty.utils.FaceDeviceUtils;
@@ -17,6 +18,7 @@ import com.real.name.project.service.repository.ProjectDetailQueryMapper;
 import com.real.name.record.query.PeriodTime;
 import com.real.name.subcontractor.entity.query.GroupPeople;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.Serializable;
@@ -87,6 +89,15 @@ public class TestController {
 
     @Autowired
     private WebSocket webSocket;
+
+    @GetMapping("/testSendMessage")
+    public ResultVo testSendMessage(@RequestParam("phone") String phone) {
+        String s = SendSms.sendMessage(phone);
+        if (StringUtils.isEmpty(s)) {
+            return ResultVo.failure();
+        }
+        return ResultVo.success(s);
+    }
 
     @GetMapping("/test1")
     public ResultVo test(@RequestParam("personIds") List<Integer> personIds) {

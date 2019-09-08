@@ -30,13 +30,14 @@ public interface SubContractorMapper {
     /**
      * 查询项目下的参建单位
      */
-    List<SubContractorQuery> findByProjectCode(@Param("projectCode") String projectCode);
+    List<SubContractorQuery> findContractInPro(@Param("projectCode") String projectCode,
+                                               @Param("contractStatus") Integer contractStatus);
 
     /**
      * 查询项目中未被移除的参建单位的参建单位名称
      */
     List<SubContractorQuery> findContractCorpNameInPro(@Param("projectCode") String projectCode,
-                                                       @Param("status") Integer status);
+                                                       @Param("contractStatus") Integer contractStatus);
 
     /**
      * 查询项目下未被移除的参建单位信息

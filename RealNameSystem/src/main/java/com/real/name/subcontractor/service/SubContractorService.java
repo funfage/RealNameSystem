@@ -37,7 +37,7 @@ public interface SubContractorService {
     /**
      * 查询项目下的参建单位
      */
-    List<SubContractorQuery> findByProjectCode(String projectCode);
+    List<SubContractorQuery> findContractInPro(String projectCode, Integer contractStatus);
 
     /**
      * 查询项目下未被移除的参建单位

@@ -45,9 +45,6 @@ public class AttendanceController {
     private GroupAttendService groupAttendService;
 
     @Autowired
-    private ProjectService projectService;
-
-    @Autowired
     private ProjectAttendService projectAttendService;
 
     @Autowired

@@ -174,8 +174,9 @@ public interface PersonQueryMapper {
                                                   @Param("personIds") List<Integer> personIds);
 
     /**
-     * 判断人员是否加入了项目，不包括从项目中移除的人员
+     * 判断人员是否加入了其他项目，不包括从项目中移除的人员
      */
-    Integer judgePersonJoinProject(@Param("personId") Integer personId);
+    Integer judgePersonJoinOtherProject(@Param("personId") Integer personId,
+                                   @Param("projectCode") String projectCode);
 
 }

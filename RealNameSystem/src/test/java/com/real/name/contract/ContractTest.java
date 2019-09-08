@@ -3,7 +3,8 @@ package com.real.name.contract;
 import com.real.name.common.utils.TimeUtil;
 import com.real.name.contract.entity.ContractFile;
 import com.real.name.contract.entity.ContractInfo;
-import com.real.name.contract.query.ContractInfoQuery;
+import com.real.name.contract.entity.query.ContractInfoQuery;
+import com.real.name.contract.entity.search.ContractInfoSearch;
 import com.real.name.contract.service.repository.ContractInfoMapper;
 import com.real.name.others.BaseTest;
 import com.real.name.project.entity.ProjectDetailQuery;
@@ -72,17 +73,29 @@ public class ContractTest extends BaseTest {
 
     @Test
     public void getAllContractInfo() {
-        List<ContractInfo> allContractInfo = contractInfoMapper.getAllContractInfo();
+        List<ContractInfoQuery> allContractInfo = contractInfoMapper.getAllContractInfo();
         System.out.println(allContractInfo);
     }
 
     @Test
     public void searchContractInfo() {
-        ContractInfoQuery query = new ContractInfoQuery();
+        ContractInfoSearch query = new ContractInfoSearch();
         query.setPersonName("陈祺荣");
         query.setProjectName("新兴");
-        List<ContractInfo> contractInfos = contractInfoMapper.searchContractInfo(query);
+        List<ContractInfoQuery> contractInfos = contractInfoMapper.searchContractInfo(query);
         System.out.println(contractInfos);
+    }
+
+    @Test
+    public void findUploadContractsInfo() {
+        List<Integer> idList = new ArrayList<>();
+        List<ContractInfoQuery> uploadContractsInfo = contractInfoMapper.findUploadContractsInfo(idList);
+        System.out.println(uploadContractsInfo);
+        idList.add(8);
+        idList.add(9);
+        idList.add(10);
+        List<ContractInfoQuery> uploadContractsInfo1 = contractInfoMapper.findUploadContractsInfo(idList);
+        System.out.println(uploadContractsInfo1);
     }
 
 }

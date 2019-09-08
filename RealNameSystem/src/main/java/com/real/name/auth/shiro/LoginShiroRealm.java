@@ -49,8 +49,8 @@ public class LoginShiroRealm extends AuthorizingRealm {
         if (user == null) {
             throw new UnknownAccountException("无此用户");
         }
-        if (user.getStatus() == null || user.getStatus() == 0) {
-            throw new LockedAccountException("用户已被管理员禁用");
+        if (user.getStatus() == null || user.getStatus() != 1) {
+            throw new LockedAccountException("此用户无效或还未被管理员批准");
         }
         //使用phone充当盐值
         ByteSource salt = ByteSource.Util.bytes(phone);

@@ -2,7 +2,8 @@ package com.real.name.contract.service.repository;
 
 import com.real.name.contract.entity.ContractFile;
 import com.real.name.contract.entity.ContractInfo;
-import com.real.name.contract.query.ContractInfoQuery;
+import com.real.name.contract.entity.query.ContractInfoQuery;
+import com.real.name.contract.entity.search.ContractInfoSearch;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -20,7 +21,6 @@ public interface ContractInfoMapper {
      * 保存合同和文件的关联
      */
     int saveContractFileList(@Param("contractFileList") List<ContractFile> contractFileList);
-
 
     /**
      * 修改合同信息
@@ -46,16 +46,16 @@ public interface ContractInfoMapper {
     /**
      * 查询所有合同信息
      */
-    List<ContractInfo> getAllContractInfo();
+    List<ContractInfoQuery> getAllContractInfo();
 
     /**
      * 搜索合同
      */
-    List<ContractInfo> searchContractInfo(@Param("contractInfoQuery") ContractInfoQuery contractInfoQuery);
+    List<ContractInfoQuery> searchContractInfo(@Param("contractInfoSearch") ContractInfoSearch contractInfoSearch);
 
     /**
      * 获取所有需要上传的人员合同信息
      */
-    List<ContractInfo> findUploadContractInfo(List<Integer> contractInfoIdList);
+    List<ContractInfoQuery> findUploadContractsInfo(@Param("contractInfoIdList") List<Integer> contractInfoIdList);
 
 }

@@ -1,5 +1,6 @@
 package com.real.name.nation.controller;
 
+import com.real.name.common.result.ResultError;
 import com.real.name.common.result.ResultVo;
 import com.real.name.nation.service.NationService;
 import com.real.name.subcontractor.entity.SubContractor;
@@ -23,8 +24,8 @@ public class NationController {
      */
     @PostMapping("/uploadProject")
     public ResultVo uploadProject(@RequestParam("projectCodeList") Set<String> projectCodeList) {
-        nationService.uploadProject(projectCodeList);
-        return ResultVo.success();
+        List<String> failNameList = nationService.uploadProject(projectCodeList);
+        return result(failNameList);
     }
 
     /**
@@ -33,16 +34,17 @@ public class NationController {
     @PostMapping("/uploadSubContractor")
     public ResultVo uploadSubContractor(@RequestParam("subContractorIdList") List<Integer> subContractorIdList,
                                         @RequestParam("projectCode") String projectCode) {
-        nationService.uploadSubContractor(subContractorIdList, projectCode);
-        return ResultVo.success();
+        List<String> failNameList = nationService.uploadSubContractor(subContractorIdList, projectCode);
+        return result(failNameList);
     }
 
     /**
      * 上传班组信息
      */
     @PostMapping("/uploadWorkerGroup")
-    public ResultVo uploadWorkerGroup() {
-        return ResultVo.success();
+    public ResultVo uploadWorkerGroup(List<Integer> groupIdList, Integer subContractorId) {
+        List<String> failNameList = nationService.uploadWorkerGroup(groupIdList, subContractorId);
+        return result(failNameList);
     }
 
     /**
@@ -51,8 +53,8 @@ public class NationController {
     @PostMapping("/updateWorkerGroup")
     public ResultVo updateWorkerGroup(@RequestParam("subContractorId") Integer subContractorId,
                                       @RequestParam("groupIdList") List<Integer> groupIdList) {
-        nationService.uploadWorkerGroup(groupIdList, subContractorId);
-        return ResultVo.success();
+        List<String> failNameList = nationService.uploadWorkerGroup(groupIdList, subContractorId);
+        return result(failNameList);
     }
 
     /**
@@ -62,9 +64,8 @@ public class NationController {
     public ResultVo uploadPerson(@RequestParam("projectCode") String projectCode,
                                  @RequestParam("teamSysNo") Integer teamSysNo,
                                  @RequestParam("personIdList") List<Integer> personIdList) {
-        nationService.uploadPerson(personIdList, teamSysNo, projectCode);
-        //查询用户是否绑定项目
-        return ResultVo.success();
+        List<String> failNameList = nationService.uploadPerson(personIdList, teamSysNo, projectCode);
+        return result(failNameList);
     }
 
     /**
@@ -72,7 +73,14 @@ public class NationController {
      */
     @GetMapping("/uploadContractor")
     public ResultVo uploadContractor(@RequestParam("contractIdList") List<Integer> contractIdList) {
+        List<String> failNameList = nationService.uploadContractor(contractIdList);
+        return result(failNameList);
+    }
 
+    private ResultVo result(List<String> failNameList) {
+        if (failNameList.size() > 0) {
+            return ResultVo.failure(failNameList, ResultError.NATION_UPLOAD_FAILURE);
+        }
         return ResultVo.success();
     }
 

@@ -65,8 +65,8 @@ public class SubContractorTest extends BaseTest {
     }
 
     @Test
-    public void findByProjectCode() {
-        List<SubContractorQuery> subContractors = subContractorMapper.findByProjectCode("36bj84W235Zgc8O78yuS32510ppMkHfe");
+    public void findContractInPro() {
+        List<SubContractorQuery> subContractors = subContractorMapper.findContractInPro("36bj84W235Zgc8O78yuS32510ppMkHfe", null);
         System.out.println(subContractors);
     }
 

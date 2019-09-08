@@ -7,6 +7,7 @@ import com.real.name.auth.service.repository.PermissionMapper;
 import com.real.name.auth.service.repository.UserMapper;
 import com.real.name.common.exception.AttendanceException;
 import com.real.name.common.result.ResultError;
+import com.real.name.record.entity.Attendance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,28 +27,40 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void registerUser(User user) {
-        //先将用户设置为无效
-        user.setStatus(0);
         //保存用户
         int effNum = userMapper.saveUser(user);
         if (effNum <= 0) {
-            throw new AttendanceException(ResultError.INSERT_ERROR);
+            throw new AttendanceException(ResultError.USER_REGISTER_ERROR);
         }
         //保存用户角色关联
         effNum = userMapper.saveUserRole(user.getUserId(), user.getRoleId());
         if (effNum < 0) {
-            throw new AttendanceException(ResultError.INSERT_ERROR);
+            throw new AttendanceException(ResultError.USER_REGISTER_ERROR);
         }
         boolean containProjectRole = AuthUtils.isContainProjectRoleById(user.getRoleId());
+        //如果用户选择的是项目管理员角色，则添加用户与项目的关联
         if (containProjectRole) {
-            //保存项目管理员与项目的关联
-            userMapper.saveUserProjects(user.getUserId(), user.getProjectSet());
+            if (user.getProjectSet() != null && user.getProjectSet().size() > 0) {
+                //保存项目管理员与项目的关联
+                int i = userMapper.saveUserProjects(user.getUserId(), user.getProjectSet());
+                if (i <= 0) {
+                    throw new AttendanceException(ResultError.USER_REGISTER_ERROR);
+                }
+            }
         }
     }
 
     @Override
     public void updateUser(User user) {
         int i = userMapper.updateUser(user);
+        if (i <= 0) {
+            throw new AttendanceException(ResultError.UPDATE_ERROR);
+        }
+    }
+
+    @Override
+    public void updateUserByPhone(User user) {
+        int i = userMapper.updateUserByPhone(user);
         if (i <= 0) {
             throw new AttendanceException(ResultError.UPDATE_ERROR);
         }

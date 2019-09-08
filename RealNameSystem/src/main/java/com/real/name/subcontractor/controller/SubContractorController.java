@@ -95,82 +95,36 @@ public class SubContractorController {
     }
 
     /**
-     * 查询参建单位的企业名称
-     * @param status 1为查询所有 否则为查询未被移除的参建单位
-     */
-    @GetMapping("/findCorpName")
-    @JSON(type = SubContractorQuery.class, include = "subContractorId,corpCode,corpName")
-    public ResultVo findCorpName(@RequestParam("projectCode") String projectCode,
-                                 @RequestParam(name = "status", defaultValue = "1") Integer status) {
-        if (status == 1) {
-            List<SubContractorQuery> subContractorList = subContractorService.findCorpName(projectCode, 1);
-            return ResultVo.success(subContractorList);
-        } else {
-            List<SubContractorQuery> subContractorList = subContractorService.findCorpName(projectCode, 0);
-            return ResultVo.success(subContractorList);
-        }
-    }
-
-    /**
      * 查询项目中的参建单位
-     * @param status 为1时查询所有 否则为分页查询
+     * @param status 若不传则查询项目下所有参建单位，为1时查询项目下未被移除的参建单位 为0查询项目下被移除的参建单位
      */
     @GetMapping("/findSubContractorInPro")
     @JSONS({
             @JSON(type = SubContractorQuery.class, filter = "uploadStatus,createTime"),
             @JSON(type = Project.class, include = "projectCode,name")
     })
-    public ResultVo findSubContractor(@RequestParam("projectCode") String  projectCode,
-                                      @RequestParam(name = "status", defaultValue = "1") Integer status,
+    public ResultVo findSubContractorInPro(@RequestParam("projectCode") String  projectCode,
+                                      @RequestParam(name = "status", required = false) Integer status,
                                       @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
                                       @RequestParam(name = "pageSize", defaultValue = "20") Integer pageSize) {
-        if (status == 1) {
-            List<SubContractorQuery> subContractorList = subContractorService.findByProjectCode(projectCode);
-            return ResultVo.success(subContractorList);
-        } else {
-            PageHelper.startPage(pageNum + 1, pageSize);
-            List<SubContractorQuery> subContractorList = subContractorService.findByProjectCode(projectCode);
-            PageInfo<SubContractorQuery> pageInfo = new PageInfo<>(subContractorList);
-            return PageUtils.pageResult(pageInfo, subContractorList);
-        }
+        PageHelper.startPage(pageNum + 1, pageSize);
+        List<SubContractorQuery> subContractorList = subContractorService.findContractInPro(projectCode, status);
+        PageInfo<SubContractorQuery> pageInfo = new PageInfo<>(subContractorList);
+        return PageUtils.pageResult(pageInfo, subContractorList);
     }
 
     /**
      * 查询项目中未被移除的参建单位名和id
-     * @param status 为1为查询未被移除的参建单位信息, 否则为查询项目下所有参建单位信息
+     * @param status 不传为查询所有参建单位信息，为1为查询未被移除的参建单位名, 为0位查询被移除的参建单位名
      */
     @GetMapping("/findContractCorpNameInPro")
     @JSONS({
             @JSON(type = SubContractorQuery.class, include = "subContractorId,corpCode,corpName")
     })
     public ResultVo findContractCorpNameInPro(@RequestParam("projectCode") String projectCode,
-                                           @RequestParam(name = "status", required = false) Integer status) {
+                                              @RequestParam(name = "status", required = false) Integer status) {
         List<SubContractorQuery> subContractorQueryList = subContractorService.findContractCorpNameInPro(projectCode, status);
         return ResultVo.success(subContractorQueryList);
-    }
-
-    /**
-     * 查未被移除的参建单位信息
-     * @param status 为1时查询所有，否则为分页查询
-     */
-    @GetMapping("/findUnRmvContractInPro")
-    @JSONS({
-            @JSON(type = SubContractorQuery.class, filter = "uploadStatus,createTime"),
-            @JSON(type = Project.class, include = "projectCode,name")
-    })
-    public ResultVo findUnRmvContractInPro(@RequestParam("projectCode") String projectCode,
-                                           @RequestParam(value = "status", defaultValue = "1") Integer status,
-                                           @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,
-                                           @RequestParam(name = "pageSize", defaultValue = "20") Integer pageSize) {
-        if (status == 1) {
-            List<SubContractorQuery> subContractorList = subContractorService.findUnRemoveInProject(projectCode);
-            return ResultVo.success(subContractorList);
-        } else {
-            PageHelper.startPage(pageNum + 1, pageSize);
-            List<SubContractorQuery> subContractorList = subContractorService.findUnRemoveInProject(projectCode);
-            PageInfo<SubContractorQuery> pageInfo = new PageInfo<>(subContractorList);
-            return PageUtils.pageResult(pageInfo, subContractorList);
-        }
     }
 
     /**

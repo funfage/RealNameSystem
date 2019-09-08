@@ -40,11 +40,11 @@
     keyProperty="user.userId" keyColumn="user_id" useGeneratedKeys="true">
         insert into `user`
         (
-        username, phone, password, status
+        username, phone, password
         )
         values
         (
-        #{user.username}, #{user.phone}, #{user.password}, #{user.status}
+        #{user.username}, #{user.phone}, #{user.password}
         )
     </insert>
 
@@ -64,21 +64,36 @@
             <if test="user.userId != null">
                 user_id = #{user.userId},
             </if>
-            <if test="user.phone != null">
-                phone = #{user.phone},
-            </if>
-            <if test="user.username != null">
+            <if test="user.username != null and user.username != ''">
                 username = #{user.username},
             </if>
-            <if test="user.password != null">
+            <if test="user.password != null and user.password != ''">
                 password = #{user.password},
             </if>
             <if test="user.status != null">
-                status = #{user.status}
+                status = #{user.status},
             </if>
         </set>
         where
           user_id = #{user.userId}
+    </update>
+
+    <update id="updateUserByPhone">
+        update
+          `user`
+        <set>
+            <if test="user.username != null and user.username != ''">
+                user_name = #{user.username}
+            </if>
+            <if test="user.password != null and user.password != ''">
+                password = #{user.password},
+            </if>
+            <if test="user.status != null">
+                status = #{user.status},
+            </if>
+        </set>
+        where
+          phone = #{user.phone}
     </update>
 
     <update id="updateUserRole" useGeneratedKeys="true">
@@ -142,8 +157,6 @@
           user_id, username, phone, password, status from `user`
         where
           phone = #{phone}
-        and
-          status = 1
     </select>
 
     <select id="getUserPermissionIds" parameterType="integer" resultType="string">

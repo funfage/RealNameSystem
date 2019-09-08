@@ -18,13 +18,18 @@ public interface UserMapper {
     /**
      * 保存项目管理员与项目信息
      */
-    void saveUserProjects(@Param("userId") Integer userId,
+    int saveUserProjects(@Param("userId") Integer userId,
                          @Param("projectSet") Set<String> projectSet);
 
     /**
      * 更新用户信息
      */
     int updateUser(@Param("user") User user);
+
+    /**
+     * 根据电话号码更新用户信息
+     */
+    int updateUserByPhone(@Param("user") User user);
 
     /**
      * 更新用户角色

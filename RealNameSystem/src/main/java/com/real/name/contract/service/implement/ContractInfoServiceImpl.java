@@ -6,12 +6,11 @@ import com.real.name.common.utils.FileTool;
 import com.real.name.common.utils.PathUtil;
 import com.real.name.contract.entity.ContractFile;
 import com.real.name.contract.entity.ContractInfo;
-import com.real.name.contract.query.ContractInfoQuery;
+import com.real.name.contract.entity.query.ContractInfoQuery;
+import com.real.name.contract.entity.search.ContractInfoSearch;
 import com.real.name.contract.service.ContractInfoService;
 import com.real.name.contract.service.repository.ContractInfoMapper;
-import com.real.name.person.service.PersonService;
 import com.real.name.project.entity.ProjectDetailQuery;
-import com.real.name.project.service.ProjectDetailQueryService;
 import com.real.name.project.service.repository.ProjectDetailQueryMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,12 +124,17 @@ public class ContractInfoServiceImpl implements ContractInfoService {
     }
 
     @Override
-    public List<ContractInfo> getAllContractInfo() {
+    public List<ContractInfoQuery> getAllContractInfo() {
         return contractInfoMapper.getAllContractInfo();
     }
 
     @Override
-    public List<ContractInfo> searchContractInfo(ContractInfoQuery contractInfoQuery) {
-        return contractInfoMapper.searchContractInfo(contractInfoQuery);
+    public List<ContractInfoQuery> searchContractInfo(ContractInfoSearch contractInfoSearch) {
+        return contractInfoMapper.searchContractInfo(contractInfoSearch);
+    }
+
+    @Override
+    public List<ContractInfoQuery> findUploadContractsInfo(List<Integer> contractInfoIdList) {
+        return contractInfoMapper.findUploadContractsInfo(contractInfoIdList);
     }
 }

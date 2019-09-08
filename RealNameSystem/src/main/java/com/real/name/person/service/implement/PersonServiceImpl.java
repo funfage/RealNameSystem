@@ -99,7 +99,7 @@ public class PersonServiceImpl implements PersonService {
                 Integer personId = person.getPersonId();
                 //如果不是管理员，判断人员是否已经加入了其他项目
                 if (person.getWorkRole() != 10) {
-                    Integer integer = personQueryMapper.judgePersonJoinProject(personId);
+                    Integer integer = personQueryMapper.judgePersonJoinOtherProject(personId, projectCode);
                     if (integer != null && integer >= 0) {
                         failNameList.add(person.getPersonName());
                         continue;
@@ -482,8 +482,8 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public Integer judgePersonJoinProject(Integer personId) {
-        return personQueryMapper.judgePersonJoinProject(personId);
+    public Integer judgePersonJoinOtherProject(Integer personId, String projectCode) {
+        return personQueryMapper.judgePersonJoinOtherProject(personId, projectCode);
     }
 
 
